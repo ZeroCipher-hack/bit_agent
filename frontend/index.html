@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bit</title>
+<meta name="theme-color" content="#5B4BDB">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9E7F1; --ink:#22202E; --muted:#6B6880; --shell:#FBFBFD; --shell-edge:#D3CFE0;
+  --screen:#0F1733; --line:#CFCBDD; --field:#FFFFFF; --accent:#5B4BDB; --on-accent:#FFFFFF;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17151F; --ink:#ECEAF5; --muted:#A09CB6; --shell:#2C2939; --shell-edge:#3D3953;
+    --screen:#060A18; --line:#3A3650; --field:#211E2D; --accent:#A99DFF; --on-accent:#17151F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17151F; --ink:#ECEAF5; --muted:#A09CB6; --shell:#2C2939; --shell-edge:#3D3953;
+  --screen:#060A18; --line:#3A3650; --field:#211E2D; --accent:#A99DFF; --on-accent:#17151F;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Rubik,"Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.45}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+
+main{max-width:560px;min-height:100%;margin:0 auto;padding:14px 18px 20px;display:flex;flex-direction:column;gap:14px}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.who{display:flex;align-items:baseline;gap:10px}
+.who h1{margin:0;font-size:30px;font-weight:700;letter-spacing:-.02em}
+.status{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:14px}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--eye,#7CF5D6);box-shadow:0 0 8px var(--eye,#7CF5D6)}
+.langs{display:inline-flex;background:var(--field);border:1px solid var(--line);border-radius:999px;padding:3px}
+.langs button{border:0;background:none;padding:6px 11px;border-radius:999px;font-size:14px;cursor:pointer;color:var(--muted)}
+.langs button[aria-checked="true"]{background:var(--accent);color:var(--on-accent)}
+
+/* robot */
+.robot{--eye:#7CF5D6;--ew:19cqw;--eh:24cqw;--er:5cqw;--lt:-.4;--lb:-.4;--lrl:0deg;--lrr:0deg;
+  display:grid;justify-items:center;margin:14px auto 0;width:min(76vw,330px);transition:transform .3s}
+.antenna{width:4px;height:24px;background:var(--shell-edge);border-radius:2px;position:relative}
+.bulb{position:absolute;top:-11px;left:50%;width:15px;height:15px;border-radius:50%;transform:translateX(-50%);
+  background:var(--eye);box-shadow:0 0 14px var(--eye);transition:background .4s,box-shadow .4s}
+.head{container-type:inline-size;width:100%;aspect-ratio:1.2;border:0;cursor:pointer;padding:7%;
+  background:var(--shell);border-radius:40% 40% 30% 30%/44% 44% 30% 30%;
+  box-shadow:inset 0 -9px 0 rgba(20,10,60,.07),0 22px 34px -20px rgba(40,30,90,.5)}
+.screen{position:relative;width:100%;height:100%;background:var(--screen);overflow:hidden;
+  border-radius:34% 34% 26% 26%/40% 40% 28% 28%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5cqw}
+.look{display:flex;gap:12cqw;transform:translate(var(--lx,0px),var(--ly,0px));transition:transform .28s ease-out}
+.eye{position:relative;width:var(--ew);height:var(--eh);transition:width .35s cubic-bezier(.3,1.5,.5,1),height .35s cubic-bezier(.3,1.5,.5,1),transform .08s}
+.look.blink .eye{transform:scaleY(.08)}
+.glow{position:absolute;inset:0;background:var(--eye);border-radius:var(--er);box-shadow:0 0 4cqw var(--eye);
+  transition:background .4s,box-shadow .4s,border-radius .35s,transform .35s,opacity .2s}
+.heart{position:absolute;inset:-12%;width:124%;height:124%;color:var(--eye);opacity:0;transform:scale(.4);transition:opacity .2s,transform .3s;filter:drop-shadow(0 0 3cqw var(--eye))}
+.lid{position:absolute;left:-30%;width:160%;height:100%;background:var(--screen);transition:transform .35s cubic-bezier(.3,1.3,.5,1)}
+.lid.top{top:-100%}
+.eye.left .lid.top{transform:translateY(calc(var(--lt) * 100%)) rotate(var(--lrl))}
+.eye.right .lid.top{transform:translateY(calc(var(--lt) * 100%)) rotate(var(--lrr))}
+.lid.bottom{top:100%;border-radius:50% 50% 0 0;transform:translateY(calc(var(--lb) * -100%))}
+.mouth{width:8cqw;height:1.4cqw;border-radius:2cqw;background:var(--eye);opacity:.75;transition:background .4s,width .3s,height .3s}
+.robot.talking .mouth{animation:talk .22s ease-in-out infinite alternate}
+@keyframes talk{from{height:1.4cqw;width:7cqw}to{height:4.5cqw;width:9cqw;border-radius:3cqw}}
+.zzz{position:absolute;right:12%;top:10%;color:#9AA3C7;font-weight:700;font-size:6cqw;opacity:0;pointer-events:none}
+.robot.asleep .zzz{opacity:1;animation:float 2.4s ease-in-out infinite}
+@keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-3cqw)}100%{transform:translateY(0)}}
+.neck{width:30%;height:16px;background:var(--shell-edge);border-radius:0 0 8px 8px}
+.feet{display:flex;gap:26%;width:58%;justify-content:center;margin-top:4px}
+.feet span{width:28%;height:16px;border-radius:10px 10px 6px 6px;background:var(--shell);box-shadow:inset 0 -4px 0 rgba(20,10,60,.08)}
+
+/* emotions */
+.robot[data-emotion="happy"]{--eye:#FFD15C;--lb:.45;--er:8cqw}
+.robot[data-emotion="excited"]{--eye:#FF9F45;--lb:.3;--er:50% 50% 8cqw 8cqw;--ew:22cqw;--eh:28cqw}
+.robot[data-emotion="sad"]{--eye:#7FA9FF;--lt:.28;--lrl:-16deg;--lrr:16deg;--eh:21cqw}
+.robot[data-emotion="angry"]{--eye:#FF6B5B;--lt:.33;--lrl:22deg;--lrr:-22deg;--eh:20cqw}
+.robot[data-emotion="surprised"]{--eye:#E9FBFF;--ew:23cqw;--eh:27cqw;--er:50%}
+.robot[data-emotion="sleepy"]{--eye:#9AA3C7;--lt:.62;--lb:.08}
+.robot[data-emotion="love"]{--eye:#FF7EB6}
+.robot[data-emotion="love"] .glow{opacity:0}
+.robot[data-emotion="love"] .heart{opacity:1;transform:scale(1);animation:beat 1s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}30%{transform:scale(1.12)}}
+.robot[data-emotion="thinking"]{--eye:#B79CFF;--ew:16cqw;--eh:20cqw;--lt:.12}
+.robot[data-emotion="thinking"] .bulb{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+.robot[data-emotion="confused"]{--eye:#7CF5D6}
+.robot[data-emotion="confused"] .eye.left .glow{transform:scale(.72)}
+.robot[data-emotion="confused"] .eye.right{--lt:.38;--lrr:-12deg}
+.robot.listening{--ew:21cqw;--eh:26cqw}
+.robot.listening .bulb{animation:pulse .7s ease-in-out infinite}
+.robot.bounce{animation:bounce .5s ease-in-out 3}
+@keyframes bounce{50%{transform:translateY(-14px)}}
+.robot.dance{animation:dance .6s ease-in-out 5}
+@keyframes dance{25%{transform:rotate(-8deg) translateY(-8px)}75%{transform:rotate(8deg) translateY(-8px)}}
+.robot[data-emotion="sad"] .head{transform:translateY(4px)}
+
+/* speech */
+.bubble{position:relative;background:var(--field);border:1px solid var(--line);border-radius:22px;padding:16px 18px;min-height:88px}
+.bubble::before{content:"";position:absolute;top:-9px;left:50%;width:16px;height:16px;background:var(--field);
+  border-left:1px solid var(--line);border-top:1px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+.bubble p{margin:0;font-size:18px;max-width:60ch}
+.bubble .you{display:block;color:var(--muted);font-size:14px;margin-bottom:6px}
+
+.ask{display:flex;gap:8px;align-items:center}
+.ask input{flex:1;min-width:0;height:52px;padding:0 16px;border-radius:26px;border:1px solid var(--line);background:var(--field)}
+.mic,.send{height:52px;border-radius:26px;border:0;cursor:pointer;flex:none}
+.mic{width:52px;background:var(--field);border:1px solid var(--line);display:grid;place-items:center}
+.mic svg{width:22px;height:22px}
+.mic[aria-pressed="true"]{background:#FF6B5B;border-color:#FF6B5B;color:#fff}
+.send{padding:0 18px;background:var(--accent);color:var(--on-accent);font-weight:500}
+.send:disabled{opacity:.55;cursor:default}
+
+.opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;color:var(--muted)}
+.opts label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.opts input{accent-color:var(--accent);width:16px;height:16px}
+.timer{display:none;align-items:center;gap:8px;background:var(--field);border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;color:var(--ink);font-variant-numeric:tabular-nums}
+.timer.on{display:inline-flex}
+.timer button{border:0;background:var(--bg);border-radius:999px;padding:2px 10px;cursor:pointer;font-size:13px}
+.note{min-height:1.2em;margin:0;font-size:14px;color:var(--muted)}
+
+details{border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;color:var(--muted);font-size:14px}
+.log{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:280px;overflow:auto}
+.log li{font-size:15px;max-width:60ch}
+.log b{font-weight:500;color:var(--muted);margin-right:6px}
+.notes{margin:8px 0 0;font-size:14px;color:var(--muted)}
+.notes button{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;margin-left:6px;font-size:14px}
+
+@media (prefers-reduced-motion: reduce){
+  .robot.bounce,.robot.dance,.robot.asleep .zzz,.robot[data-emotion="love"] .heart,.bulb{animation:none!important}
+  .look,.eye,.lid,.glow{transition:none}
+}
+
+.cards{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--field);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+.card p{margin:0 0 10px;max-width:60ch}
+.card .row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:999px;padding:9px 16px;cursor:pointer;font-weight:500;background:var(--bg);color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.player{aspect-ratio:16/9;width:100%;border:0;border-radius:12px;margin-bottom:10px;background:#000}
+.card a{color:var(--accent)}
+.gear{border:1px solid var(--line);background:var(--field);border-radius:999px;width:38px;height:38px;cursor:pointer;display:grid;place-items:center}
+.gear svg{width:18px;height:18px}
+dialog{border:1px solid var(--line);border-radius:20px;background:var(--field);color:var(--ink);padding:20px;width:min(92vw,440px)}
+dialog::backdrop{background:rgba(10,8,20,.5)}
+dialog h2{margin:0 0 12px;font-size:20px}
+dialog label{display:block;font-size:14px;color:var(--muted);margin:12px 0 4px}
+dialog input,dialog select{width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 12px}
+dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div class="who"><h1 id="name">Bit</h1><span class="status" id="status">Uygʻoq</span></div>
+    <div style="display:flex;gap:8px;align-items:center">
+    <div class="langs" role="radiogroup" aria-label="Javob tili" id="langs">
+      <button role="radio" data-lang="auto" aria-checked="true">Avto</button>
+      <button role="radio" data-lang="uz" aria-checked="false">Oʻzbek</button>
+      <button role="radio" data-lang="ru" aria-checked="false">Русский</button>
+      <button role="radio" data-lang="en" aria-checked="false">English</button>
+    </div>
+    <button class="gear" id="gear" type="button" aria-label="Sozlamalar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </div>
+  </header>
+
+  <div class="robot" id="robot" data-emotion="neutral">
+    <div class="antenna"><span class="bulb"></span></div>
+    <button class="head" id="head" aria-label="Bitni silash">
+      <div class="screen">
+        <div class="look" id="look">
+          <div class="eye left"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
+          <div class="eye right"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
+        </div>
+        <div class="mouth"></div>
+        <div class="zzz" aria-hidden="true">z z Z</div>
+      </div>
+    </button>
+    <div class="neck"></div>
+    <div class="feet"><span></span><span></span></div>
+  </div>
+
+  <section class="bubble" aria-live="polite">
+    <span class="you" id="you" hidden></span>
+    <p id="say"></p>
+  </section>
+
+  <div class="cards" id="cards"></div>
+
+  <form class="ask" id="ask" autocomplete="off">
+    <button type="button" class="mic" id="mic" aria-pressed="false" aria-label="Gapirish">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+    </button>
+    <input id="q" type="text" placeholder="Bitga savol bering…" aria-label="Savol">
+    <button type="submit" class="send" id="send">Yuborish</button>
+  </form>
+
+  <div class="opts">
+    <label><input type="checkbox" id="voice" checked> <span id="lblVoice">Ovozli javob</span></label>
+    <label><input type="checkbox" id="smart"> <span id="lblSmart">Chuqur oʻylash</span></label>
+    <span class="timer" id="timer"><span id="timerText">00:00</span><button type="button" id="timerStop">×</button></span>
+  </div>
+  <p class="note" id="note" role="status"></p>
+
+  <details>
+    <summary id="lblHistory">Suhbat tarixi</summary>
+    <ol class="log" id="log"></ol>
+    <p class="notes" id="notesView"></p>
+  </details>
+
+  <dialog id="settings">
+    <form method="dialog" id="settingsForm">
+      <h2 id="lblSettings">Sozlamalar</h2>
+      <label for="sUrl">Server manzili</label>
+      <input id="sUrl" type="url" placeholder="https://bit.example.uz">
+      <p class="hint">Boʻsh qoldirsangiz, shu sahifa ochilgan server ishlatiladi.</p>
+      <label for="sToken">Kirish tokeni (BIT_API_TOKEN)</label>
+      <input id="sToken" type="password" autocomplete="off">
+      <label for="sLocal">Kompyuter agenti tokeni (ixtiyoriy)</label>
+      <input id="sLocal" type="password" autocomplete="off">
+      <p class="hint">Kompyuterda ilova va papkalarni ochish uchun. bit_local_agent.py oynasida koʻrinadi.</p>
+      <div class="row"><button class="btn" value="cancel" formnovalidate>Bekor qilish</button><button class="btn primary" value="save" id="sSave">Saqlash</button></div>
+    </form>
+  </dialog>
+</main>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const robot = $('#robot'), look = $('#look'), head = $('#head');
+  const sayEl = $('#say'), youEl = $('#you'), statusEl = $('#status'), noteEl = $('#note');
+  const q = $('#q'), sendBtn = $('#send'), micBtn = $('#mic'), logEl = $('#log'), cards = $('#cards');
+  const voiceChk = $('#voice'), smartChk = $('#smart');
+
+  const EMOTIONS = ['neutral','happy','excited','sad','angry','surprised','sleepy','love','thinking','confused'];
+  const BCP = { uz:'uz-UZ', ru:'ru-RU', en:'en-US' };
+  const T = {
+    uz:{ name:'Bit', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
+      ph:'Bitga yozing yoki gapiring…', send:'Yuborish', mic:'Gapirish', voice:'Ovozli javob', smart:'Chuqur oʻylash', history:'Suhbat tarixi', you:'Siz', pet:'Bitni silash',
+      greet:'Salom, hamkasb! Men tayyorman. Telegramga yozish, musiqa qoʻyish yoki kompyuterda biror narsani ochish kerak boʻlsa, ayting.',
+      tickle:['Hihi, qitiq boʻlyapti!','Yana silang!','Voy, yoqimli!'], wake:'Ha? Uygʻondim!', timerDone:'Vaqt tugadi!',
+      yes:'Ha, bajar', no:'Yoʻq', done:'Bajarildi.', rejected:'Bekor qildim.', expired:'Bu soʻrov eskirgan. Qaytadan ayting.',
+      open:'Ochish', ytOpen:'YouTubeʼda ochish', localFail:'Kompyuter agenti javob bermadi. bit_local_agent.py ishga tushganini va token toʻgʻriligini tekshiring.',
+      noLocal:'Kompyuter agenti tokeni kiritilmagan. Sozlamalarda kiriting.', notAllowed:'Bu ilova yoki papka roʻyxatda yoʻq:',
+      needToken:'Avval sozlamalarda kirish tokenini kiriting.', bad:'Token notoʻgʻri. Sozlamalarni tekshiring.', rate:'Soʻrovlar juda koʻp. Bir oz kuting.',
+      fail:'Server javob bermadi. Internet va serverni tekshiring.', settings:'Sozlamalar', micBlocked:'Mikrofonga ruxsat yoʻq. Yozib yuboring.',
+      micLang:'Brauzer bu tilda nutqni tanimaydi. Yozib yuboring.', noVoice:'Bu qurilmada shu til uchun ovoz yoʻq, javob matnda koʻrinadi.', notes:'Eslab qolganlarim:', clear:'Tozalash' },
+    ru:{ name:'Бит', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
+      ph:'Напишите или скажите Биту…', send:'Отправить', mic:'Говорить', voice:'Отвечать голосом', smart:'Думать глубже', history:'История', you:'Вы', pet:'Погладить Бита',
+      greet:'Привет, коллега! Я готов. Написать в Telegram, включить музыку или открыть что-то на компьютере — просто скажите.',
+      tickle:['Хи-хи, щекотно!','Ещё погладь!','Ой, приятно!'], wake:'А? Я проснулся!', timerDone:'Время вышло!',
+      yes:'Да, выполнить', no:'Нет', done:'Готово.', rejected:'Отменил.', expired:'Запрос устарел. Повторите.',
+      open:'Открыть', ytOpen:'Открыть в YouTube', localFail:'Агент компьютера не ответил. Проверьте, что bit_local_agent.py запущен и токен верный.',
+      noLocal:'Токен агента компьютера не задан. Укажите его в настройках.', notAllowed:'Этого приложения или папки нет в списке:',
+      needToken:'Сначала укажите токен доступа в настройках.', bad:'Неверный токен. Проверьте настройки.', rate:'Слишком много запросов. Подождите.',
+      fail:'Сервер не ответил. Проверьте интернет и сервер.', settings:'Настройки', micBlocked:'Нет доступа к микрофону. Напишите.',
+      micLang:'Браузер не распознаёт речь на этом языке. Напишите.', noVoice:'Нет голоса для этого языка, ответ показан текстом.', notes:'Я запомнил:', clear:'Очистить' },
+    en:{ name:'Bit', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
+      ph:'Type or talk to Bit…', send:'Send', mic:'Speak', voice:'Spoken replies', smart:'Think deeper', history:'Chat history', you:'You', pet:'Pet Bit',
+      greet:'Hi, colleague! I’m ready. Message someone on Telegram, play music or open something on your computer — just say it.',
+      tickle:['Hehe, that tickles!','Do it again!','Aww, nice!'], wake:'Huh? I’m awake!', timerDone:'Time’s up!',
+      yes:'Yes, do it', no:'No', done:'Done.', rejected:'Cancelled.', expired:'That request expired. Ask again.',
+      open:'Open', ytOpen:'Open in YouTube', localFail:'The computer agent didn’t answer. Check that bit_local_agent.py is running and the token is right.',
+      noLocal:'No computer agent token set. Add it in settings.', notAllowed:'That app or folder isn’t on the list:',
+      needToken:'Add your access token in settings first.', bad:'Wrong token. Check settings.', rate:'Too many requests. Wait a moment.',
+      fail:'The server didn’t answer. Check the internet and the server.', settings:'Settings', micBlocked:'Microphone access is blocked. Type instead.',
+      micLang:'This browser can’t recognise speech in that language. Type instead.', noVoice:'No voice for this language on this device, so the reply is shown as text.', notes:'Things I remember:', clear:'Clear' }
+  };
+
+  const store = {
+    get(k, d){ try{ const v = localStorage.getItem('bit:'+k); return v == null ? d : JSON.parse(v); }catch{ return d; } },
+    set(k, v){ try{ localStorage.setItem('bit:'+k, JSON.stringify(v)); }catch{} }
+  };
+  let cfg = store.get('cfg', { url:'', token:'', local:'' });
+  let mode = store.get('mode', 'auto');
+  let lastLang = mode === 'auto' ? store.get('lastLang', 'uz') : mode;
+  voiceChk.checked = store.get('voice', true);
+  smartChk.checked = store.get('smart', false);
+  let busy = false, asleep = false, holdTimer = 0, idleTimer = 0, pointerAt = 0;
+  const uiLang = () => mode === 'auto' ? lastLang : mode;
+  const t = () => T[uiLang()];
+  const apiBase = () => (cfg.url || location.origin).replace(/\/+$/, '');
+
+  // ---------- server ----------
+  async function api(path, body){
+    if (!cfg.token) throw { code:'token' };
+    let r;
+    try {
+      r = await fetch(apiBase() + path, { method: body ? 'POST' : 'GET',
+        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.token },
+        body: body ? JSON.stringify(body) : undefined });
+    } catch { throw { code:'network' }; }
+    if (r.status === 401) throw { code:'bad' };
+    if (r.status === 429) throw { code:'rate' };
+    if (!r.ok) throw { code:'server', status:r.status };
+    return r.json();
+  }
+  function errText(e){
+    const L = t();
+    return { token:L.needToken, bad:L.bad, rate:L.rate }[e && e.code] || L.fail;
+  }
+
+  // ---------- UI text ----------
+  function applyUI(){
+    const L = t();
+    document.documentElement.lang = uiLang();
+    $('#name').textContent = L.name;
+    q.placeholder = L.ph; sendBtn.textContent = L.send; micBtn.setAttribute('aria-label', L.mic);
+    head.setAttribute('aria-label', L.pet); $('#gear').setAttribute('aria-label', L.settings);
+    $('#lblVoice').textContent = L.voice; $('#lblSmart').textContent = L.smart; $('#lblHistory').textContent = L.history;
+    document.querySelectorAll('#langs button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.lang === mode)));
+    refreshStatus();
+  }
+  function refreshStatus(){
+    const L = t();
+    statusEl.textContent = asleep ? L.sleeping : robot.classList.contains('listening') ? L.listening
+      : busy ? L.thinking : robot.classList.contains('talking') ? L.talking : L.awake;
+  }
+  function note(msg){ noteEl.textContent = msg || ''; }
+  function addLog(who, text){
+    const li = document.createElement('li'); const b = document.createElement('b');
+    b.textContent = who === 'you' ? t().you : t().name; li.append(b, text); logEl.append(li);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  async function loadNotes(){
+    const v = $('#notesView'); v.textContent = '';
+    try {
+      const { facts } = await api('/api/memory');
+      if (!facts.length) return;
+      v.append(t().notes + ' ' + facts.join('; '));
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = t().clear;
+      b.onclick = async () => { await fetch(apiBase() + '/api/memory', { method:'DELETE', headers:{ Authorization:'Bearer ' + cfg.token } }); loadNotes(); };
+      v.append(b);
+    } catch {}
+  }
+  $('#lblHistory').parentElement.addEventListener('toggle', e => { if (e.target.open) loadNotes(); });
+
+  // ---------- emotions & life ----------
+  function setEmotion(emo, holdMs){
+    robot.dataset.emotion = EMOTIONS.includes(emo) ? emo : 'neutral';
+    statusEl.style.setProperty('--eye', getComputedStyle(robot).getPropertyValue('--eye'));
+    clearTimeout(holdTimer);
+    if (holdMs) holdTimer = setTimeout(() => { if (!asleep && !busy) setEmotion('neutral'); }, holdMs);
+    if (emo === 'thinking') setLook(-3, -3, 'cqw');
+  }
+  function pulse(cls, ms){ robot.classList.remove(cls); void robot.offsetWidth; robot.classList.add(cls); setTimeout(() => robot.classList.remove(cls), ms); }
+  function setLook(x, y, unit='px'){ look.style.setProperty('--lx', x + unit); look.style.setProperty('--ly', y + unit); }
+  addEventListener('pointermove', e => {
+    pointerAt = Date.now();
+    if (asleep || robot.dataset.emotion === 'thinking') return;
+    const r = head.getBoundingClientRect();
+    const dx = (e.clientX - (r.left + r.width/2)) / innerWidth, dy = (e.clientY - (r.top + r.height/2)) / innerHeight;
+    setLook(Math.max(-1, Math.min(1, dx*2)) * 12, Math.max(-1, Math.min(1, dy*2)) * 8);
+  });
+  (function glance(){ setTimeout(() => {
+    if (!asleep && Date.now() - pointerAt > 4000 && robot.dataset.emotion !== 'thinking')
+      setLook(Math.round((Math.random()*2-1)*12), Math.round((Math.random()*2-1)*7));
+    glance(); }, 2500 + Math.random()*3500); })();
+  (function blink(){ setTimeout(() => {
+    if (!asleep) { look.classList.add('blink'); setTimeout(() => look.classList.remove('blink'), 110); }
+    blink(); }, 2200 + Math.random()*4000); })();
+  function poke(){ clearTimeout(idleTimer); if (asleep) wake(); idleTimer = setTimeout(sleep, 90000); }
+  function sleep(){
+    if (busy || robot.classList.contains('talking') || ytPlaying) { idleTimer = setTimeout(sleep, 30000); return; }
+    asleep = true; robot.classList.add('asleep'); setEmotion('sleepy'); setLook(0, 4); chirp('sleepy'); refreshStatus();
+  }
+  function wake(){ asleep = false; robot.classList.remove('asleep'); setEmotion('surprised', 900); chirp('surprised'); refreshStatus(); }
+  ['keydown','pointerdown'].forEach(ev => addEventListener(ev, poke));
+  let taps = [];
+  head.addEventListener('click', () => {
+    if (busy) return;
+    const now = Date.now(); taps = taps.filter(x => now - x < 1300); taps.push(now);
+    const L = t();
+    if (taps.length >= 3) { taps = []; setEmotion('excited', 3500); pulse('dance', 3000); chirp('excited'); show(L.tickle[0], uiLang()); }
+    else { setEmotion(Math.random() < .3 ? 'love' : 'happy', 2500); pulse('bounce', 1500); chirp('happy'); show(L.tickle[1 + Math.floor(Math.random()*2)], uiLang()); }
+  });
+
+  // ---------- sounds ----------
+  let ac;
+  function audio(){ try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch { ac = null; } return ac; }
+  function tone(f1, f2, t0, dur, type='sine', vol=.07){
+    const a = audio(); if (!a) return;
+    const o = a.createOscillator(), g = a.createGain(), n = a.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f1, n); o.frequency.exponentialRampToValueAtTime(f2, n + dur);
+    g.gain.setValueAtTime(.0001, n); g.gain.exponentialRampToValueAtTime(vol, n + .02); g.gain.exponentialRampToValueAtTime(.0001, n + dur);
+    o.connect(g).connect(a.destination); o.start(n); o.stop(n + dur + .05);
+  }
+  const CHIRPS = {
+    happy:()=>{tone(660,990,0,.12);tone(880,1320,.13,.14)}, excited:()=>{tone(700,1400,0,.1);tone(900,1600,.1,.1);tone(1100,1900,.2,.14)},
+    love:()=>{tone(600,700,0,.18);tone(800,900,.2,.22)}, sad:()=>tone(520,300,0,.4,'triangle'), angry:()=>tone(190,140,0,.28,'square',.035),
+    surprised:()=>tone(400,1500,0,.18), confused:()=>{tone(500,720,0,.12);tone(720,450,.13,.16)}, sleepy:()=>tone(420,240,0,.55,'triangle',.05),
+    alarm:()=>{for(let i=0;i<4;i++) tone(1046,1046,i*.28,.16,'square',.045)}
+  };
+  function chirp(k){ if (voiceChk.checked && CHIRPS[k]) CHIRPS[k](); }
+
+  // ---------- speaking ----------
+  let typeTimer = 0, talkTimer = 0; const warnedVoice = {};
+  function typeOut(text){
+    clearInterval(typeTimer); let i = 0; sayEl.textContent = '';
+    typeTimer = setInterval(() => { i += 2; sayEl.textContent = text.slice(0, i); if (i >= text.length) clearInterval(typeTimer); }, 28);
+  }
+  function pickVoice(lang){
+    if (!('speechSynthesis' in window)) return null;
+    const vs = speechSynthesis.getVoices();
+    let v = vs.find(x => x.lang && x.lang.toLowerCase().startsWith(lang));
+    if (!v && lang === 'uz') v = vs.find(x => x.lang && x.lang.toLowerCase().startsWith('tr'));
+    return v || null;
+  }
+  if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => {};
+  function talkFor(ms){ clearTimeout(talkTimer); robot.classList.add('talking'); refreshStatus();
+    talkTimer = setTimeout(() => { robot.classList.remove('talking'); refreshStatus(); }, ms); }
+  function show(text, lang, question){
+    youEl.hidden = !question; if (question) youEl.textContent = question;
+    typeOut(text);
+    const v = voiceChk.checked && !ytPlaying ? pickVoice(lang) : null;
+    if (!v) {
+      if (voiceChk.checked && !warnedVoice[lang] && 'speechSynthesis' in window && speechSynthesis.getVoices().length) { warnedVoice[lang] = true; note(T[lang].noVoice); }
+      talkFor(Math.min(9000, 600 + text.length * 45)); return;
+    }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/[ʻʼ’]/g, "'"));
+    u.voice = v; u.lang = v.lang; u.pitch = 1.4; u.rate = 1.04;
+    u.onstart = () => { clearTimeout(talkTimer); robot.classList.add('talking'); refreshStatus(); };
+    u.onend = u.onerror = () => { robot.classList.remove('talking'); refreshStatus(); };
+    speechSynthesis.speak(u);
+  }
+
+  // ---------- client actions from the server ----------
+  let timerEnd = 0, timerLabel = '', timerTick = 0, ytPlaying = false;
+  function startTimer(sec, label){ timerEnd = Date.now() + sec*1000; timerLabel = label; $('#timer').classList.add('on'); clearInterval(timerTick); tickTimer(); timerTick = setInterval(tickTimer, 500); }
+  function stopTimer(){ clearInterval(timerTick); $('#timer').classList.remove('on'); timerEnd = 0; }
+  function tickTimer(){
+    const left = Math.max(0, Math.round((timerEnd - Date.now())/1000));
+    const h = Math.floor(left/3600), m = Math.floor(left%3600/60), s = left%60;
+    $('#timerText').textContent = (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(s).padStart(2,'0') + (timerLabel ? '  ' + timerLabel : '');
+    if (left === 0) { stopTimer(); if (asleep) wake(); setEmotion('surprised', 4000); pulse('bounce', 1500); chirp('alarm');
+      show(T[uiLang()].timerDone + (timerLabel ? ' ' + timerLabel : ''), uiLang()); }
+  }
+  $('#timerStop').onclick = stopTimer;
+
+  function card(){ const c = document.createElement('div'); c.className = 'card'; cards.prepend(c); return c; }
+  function btn(label, primary, onclick){ const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (primary ? ' primary' : ''); b.textContent = label; b.onclick = onclick; return b; }
+  function openLink(url){
+    const w = window.open(url, '_blank', 'noopener');
+    if (!w) { const c = card(); const p = document.createElement('p'); p.textContent = url; const row = document.createElement('div'); row.className = 'row';
+      row.append(btn(t().open, true, () => { window.open(url, '_blank', 'noopener'); c.remove(); })); c.append(p, row); }
+  }
+  function playYoutube(a){
+    cards.querySelectorAll('.yt').forEach(n => n.remove());
+    const c = card(); c.classList.add('yt');
+    const f = document.createElement('iframe'); f.className = 'player';
+    f.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(a.id) + '?autoplay=1&playsinline=1';
+    f.allow = 'autoplay; encrypted-media; picture-in-picture'; f.allowFullscreen = true; f.title = a.title || 'YouTube';
+    const p = document.createElement('p'); p.textContent = a.title || '';
+    const row = document.createElement('div'); row.className = 'row';
+    const link = document.createElement('a'); link.href = a.url; link.target = '_blank'; link.rel = 'noopener'; link.textContent = t().ytOpen;
+    row.append(link, btn('×', false, () => { c.remove(); ytPlaying = false; }));
+    c.append(f, p, row); ytPlaying = true; pulse('dance', 3000);
+  }
+  async function openLocal(target){
+    if (!cfg.local) { note(t().noLocal); return; }
+    try {
+      const r = await fetch('http://127.0.0.1:8765/open', { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.local }, body: JSON.stringify({ target }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.status === 404) note(t().notAllowed + ' ' + target + (j.allowed ? ' (' + j.allowed.join(', ') + ')' : ''));
+      else if (!r.ok) note(t().localFail);
+    } catch { note(t().localFail); }
+  }
+  function runActions(actions){
+    for (const a of actions || []) {
+      if (a.type === 'timer') startTimer(a.seconds, a.label || '');
+      else if (a.type === 'open_url') openLink(a.url);
+      else if (a.type === 'youtube') playYoutube(a);
+      else if (a.type === 'local' && a.action === 'open') openLocal(a.target);
+    }
+  }
+  function confirmCard(p){
+    const c = card(); const txt = document.createElement('p'); txt.textContent = p.summary;
+    const row = document.createElement('div'); row.className = 'row';
+    const decide = async approve => {
+      row.querySelectorAll('button').forEach(b => b.disabled = true);
+      try {
+        const r = await api('/api/confirm', { id:p.id, approve });
+        const L = t();
+        const msg = r.status === 'done' ? L.done : r.status === 'rejected' ? L.rejected : r.status === 'not_found' ? L.expired : (r.error || L.fail);
+        txt.textContent = p.summary + ' — ' + msg;
+        setEmotion(r.status === 'done' ? 'happy' : r.status === 'error' ? 'sad' : 'neutral', 3000);
+        if (r.status === 'done') { chirp('happy'); runActions(r.actions); }
+        addLog('bit', msg); row.remove(); setTimeout(() => c.remove(), 8000);
+      } catch (e) { note(errText(e)); row.querySelectorAll('button').forEach(b => b.disabled = false); }
+    };
+    row.append(btn(t().yes, true, () => decide(true)), btn(t().no, false, () => decide(false)));
+    c.append(txt, row);
+  }
+
+  // ---------- ask ----------
+  async function ask(text){
+    text = text.trim(); if (!text || busy) return;
+    poke(); busy = true; sendBtn.disabled = true; q.value = ''; note('');
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    youEl.textContent = text; youEl.hidden = false; sayEl.textContent = '…';
+    addLog('you', text); setEmotion('thinking'); refreshStatus();
+    try {
+      const out = await api('/api/chat', { text, lang_mode: mode, smart: smartChk.checked });
+      busy = false;
+      const lang = BCP[out.lang] ? out.lang : uiLang();
+      if (mode === 'auto') { lastLang = lang; store.set('lastLang', lang); applyUI(); }
+      const emo = EMOTIONS.includes(out.emotion) ? out.emotion : 'neutral';
+      setEmotion(emo, emo === 'sleepy' ? 0 : 7000); chirp(emo); if (emo === 'excited') pulse('bounce', 1500);
+      addLog('bit', out.reply); show(out.reply, lang, text);
+      runActions(out.actions); (out.pending || []).forEach(confirmCard);
+      if (emo === 'sleepy') setTimeout(sleep, 4000);
+    } catch (e) {
+      busy = false; setEmotion('confused', 4000); chirp('confused'); show(errText(e), uiLang(), text);
+      if (e && (e.code === 'token' || e.code === 'bad')) openSettings();
+    } finally { busy = false; sendBtn.disabled = false; refreshStatus(); }
+  }
+  $('#ask').addEventListener('submit', e => { e.preventDefault(); ask(q.value); });
+
+  // ---------- voice input ----------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, listening = false;
+  if (!SR) micBtn.hidden = true;
+  micBtn.addEventListener('click', () => {
+    audio();
+    if (listening) { rec && rec.stop(); return; }
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    rec = new SR(); rec.lang = BCP[uiLang()]; rec.interimResults = true;
+    let finalText = '';
+    rec.onresult = e => { let s = ''; for (let i = 0; i < e.results.length; i++) s += e.results[i][0].transcript;
+      q.value = s; if (e.results[e.results.length - 1].isFinal) finalText = s; };
+    rec.onerror = e => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') note(t().micBlocked); else if (e.error === 'language-not-supported') note(t().micLang); };
+    rec.onend = () => { listening = false; micBtn.setAttribute('aria-pressed', 'false'); robot.classList.remove('listening'); refreshStatus(); if (finalText) ask(finalText); };
+    try { rec.start(); listening = true; micBtn.setAttribute('aria-pressed', 'true'); robot.classList.add('listening'); setEmotion('neutral'); setLook(0, 0); note(''); refreshStatus(); }
+    catch { note(t().micBlocked); }
+  });
+
+  // ---------- settings ----------
+  const dlg = $('#settings');
+  function openSettings(){ $('#sUrl').value = cfg.url; $('#sToken').value = cfg.token; $('#sLocal').value = cfg.local; if (!dlg.open) dlg.showModal(); }
+  $('#gear').onclick = openSettings;
+  dlg.addEventListener('close', () => {
+    if (dlg.returnValue !== 'save') return;
+    cfg = { url: $('#sUrl').value.trim(), token: $('#sToken').value.trim(), local: $('#sLocal').value.trim() };
+    store.set('cfg', cfg); note('');
+  });
+  document.querySelectorAll('#langs button').forEach(b => b.addEventListener('click', () => {
+    mode = b.dataset.lang; store.set('mode', mode); if (mode !== 'auto') lastLang = mode; applyUI(); note('');
+  }));
+  voiceChk.addEventListener('change', () => { store.set('voice', voiceChk.checked); if (!voiceChk.checked && 'speechSynthesis' in window) speechSynthesis.cancel(); });
+  smartChk.addEventListener('change', () => store.set('smart', smartChk.checked));
+
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+
+  applyUI(); setEmotion('happy', 2500); typeOut(t().greet); poke();
+  if (!cfg.token) setTimeout(openSettings, 800);
+})();
+
+</script>
+</body>
+</html>

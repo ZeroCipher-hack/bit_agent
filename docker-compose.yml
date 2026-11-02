@@ -1,0 +1,30 @@
+services:
+  bit:
+    build: ./backend
+    env_file: .env
+    environment:
+      TZ: ${TZ:-Asia/Tashkent}
+    volumes:
+      - ./data:/data
+      - ./frontend:/frontend:ro
+    ports:
+      - "127.0.0.1:8000:8000"   # only this computer; phones go through HTTPS (caddy below or a tunnel)
+    restart: unless-stopped
+
+  # HTTPS for phones on a VPS with a domain:  docker compose --profile https up -d
+  caddy:
+    image: caddy:2
+    profiles: ["https"]
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on: [bit]
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
