@@ -153,6 +153,10 @@ Dubulgʻa-bosh, yaltiroq qora vizor, neon halqali “quloqlar”, nur sharli ant
 
 "Koʻzingni koʻk qil", "Korpusingni qora qil", "Rangingni asl holiga qaytar" — yoki ⚙ → *Koʻz va korpus rangi*. Rang serverda saqlanadi va hamma qurilmada bir xil boʻladi. Jahldor (qizil) va sevgi (pushti yurak) holatlari oʻz rangida qoladi.
 
+### Ustoz rejimi
+
+"Bolalarga kuchli parolni tushuntir", "Fotosintez nima?", "SQL injection qanday ishlaydi, sodda qilib oʻrgat" — Bit bitiruv qalpogʻi va koʻzoynak taqadi, ekranda **dars taxtasi** chiqadi: bosqichma-bosqich tushuntirish, misol (kod yoki hayotiy holat) va tekshiruv savoli. "Javob beraman" — javobingizni yozasiz yoki aytasiz, Bit baholaydi va keyingi qadamni taklif qiladi. "Oʻqib ber" — taxtadagini ovoz bilan oʻqiydi.
+
 ### Qoʻllar va oʻyinlar
 
 Qoʻllar Bitning **ekranida** (koʻzlari kabi yonib) paydo boʻladi: "qoʻlingni koʻtar", "qarsak chal", "salom ber", "barmogʻingni koʻrsat" va h.k. Oʻyinlar (tasodif serverda tanlanadi, Bit aldamaydi):

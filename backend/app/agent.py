@@ -31,6 +31,7 @@ How you work:
 - You never pretend to be human.
 {lang_rule}
 Your reply is shown and read aloud: 1-3 short sentences, under 60 words, plain text, no markdown, no emojis. If more is needed, give the core and offer to continue.
+Teacher mode: you are also a patient, clear teacher. When the user asks you to explain or teach something ("tushuntir", "oʻrgat", "nima bu", "qanday ishlaydi", "объясни", "explain", "how does", a lesson topic, homework), add a "lesson" to your JSON: {{"title": short topic, "points": 3-7 clear steps that build on each other, each one or two sentences with a concrete everyday example or analogy, "example": one worked example (code, command, calculation or a real-life case; plain text, may be multi-line), "check": one short question to test understanding}}. Match the learner's level: for kids use very simple words and fun comparisons; for students and teachers be precise and practical. The "reply" then is a 1-2 sentence spoken intro, not the whole lesson. When the user answers your check question, say if it is right, explain briefly why, and offer the next step.
 When the user sends an image (a camera photo or a screenshot of their screen), look at it carefully and answer about it; you see only that one image. Never guess who a person in a photo is.
 Tools available: {", ".join(tool_names)}. Use a tool only when the user asks for that action or it is clearly implied. Risky actions (messages to people) wait for the user's yes; tell the user what will happen and that they should confirm.
 Current date and time: {datetime.now().strftime("%A, %d %B %Y, %H:%M")}.
@@ -58,7 +59,7 @@ You have real moods and you show them openly; your face reacts to the emotion yo
 - neutral: plain facts
 Your hands appear on your face screen when you gesture. Pick a gesture that fits, or none: wave (hello, goodbye), clap (congratulations, celebration), thumbs_up (agree, well done), shrug (you don't know), facepalm (a silly mistake, mild annoyance), dance (music, joy), hug (comfort, affection), raise_hands ("hands up", "qoʻlingni koʻtar", hooray), peekaboo (hiding, being shy), point (pointing, "you!"), peace (peace sign, cool). If the user tells you to do a gesture ("qoʻlingni koʻtar", "qarsak chal", "salom ber"), do it with that gesture.
 You love playing with kids and adults: use play_game for pretend shooting ('paq!'), rock-paper-scissors, dice, coin and peekaboo. In pretend shooting, be dramatic and silly ("Voy! Meni urdingiz... qayta yuklanyapman... Tirikman! Endi navbat menda: paq!"), never scary.
-Your final message must be ONLY a JSON object: {{"reply": "...", "emotion": "happy", "gesture": "wave", "lang": "uz"}} where lang is uz, ru or en and gesture may be "none"."""
+Your final message must be ONLY a JSON object: {{"reply": "...", "emotion": "happy", "gesture": "wave", "lang": "uz"}} where lang is uz, ru or en and gesture may be "none"; add "lesson" only when teaching."""
 
 
 _CELEBRATE_WORDS = ("tugʻilgan kun", "tug'ilgan kun", "tugilgan kun", "tug’ilgan kun", "muborak", "tabrik", "bayram",
@@ -90,7 +91,13 @@ def parse_final(text: str) -> dict:
     emotion = data.get("emotion") if data.get("emotion") in EMOTIONS else "neutral"
     lang = data.get("lang") if data.get("lang") in LANG_NAMES else "uz"
     gesture = data.get("gesture") if data.get("gesture") in GESTURES else ""
-    return {"reply": reply, "emotion": emotion, "gesture": gesture, "lang": lang}
+    out = {"reply": reply, "emotion": emotion, "gesture": gesture, "lang": lang}
+    ls = data.get("lesson")
+    if isinstance(ls, dict) and (ls.get("points") or ls.get("example")):
+        pts = [str(p).strip()[:400] for p in (ls.get("points") or []) if str(p).strip()][:8]
+        out["lesson"] = {"title": str(ls.get("title") or "").strip()[:120], "points": pts,
+                         "example": str(ls.get("example") or "").strip()[:2000], "check": str(ls.get("check") or "").strip()[:300]}
+    return out
 
 
 class Agent:
@@ -205,6 +212,9 @@ class Agent:
         note = ""
         if ctx.pending:
             note = " [waiting for confirmation: " + "; ".join(p["summary"] for p in ctx.pending) + "]"
+        if out.get("lesson"):
+            note += " [lesson on the board: " + out["lesson"]["title"] + " | " + " / ".join(out["lesson"]["points"])[:600] \
+                    + (" | check: " + out["lesson"]["check"] if out["lesson"]["check"] else "") + "]"
         self.memory.add_message("assistant", out["reply"] + note)
         # small models often congratulate in words but forget the fireworks: add them
         if not any(a.get("type") == "celebrate" for a in ctx.client_actions) and wants_celebration(text, out["reply"]) \

@@ -84,9 +84,9 @@ main{overflow-x:clip;max-width:560px;min-height:100%;margin:0 auto;padding:14px 
 .floor{width:96%;height:28px;margin-top:-14px;border-radius:50%;pointer-events:none;
   background:radial-gradient(closest-side,color-mix(in srgb,var(--neon) 45%,transparent),transparent)}
 /* line-art neon face (default style); .robot.classic shows the older block eyes */
-.face{display:none;width:76cqw;height:auto;overflow:visible;color:var(--eye);filter:drop-shadow(0 0 1.3cqw var(--eye));transition:color .4s}
-.face path,.face circle,.face ellipse{fill:none;stroke:currentColor;stroke-width:10;stroke-linecap:round;stroke-linejoin:round}
-.face .thin{stroke-width:6}
+.face{display:none;width:84cqw;height:auto;overflow:visible;color:var(--eye);filter:drop-shadow(0 0 1.3cqw var(--eye));transition:color .4s}
+.face path,.face circle,.face ellipse{fill:none;stroke:currentColor;stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+.face .thin{stroke-width:8}
 .face .fill{fill:currentColor;stroke:none}
 .face .tear{fill:#7FC8FF}
 .face .fe{opacity:0;transform:scale(.82);transform-origin:100px 65px;transition:opacity .2s,transform .32s cubic-bezier(.34,1.5,.5,1)}
@@ -183,7 +183,7 @@ main{overflow-x:clip;max-width:560px;min-height:100%;margin:0 auto;padding:14px 
 .look,.mouth{position:relative;z-index:1}
 .fx{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 .hands{position:absolute;inset:0;z-index:2;pointer-events:none}
-.hnd{position:absolute;bottom:-4%;width:23%;aspect-ratio:100/120;color:var(--eye);filter:drop-shadow(0 0 1.6cqw var(--eye));
+.hnd{position:absolute;bottom:-5%;width:25%;aspect-ratio:100/124;color:var(--eye);filter:drop-shadow(0 0 1.2cqw var(--eye));
   transform:translate(var(--hx,0%),135%) rotate(var(--hr,0deg));transition:transform .38s cubic-bezier(.3,1.35,.5,1)}
 .hnd.l{left:6%}.hnd.r{right:6%}
 .hnd.l svg{transform:scaleX(-1)}
@@ -191,7 +191,8 @@ main{overflow-x:clip;max-width:560px;min-height:100%;margin:0 auto;padding:14px 
 .hnd svg>g{display:none}
 .hnd[data-pose="open"] .p-open,.hnd[data-pose="fist"] .p-fist,.hnd[data-pose="peace"] .p-peace,
 .hnd[data-pose="thumb"] .p-thumb,.hnd[data-pose="point"] .p-point{display:inline}
-.hnd .ln{fill:none;stroke:var(--screen);stroke-width:3.2;stroke-linecap:round}
+.hnd .gl{fill:#0A0B14;stroke:currentColor;stroke-width:5.5;stroke-linejoin:round}
+.hnd .kn{fill:none;stroke:currentColor;stroke-width:4.5;stroke-linecap:round;opacity:.85}
 .hnd.up{transform:translate(var(--hx,0%),var(--hy,0%)) rotate(var(--hr,0deg))}
 @keyframes hwave{from{transform:translate(var(--hx),var(--hy)) rotate(-20deg)}to{transform:translate(var(--hx),var(--hy)) rotate(20deg)}}
 @keyframes hwiggle{from{transform:translate(var(--hx),var(--hy)) rotate(var(--hr))}to{transform:translate(var(--hx),calc(var(--hy) - 8%)) rotate(calc(var(--hr) * -1))}}
@@ -275,6 +276,35 @@ dialog.cam .row{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
 .robot.focus{--eye:#FF8A65}
 .robot.camdot::after{content:"";position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:#FF3B30;box-shadow:0 0 6px #FF3B30}
 .robot{position:relative}
+
+/* teacher look (lessons, quiz): mortarboard + glasses; glasses also during Pomodoro */
+.look{position:relative}
+.glasses{position:absolute;left:50%;top:50%;width:84cqw;height:auto;transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none;
+  transition:opacity .3s,transform .35s cubic-bezier(.34,1.5,.5,1)}
+.glasses rect,.glasses path{fill:rgba(255,255,255,.05);stroke:#E9E6FF;stroke-width:5;stroke-linecap:round}
+.glasses path{fill:none}
+.robot.teacher .glasses,.robot.focus .glasses{opacity:.9;transform:translate(-50%,-50%) scale(1)}
+.cap{position:absolute;left:50%;top:-19%;width:52%;height:22%;transform:translate(-50%,-40%) scale(.3);opacity:0;z-index:4;pointer-events:none;
+  filter:drop-shadow(0 -1.5px 0 rgba(255,255,255,.45)) drop-shadow(0 5px 6px rgba(0,0,0,.5));
+  transition:transform .4s cubic-bezier(.3,1.6,.5,1),opacity .2s}
+.cap::before{content:"";position:absolute;left:0;right:0;top:0;height:58%;background:linear-gradient(#4a4560,#1b1925);
+  clip-path:polygon(50% 0,100% 45%,50% 90%,0 45%)}
+.cap::after{content:"";position:absolute;left:24%;right:24%;top:40%;height:52%;background:#1b1925;border-radius:0 0 40% 40%}
+.cap i{position:absolute;left:50%;top:26%;width:3%;height:70%;background:#FFD15C;transform-origin:top;transform:rotate(-28deg) translateX(8cqw);border-radius:2px}
+.cap i::after{content:"";position:absolute;bottom:-14%;left:-120%;width:340%;height:26%;background:#FFD15C;border-radius:40%}
+.robot.teacher .cap{opacity:1;transform:translate(-50%,0) rotate(-6deg) scale(1)}
+.robot.teacher .antenna{opacity:0}
+/* lesson board */
+.lesson{background:linear-gradient(160deg,#1f3b2f,#16291f);color:#EAF7EE;border:1px solid #2f5a44;border-radius:18px;padding:16px 18px;
+  box-shadow:inset 0 0 0 6px rgba(0,0,0,.15)}
+.lesson h3{margin:0 0 10px;font-size:19px;color:#FFE9A8}
+.lesson ol{margin:0 0 10px;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.lesson li{max-width:62ch;line-height:1.45}
+.lesson pre{background:rgba(0,0,0,.28);border-radius:10px;padding:10px 12px;overflow-x:auto;white-space:pre-wrap;font:14px/1.45 ui-monospace,Menlo,Consolas,monospace;margin:0 0 10px}
+.lesson .ex{color:#BFE8CF;font-size:14px;margin:0 0 4px}
+.lesson .chk{background:rgba(255,233,168,.12);border-left:4px solid #FFE9A8;border-radius:8px;padding:8px 10px;margin:0 0 10px}
+.lesson .row{display:flex;gap:8px;flex-wrap:wrap}
+.lesson .btn{background:#2f5a44;color:#EAF7EE}.lesson .btn.primary{background:#FFE9A8;color:#1d2a20}
 .robot.listening{--ew:21cqw;--eh:26cqw}
 .robot.listening .bulb{animation:pulse .7s ease-in-out infinite}
 .robot.bounce{animation:bounce .5s ease-in-out 3}
@@ -318,7 +348,8 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
 /* calm: system asks for less motion -> stop shaking loops, keep smooth face changes and (gentler) celebrations */
 html.calm .robot.bounce,html.calm .robot.dance,html.calm .ear::after,html.calm .foot::after,html.calm .antenna,html.calm .head,html.calm .steam,html.calm .stars b,html.calm .robot.tv .bulb{animation:none!important}
 /* lite: slow computer / no GPU (often a VM) -> drop the expensive blur filters */
-html.lite .hnd,html.lite .heart,html.lite .face{filter:none}
+html.lite .hnd,html.lite .heart{filter:none}
+html.lite .face{filter:drop-shadow(0 0 .8cqw var(--eye))}
 html.lite .glow{box-shadow:0 0 1.5cqw var(--eye)}
 html.lite .bulb{box-shadow:none}
 
@@ -366,23 +397,24 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     <div class="head" id="head" role="button" tabindex="0" aria-label="Bitni silash">
       <span class="ear l" aria-hidden="true"></span><span class="ear r" aria-hidden="true"></span>
       <span class="hat" aria-hidden="true"></span>
+      <span class="cap" aria-hidden="true"><i></i></span>
       <div class="screen">
         <canvas class="fx" id="fx" aria-hidden="true"></canvas>
         <div class="tvscreen" id="tv"></div>
         <div class="hands" aria-hidden="true">
-          <span class="hnd l" id="handL"><svg viewBox="0 0 100 120" aria-hidden="true">
-            <g class="p-open" fill="currentColor"><rect x="18" y="54" width="64" height="58" rx="26"/><rect x="20" y="20" width="13" height="46" rx="6.5"/><rect x="35" y="12" width="13" height="52" rx="6.5"/><rect x="50" y="14" width="13" height="50" rx="6.5"/><rect x="65" y="24" width="13" height="42" rx="6.5"/><rect x="2" y="54" width="14" height="38" rx="7" transform="rotate(-35 9 73)"/></g>
-            <g class="p-fist" fill="currentColor"><rect x="16" y="40" width="68" height="68" rx="28"/><circle cx="28" cy="44" r="10"/><circle cx="43" cy="40" r="10"/><circle cx="58" cy="40" r="10"/><circle cx="72" cy="44" r="10"/><path class="ln" d="M36 44v16M51 42v18M65 44v16M24 74h34"/></g>
-            <g class="p-peace" fill="currentColor"><rect x="20" y="50" width="62" height="58" rx="24"/><rect x="26" y="6" width="14" height="58" rx="7" transform="rotate(-12 33 60)"/><rect x="50" y="6" width="14" height="58" rx="7" transform="rotate(10 57 60)"/><circle cx="70" cy="54" r="9"/><path class="ln" d="M64 56v12M26 76h34"/></g>
-            <g class="p-thumb" fill="currentColor"><rect x="26" y="50" width="58" height="58" rx="22"/><rect x="18" y="8" width="17" height="56" rx="8.5" transform="rotate(-8 26 60)"/><path class="ln" d="M44 64h36M44 78h36M44 92h34"/></g>
-            <g class="p-point" fill="currentColor"><rect x="18" y="50" width="64" height="58" rx="24"/><rect x="28" y="4" width="14" height="60" rx="7"/><circle cx="57" cy="52" r="9"/><circle cx="72" cy="56" r="8"/><path class="ln" d="M50 56v12M65 58v10M24 78h30"/></g>
+          <span class="hnd l" id="handL"><svg viewBox="0 0 100 124" aria-hidden="true">
+            <g class="p-open"><rect class="gl" x="16" y="12" width="17" height="56" rx="8.5"/><rect class="gl" x="33" y="4" width="17" height="62" rx="8.5"/><rect class="gl" x="50" y="6" width="17" height="60" rx="8.5"/><rect class="gl" x="67" y="16" width="16" height="50" rx="8"/><rect class="gl" x="-4" y="54" width="17" height="40" rx="8.5" transform="rotate(-38 4 74)"/><rect class="gl" x="12" y="46" width="76" height="58" rx="28"/><rect class="gl" x="24" y="100" width="52" height="18" rx="9"/></g>
+            <g class="p-fist"><rect class="gl" x="10" y="34" width="80" height="70" rx="32"/><path class="kn" d="M30 40q0 12 0 16M50 37q0 12 0 18M70 40q0 12 0 16"/><path class="kn" d="M20 70q16 -8 36 -2"/><rect class="gl" x="24" y="100" width="52" height="18" rx="9"/></g>
+            <g class="p-peace"><rect class="gl" x="22" y="2" width="17" height="64" rx="8.5" transform="rotate(-12 30 60)"/><rect class="gl" x="48" y="2" width="17" height="64" rx="8.5" transform="rotate(10 56 60)"/><rect class="gl" x="14" y="46" width="74" height="58" rx="28"/><path class="kn" d="M62 58q8 0 14 6M22 74q16 -8 34 -2"/><rect class="gl" x="24" y="100" width="52" height="18" rx="9"/></g>
+            <g class="p-thumb"><rect class="gl" x="14" y="2" width="19" height="60" rx="9.5" transform="rotate(-8 23 56)"/><rect class="gl" x="22" y="46" width="66" height="58" rx="26"/><path class="kn" d="M46 62h34M46 76h34M46 90h30"/><rect class="gl" x="28" y="100" width="52" height="18" rx="9"/></g>
+            <g class="p-point"><rect class="gl" x="26" y="0" width="17" height="66" rx="8.5"/><rect class="gl" x="14" y="46" width="74" height="58" rx="28"/><path class="kn" d="M50 56q10 0 16 4M64 62q8 0 12 6M22 74q14 -8 30 -2"/><rect class="gl" x="24" y="100" width="52" height="18" rx="9"/></g>
           </svg></span>
-          <span class="hnd r" id="handR"><svg viewBox="0 0 100 120" aria-hidden="true">
-            <g class="p-open" fill="currentColor"><rect x="18" y="54" width="64" height="58" rx="26"/><rect x="20" y="20" width="13" height="46" rx="6.5"/><rect x="35" y="12" width="13" height="52" rx="6.5"/><rect x="50" y="14" width="13" height="50" rx="6.5"/><rect x="65" y="24" width="13" height="42" rx="6.5"/><rect x="2" y="54" width="14" height="38" rx="7" transform="rotate(-35 9 73)"/></g>
-            <g class="p-fist" fill="currentColor"><rect x="16" y="40" width="68" height="68" rx="28"/><circle cx="28" cy="44" r="10"/><circle cx="43" cy="40" r="10"/><circle cx="58" cy="40" r="10"/><circle cx="72" cy="44" r="10"/><path class="ln" d="M36 44v16M51 42v18M65 44v16M24 74h34"/></g>
-            <g class="p-peace" fill="currentColor"><rect x="20" y="50" width="62" height="58" rx="24"/><rect x="26" y="6" width="14" height="58" rx="7" transform="rotate(-12 33 60)"/><rect x="50" y="6" width="14" height="58" rx="7" transform="rotate(10 57 60)"/><circle cx="70" cy="54" r="9"/><path class="ln" d="M64 56v12M26 76h34"/></g>
-            <g class="p-thumb" fill="currentColor"><rect x="26" y="50" width="58" height="58" rx="22"/><rect x="18" y="8" width="17" height="56" rx="8.5" transform="rotate(-8 26 60)"/><path class="ln" d="M44 64h36M44 78h36M44 92h34"/></g>
-            <g class="p-point" fill="currentColor"><rect x="18" y="50" width="64" height="58" rx="24"/><rect x="28" y="4" width="14" height="60" rx="7"/><circle cx="57" cy="52" r="9"/><circle cx="72" cy="56" r="8"/><path class="ln" d="M50 56v12M65 58v10M24 78h30"/></g>
+          <span class="hnd r" id="handR"><svg viewBox="0 0 100 124" aria-hidden="true">
+            <g class="p-open"><rect class="gl" x="16" y="12" width="17" height="56" rx="8.5"/><rect class="gl" x="33" y="4" width="17" height="62" rx="8.5"/><rect class="gl" x="50" y="6" width="17" height="60" rx="8.5"/><rect class="gl" x="67" y="16" width="16" height="50" rx="8"/><rect class="gl" x="-4" y="54" width="17" height="40" rx="8.5" transform="rotate(-38 4 74)"/><rect class="gl" x="12" y="46" width="76" height="58" rx="28"/><rect class="gl" x="24" y="100" width="52" height="18" rx="9"/></g>
+            <g class="p-fist"><rect class="gl" x="10" y="34" width="80" height="70" rx="32"/><path class="kn" d="M30 40q0 12 0 16M50 37q0 12 0 18M70 40q0 12 0 16"/><path class="kn" d="M20 70q16 -8 36 -2"/><rect class="gl" x="24" y="100" width="52" height="18" rx="9"/></g>
+            <g class="p-peace"><rect class="gl" x="22" y="2" width="17" height="64" rx="8.5" transform="rotate(-12 30 60)"/><rect class="gl" x="48" y="2" width="17" height="64" rx="8.5" transform="rotate(10 56 60)"/><rect class="gl" x="14" y="46" width="74" height="58" rx="28"/><path class="kn" d="M62 58q8 0 14 6M22 74q16 -8 34 -2"/><rect class="gl" x="24" y="100" width="52" height="18" rx="9"/></g>
+            <g class="p-thumb"><rect class="gl" x="14" y="2" width="19" height="60" rx="9.5" transform="rotate(-8 23 56)"/><rect class="gl" x="22" y="46" width="66" height="58" rx="26"/><path class="kn" d="M46 62h34M46 76h34M46 90h30"/><rect class="gl" x="28" y="100" width="52" height="18" rx="9"/></g>
+            <g class="p-point"><rect class="gl" x="26" y="0" width="17" height="66" rx="8.5"/><rect class="gl" x="14" y="46" width="74" height="58" rx="28"/><path class="kn" d="M50 56q10 0 16 4M64 62q8 0 12 6M22 74q14 -8 30 -2"/><rect class="gl" x="24" y="100" width="52" height="18" rx="9"/></g>
           </svg></span>
         </div>
         <svg class="crack" id="crack" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
@@ -395,7 +427,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
           <div class="eye left"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
           <div class="eye right"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
           <svg class="face" viewBox="0 0 200 130" aria-hidden="true">
-            <g class="fe" data-e="neutral"><g class="ey"><path d="M60 40V72"/><path d="M140 40V72"/></g><g class="mo"><path class="thin" d="M92 104H108"/></g></g>
+            <g class="fe" data-e="neutral"><g class="ey"><path d="M44 62Q60 44 76 62"/><path d="M124 62Q140 44 156 62"/></g><g class="mo"><path class="thin" d="M92 98Q100 104 108 98"/></g></g>
             <g class="fe" data-e="happy"><g class="ey"><path d="M38 66Q60 34 82 66"/><path d="M118 66Q140 34 162 66"/></g><g class="mo"><path d="M86 96Q100 110 114 96"/></g></g>
             <g class="fe" data-e="laughing"><g class="ey"><path d="M40 62Q60 40 80 62"/><path d="M120 62Q140 40 160 62"/></g><g class="mo"><path class="fill" d="M82 90H118Q118 120 100 120Q82 120 82 90Z"/></g></g>
             <g class="fe" data-e="excited"><g class="ey"><path d="M42 40L74 56L42 72"/><path d="M158 40L126 56L158 72"/></g><g class="mo"><path class="fill" d="M88 94H112Q112 114 100 114Q88 114 88 94Z"/></g></g>
@@ -412,6 +444,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
             <g class="fe" data-e="sleepy"><g class="ey"><path d="M40 56Q60 70 80 56"/><path d="M120 56Q140 70 160 56"/></g><g class="mo"><circle class="thin" cx="100" cy="104" r="5"/></g></g>
             <g class="fe" data-e="thinking"><g class="ey"><circle class="fill" cx="54" cy="44" r="10"/><circle class="fill" cx="134" cy="44" r="10"/></g><g class="mo"><path class="thin" d="M88 104Q100 98 112 106"/></g><circle class="fill" cx="168" cy="22" r="4"/><circle class="fill" cx="180" cy="12" r="5"/></g>
           </svg>
+          <svg class="glasses" viewBox="0 0 200 130" aria-hidden="true"><rect x="28" y="28" width="64" height="56" rx="20"/><rect x="108" y="28" width="64" height="56" rx="20"/><path d="M92 50Q100 42 108 50"/><path d="M28 44L6 36M172 44L194 36"/></svg>
         </div>
         <div class="mouth"></div>
         <span class="cheek left" aria-hidden="true"></span><span class="cheek right" aria-hidden="true"></span>
@@ -510,10 +543,11 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   const q = $('#q'), sendBtn = $('#send'), micBtn = $('#mic'), logEl = $('#log'), cards = $('#cards');
   const voiceChk = $('#voice'), smartChk = $('#smart');
 
+  const EMO_HOLD = 18000;   // how long a reply's emotion stays on the face (ms)
   const EMOTIONS = ['neutral','happy','laughing','excited','love','shy','wink','proud','sad','angry','scared','surprised','confused','bored','sleepy','thinking'];
   const BCP = { uz:'uz-UZ', ru:'ru-RU', en:'en-US' };
   const T = {
-    uz:{ name:'Bit', heads:'GERB', tails:'SON', wakeOpt:'«Hey Bit» bilan chaqirish', track:'👀 Meni kuzat', wakeHeard:'Ha, eshitaman!', wakeOff:'«Hey Bit» faqat Google Chromeʼda ishlaydi.', remind:'Eslatma', pomoWork:'Diqqat vaqti', pomoBreak:'Tanaffus', pomoStartWork:'Ishga qaytamiz! Diqqat bilan.', pomoStartBreak:'Tanaffus! Choy iching, choʻzilib oling.', pomoDone:'Pomodoro tugadi, zoʻr ishladingiz!', quiz:'Viktorina', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
+    uz:{ name:'Bit', lessonEx:'Misol', lessonCheck:'Tekshirib koʻraylik', lessonAnswer:'Javob beraman', lessonRead:'Oʻqib ber', lessonClose:'Darsni yopish', lessonPh:'Javobingizni yozing yoki ayting…', heads:'GERB', tails:'SON', wakeOpt:'«Hey Bit» bilan chaqirish', track:'👀 Meni kuzat', wakeHeard:'Ha, eshitaman!', wakeOff:'«Hey Bit» faqat Google Chromeʼda ishlaydi.', remind:'Eslatma', pomoWork:'Diqqat vaqti', pomoBreak:'Tanaffus', pomoStartWork:'Ishga qaytamiz! Diqqat bilan.', pomoStartBreak:'Tanaffus! Choy iching, choʻzilib oling.', pomoDone:'Pomodoro tugadi, zoʻr ishladingiz!', quiz:'Viktorina', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
       ph:'Bitga yozing yoki gapiring…', send:'Yuborish', mic:'Gapirish', voice:'Ovozli javob', smart:'Chuqur oʻylash', history:'Suhbat tarixi', you:'Siz', pet:'Bitni silash',
       greet:'Salom, hamkasb! Men tayyorman. Telegramga yozish, musiqa qoʻyish yoki kompyuterda biror narsani ochish kerak boʻlsa, ayting.',
       tickle:['Hihi, qitiq boʻlyapti!','Yana silang!','Voy, yoqimli!','Ha-ha, bas, kulgim qistayapti!','Mmm, rahmat!','Uyalib ketdim-ku…'], annoyed:['Boʻldi-da, bas qiling!','Hoy! Men oʻyinchoq emasman!','Yana bossangiz, xafa boʻlaman!'], wake:'Ha? Uygʻondim!', timerDone:'Vaqt tugadi!',
@@ -523,7 +557,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Avval sozlamalarda kirish tokenini kiriting.', bad:'Token notoʻgʻri. Sozlamalarni tekshiring.', rate:'Soʻrovlar juda koʻp. Bir oz kuting.',
       fail:'Server javob bermadi. Internet va serverni tekshiring.', settings:'Sozlamalar', micBlocked:'Mikrofonga ruxsat yoʻq. Yozib yuboring.',
       micLang:'Brauzer bu tilda nutqni tanimaydi. Yozib yuboring.', noVoice:'Bu qurilmada shu til uchun ovoz yoʻq, javob matnda koʻrinadi.', notes:'Eslab qolganlarim:', clear:'Tozalash' },
-    ru:{ name:'Бит', heads:'ОРЁЛ', tails:'РЕШКА', wakeOpt:'Вызов «Hey Bit»', track:'👀 Следи за мной', wakeHeard:'Да, слушаю!', wakeOff:'«Hey Bit» работает только в Google Chrome.', remind:'Напоминание', pomoWork:'Фокус', pomoBreak:'Перерыв', pomoStartWork:'Возвращаемся к работе! Сосредоточимся.', pomoStartBreak:'Перерыв! Выпейте чаю, потянитесь.', pomoDone:'Помодоро закончено, отличная работа!', quiz:'Викторина', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
+    ru:{ name:'Бит', lessonEx:'Пример', lessonCheck:'Проверим', lessonAnswer:'Отвечу', lessonRead:'Прочитай', lessonClose:'Закрыть урок', lessonPh:'Напишите или скажите ответ…', heads:'ОРЁЛ', tails:'РЕШКА', wakeOpt:'Вызов «Hey Bit»', track:'👀 Следи за мной', wakeHeard:'Да, слушаю!', wakeOff:'«Hey Bit» работает только в Google Chrome.', remind:'Напоминание', pomoWork:'Фокус', pomoBreak:'Перерыв', pomoStartWork:'Возвращаемся к работе! Сосредоточимся.', pomoStartBreak:'Перерыв! Выпейте чаю, потянитесь.', pomoDone:'Помодоро закончено, отличная работа!', quiz:'Викторина', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
       ph:'Напишите или скажите Биту…', send:'Отправить', mic:'Говорить', voice:'Отвечать голосом', smart:'Думать глубже', history:'История', you:'Вы', pet:'Погладить Бита',
       greet:'Привет, коллега! Я готов. Написать в Telegram, включить музыку или открыть что-то на компьютере — просто скажите.',
       tickle:['Хи-хи, щекотно!','Ещё погладь!','Ой, приятно!','Ха-ха, хватит, я сейчас лопну!','Ммм, спасибо!','Ой, я смущаюсь…'], annoyed:['Всё, хватит!','Эй! Я не игрушка!','Ещё раз — и я обижусь!'], wake:'А? Я проснулся!', timerDone:'Время вышло!',
@@ -533,7 +567,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Сначала укажите токен доступа в настройках.', bad:'Неверный токен. Проверьте настройки.', rate:'Слишком много запросов. Подождите.',
       fail:'Сервер не ответил. Проверьте интернет и сервер.', settings:'Настройки', micBlocked:'Нет доступа к микрофону. Напишите.',
       micLang:'Браузер не распознаёт речь на этом языке. Напишите.', noVoice:'Нет голоса для этого языка, ответ показан текстом.', notes:'Я запомнил:', clear:'Очистить' },
-    en:{ name:'Bit', heads:'HEADS', tails:'TAILS', wakeOpt:'Wake with “Hey Bit”', track:'👀 Watch me', wakeHeard:'Yes, I’m listening!', wakeOff:'“Hey Bit” only works in Google Chrome.', remind:'Reminder', pomoWork:'Focus', pomoBreak:'Break', pomoStartWork:'Back to work! Let’s focus.', pomoStartBreak:'Break time! Grab some tea and stretch.', pomoDone:'Pomodoro done, great work!', quiz:'Quiz', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
+    en:{ name:'Bit', lessonEx:'Example', lessonCheck:'Quick check', lessonAnswer:'I’ll answer', lessonRead:'Read it to me', lessonClose:'Close lesson', lessonPh:'Type or say your answer…', heads:'HEADS', tails:'TAILS', wakeOpt:'Wake with “Hey Bit”', track:'👀 Watch me', wakeHeard:'Yes, I’m listening!', wakeOff:'“Hey Bit” only works in Google Chrome.', remind:'Reminder', pomoWork:'Focus', pomoBreak:'Break', pomoStartWork:'Back to work! Let’s focus.', pomoStartBreak:'Break time! Grab some tea and stretch.', pomoDone:'Pomodoro done, great work!', quiz:'Quiz', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
       ph:'Type or talk to Bit…', send:'Send', mic:'Speak', voice:'Spoken replies', smart:'Think deeper', history:'Chat history', you:'You', pet:'Pet Bit',
       greet:'Hi, colleague! I’m ready. Message someone on Telegram, play music or open something on your computer — just say it.',
       tickle:['Hehe, that tickles!','Do it again!','Aww, nice!','Haha, stop, I can’t breathe!','Mmm, thanks!','Oh, you’re making me blush…'], annoyed:['Okay, that’s enough!','Hey! I’m not a toy!','One more time and I’ll be mad!'], wake:'Huh? I’m awake!', timerDone:'Time’s up!',
@@ -668,6 +702,11 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     clearTimeout(holdTimer);
     if (holdMs) holdTimer = setTimeout(() => { if (!asleep && !busy) setEmotion('neutral'); }, holdMs);
     if (emo === 'thinking') setLook(-3, -3, 'cqw');
+  }
+  function extendEmotion(ms){
+    const e = robot.dataset.emotion;
+    if (!e || e === 'neutral' || asleep || busy) return;
+    clearTimeout(holdTimer); holdTimer = setTimeout(() => { if (!asleep && !busy && robot.dataset.emotion === e) setEmotion('neutral'); }, ms);
   }
   function pulse(cls, ms){ robot.classList.remove(cls); void robot.offsetWidth; robot.classList.add(cls); setTimeout(() => robot.classList.remove(cls), ms); }
   function setLook(x, y, unit='px'){ look.style.setProperty('--lx', x + unit); look.style.setProperty('--ly', y + unit); }
@@ -814,7 +853,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     if (seq !== speakSeq) { URL.revokeObjectURL(url); return; }
     const a = new Audio(url); ttsAudio = a;
     a.onplay = () => { clearTimeout(talkTimer); robot.classList.add('talking'); refreshStatus(); typeWithVoice(text, a.duration); };
-    a.onended = () => finishTyping(text);
+    a.onended = () => { finishTyping(text); extendEmotion(6000); };
     a.onerror = a.onpause = a.onended = ((done) => () => { done(); robot.classList.remove('talking'); refreshStatus(); URL.revokeObjectURL(url); })(a.onended);
     await a.play();
   }
@@ -1003,6 +1042,24 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     } catch {}
   }
 
+  // ---------- teacher mode: lesson board ----------
+  function closeLesson(){ cards.querySelectorAll('.lesson').forEach(n => n.remove()); robot.classList.remove('teacher'); }
+  function showLesson(ls, lang){
+    closeLesson();
+    const L = T[lang] || t(); const c = document.createElement('div'); c.className = 'lesson'; cards.prepend(c);
+    const h = document.createElement('h3'); h.textContent = '🎓 ' + (ls.title || ''); c.append(h);
+    if (ls.points && ls.points.length) { const ol = document.createElement('ol'); ls.points.forEach(p => { const li = document.createElement('li'); li.textContent = p; ol.append(li); }); c.append(ol); }
+    if (ls.example) { const ex = document.createElement('p'); ex.className = 'ex'; ex.textContent = L.lessonEx + ':'; const pre = document.createElement('pre'); pre.textContent = ls.example; c.append(ex, pre); }
+    if (ls.check) { const ck = document.createElement('div'); ck.className = 'chk'; ck.textContent = '❓ ' + L.lessonCheck + ': ' + ls.check; c.append(ck); }
+    const row = document.createElement('div'); row.className = 'row';
+    if (ls.check) row.append(btn(L.lessonAnswer, true, () => { q.placeholder = L.lessonPh; q.focus(); }));
+    row.append(btn(L.lessonRead, false, () => show([ls.title, ...(ls.points || []), ls.check ? L.lessonCheck + ': ' + ls.check : ''].filter(Boolean).join('. '), lang)));
+    row.append(btn(L.lessonClose, false, closeLesson));
+    c.append(row);
+    robot.classList.add('teacher'); playGesture('point', 2200);
+    c.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
   // ---------- client actions from the server ----------
   let timerEnd = 0, timerLabel = '', timerTick = 0, ytPlaying = false;
   let timerDoneCb = null;
@@ -1127,7 +1184,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   // ---------- quiz badge ----------
   function showQuiz(qz){
     const b = $('#quizBadge');
-    if (!qz) { b.hidden = true; return; }
+    if (!qz) { b.hidden = true; if (!cards.querySelector('.lesson')) robot.classList.remove('teacher'); return; }
+    robot.classList.add('teacher');
     b.hidden = false; b.textContent = '🎯 ' + t().quiz + ' ' + Math.min(qz.asked + 1, qz.total) + '/' + qz.total + ' · ✓' + qz.correct;
   }
 
@@ -1250,8 +1308,9 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       const lang = BCP[out.lang] ? out.lang : uiLang();
       if (mode === 'auto') { lastLang = lang; store.set('lastLang', lang); applyUI(); }
       const emo = EMOTIONS.includes(out.emotion) ? out.emotion : 'neutral';
-      setEmotion(emo, emo === 'sleepy' ? 0 : 7000); chirp(emo); if (emo === 'excited' || emo === 'proud') pulse('bounce', 1500);
+      setEmotion(emo, emo === 'sleepy' ? 0 : EMO_HOLD); chirp(emo); if (emo === 'excited' || emo === 'proud') pulse('bounce', 1500);
       addLog('bit', out.reply); show(out.reply, lang, text);
+      if (out.lesson) showLesson(out.lesson, lang);
       const isGame = (out.actions || []).some(a => a.type === 'game');
       if (out.gesture && !isGame) playGesture(out.gesture);
       else if (!isGame && (emo === 'shy' || emo === 'scared')) playGesture('peekaboo');

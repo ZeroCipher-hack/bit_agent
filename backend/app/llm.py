@@ -52,7 +52,7 @@ class AnthropicLLM:
     async def complete(self, system, transcript, tools, smart=False):
         kw = {"tools": [t.schema() for t in tools]} if tools else {}
         resp = await self.client.messages.create(
-            model=config.MODEL_SMART if smart else config.MODEL_FAST, max_tokens=1024, system=system,
+            model=config.MODEL_SMART if smart else config.MODEL_FAST, max_tokens=2048, system=system,
             messages=self._convert(transcript), **kw)
         text = "\n".join(b.text for b in resp.content if b.type == "text")
         calls = [{"id": b.id, "name": b.name, "input": dict(b.input or {})} for b in resp.content if b.type == "tool_use"]
@@ -106,7 +106,7 @@ class OpenAICompatLLM:
         raise last_err
 
     async def _complete_once(self, model, system, transcript, tools):
-        body = {"model": model, "max_tokens": 1024, "messages": self._convert(system, transcript)}
+        body = {"model": model, "max_tokens": 2048, "messages": self._convert(system, transcript)}
         if tools:
             body["tools"] = [{"type": "function", "function": {"name": t.name, "description": t.description,
                                                                 "parameters": t.input_schema}} for t in tools]

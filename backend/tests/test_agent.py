@@ -572,3 +572,17 @@ def test_themes_and_face_style(mem):
     assert mem.kv_get("appearance") == {"style": "neon"}
     c = TestClient(main.app); h = {"Authorization": "Bearer test-token"}
     assert c.post("/api/appearance", json={"style": "weird"}, headers=h).status_code == 400
+
+
+def test_lesson_is_parsed_and_remembered(mem):
+    reply = {"reply": "Keling, parolni oddiy qilib tushuntiraman.", "emotion": "happy", "gesture": "point", "lang": "uz",
+             "lesson": {"title": "Kuchli parol", "points": ["Parol — uyingiz kaliti.", "Uzun boʻlsin: 12+ belgi.", "Har saytga boshqa parol."],
+                        "example": "Yomon: 123456\\nYaxshi: Olma-Kitob-7-Quyosh", "check": "Nega bitta parolni hamma joyda ishlatmaslik kerak?"}}
+    fc = FakeClient([text(json.dumps(reply, ensure_ascii=False))])
+    out = run(Agent(mem, load_tools(), fc).chat("bolalarga kuchli parolni tushuntir"))
+    assert out["lesson"]["title"] == "Kuchli parol" and len(out["lesson"]["points"]) == 3 and "123456" in out["lesson"]["example"]
+    assert "Teacher mode" in fc.calls[0]["system"] and fc.calls[0]["max_tokens"] == 2048
+    stored = mem.recent_messages()[-1]["content"]
+    assert "[lesson on the board: Kuchli parol" in stored and "check:" in stored        # so Bit can grade the answer next turn
+    assert "lesson" not in parse_final('{"reply":"Salom"}')
+    assert "lesson" not in parse_final('{"reply":"x","lesson":"just text"}')
