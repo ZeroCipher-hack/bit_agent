@@ -224,3 +224,13 @@ def test_openai_compat_error_and_missing_ids(mem):
         [(200, {"choices": [{"message": {"tool_calls": [{"function": {"name": "dance", "arguments": "not json"}}]}}]})], seen))
     step = run(llm2.complete("s", [{"role": "user", "content": "hi"}], []))
     assert step["tool_calls"][0]["id"].startswith("call_") and step["tool_calls"][0]["input"] == {}
+
+
+def test_openai_compat_timeout_is_clear(monkeypatch):
+    def handler(request):
+        raise _httpx.ReadTimeout("slow", request=request)
+    monkeypatch.setattr(config, "OPENAI_REASONING_EFFORT", "low")
+    llm = OpenAICompatLLM("https://example.test/v1", "k", "m", transport=_httpx.MockTransport(handler))
+    with pytest.raises(LLMError) as e:
+        run(llm.complete("s", [{"role": "user", "content": "hi"}], []))
+    assert e.value.status_code == 504 and "did not answer" in e.value.message

@@ -83,9 +83,17 @@ class OpenAICompatLLM:
                 "messages": self._convert(system, transcript),
                 "tools": [{"type": "function", "function": {"name": t.name, "description": t.description,
                                                              "parameters": t.input_schema}} for t in tools]}
+        if config.OPENAI_REASONING_EFFORT:
+            body["reasoning_effort"] = config.OPENAI_REASONING_EFFORT
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
-        async with httpx.AsyncClient(timeout=90, transport=self.transport) as client:
-            r = await client.post(f"{self.base_url}/chat/completions", json=body, headers=headers)
+        try:
+            async with httpx.AsyncClient(timeout=config.LLM_TIMEOUT, transport=self.transport) as client:
+                r = await client.post(f"{self.base_url}/chat/completions", json=body, headers=headers)
+        except httpx.TimeoutException:
+            raise LLMError(f"{body['model']} did not answer within {config.LLM_TIMEOUT:.0f}s "
+                           "(slow/thinking model, free-tier queue, or blocked network)", 504)
+        except httpx.HTTPError as e:
+            raise LLMError(f"cannot reach {self.base_url}: {type(e).__name__}", 503)
         if r.status_code >= 400:
             try:
                 err = r.json()

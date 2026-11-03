@@ -18,6 +18,9 @@ OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://generativelanguage.googl
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL_FAST = os.getenv("OPENAI_MODEL_FAST", "gemini-3.8-flash")
 OPENAI_MODEL_SMART = os.getenv("OPENAI_MODEL_SMART", "")
+# Optional: "none" / "low" / "medium" / "high" — limits slow "thinking" on reasoning models (sent only if set)
+OPENAI_REASONING_EFFORT = os.getenv("OPENAI_REASONING_EFFORT", "").strip()
+LLM_TIMEOUT = float(os.getenv("BIT_LLM_TIMEOUT", "60"))
 
 
 def llm_configured() -> bool:
