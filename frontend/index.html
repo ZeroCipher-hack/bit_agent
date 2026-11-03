@@ -411,9 +411,25 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 
   // ---------- speaking ----------
   let typeTimer = 0, talkTimer = 0; const warnedVoice = {};
-  function typeOut(text){
-    clearInterval(typeTimer); let i = 0; sayEl.textContent = '';
-    typeTimer = setInterval(() => { i += 2; sayEl.textContent = text.slice(0, i); if (i >= text.length) clearInterval(typeTimer); }, 28);
+  function typeOut(text, msPerChar = 14){
+    // time-based, so slow timers never leave the text behind the voice
+    clearInterval(typeTimer); clearTimeout(typeStart); sayEl.textContent = '';
+    const t0 = performance.now(), total = Math.max(1, text.length * msPerChar);
+    typeTimer = setInterval(() => {
+      const n = Math.min(text.length, Math.ceil(text.length * (performance.now() - t0) / total));
+      sayEl.textContent = text.slice(0, n); if (n >= text.length) clearInterval(typeTimer);
+    }, 30);
+  }
+  function finishTyping(text){ clearInterval(typeTimer); clearTimeout(typeStart); sayEl.textContent = text; }
+  let typeStart = 0;
+  // wait for the voice, then type along with it; type anyway if the voice is late
+  function typeWhenSpeaking(text, maxWait = 3000){
+    clearInterval(typeTimer); clearTimeout(typeStart); sayEl.textContent = '…';
+    typeStart = setTimeout(() => typeOut(text), maxWait);
+  }
+  function typeWithVoice(text, seconds){
+    const ms = isFinite(seconds) && seconds > 0 ? (seconds * 1000 * 0.92) / Math.max(1, text.length) : 55;
+    typeOut(text, Math.min(90, Math.max(12, ms)));
   }
   function pickVoice(lang){
     if (!('speechSynthesis' in window)) return null;
@@ -441,8 +457,9 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     const url = URL.createObjectURL(await r.blob());
     if (seq !== speakSeq) { URL.revokeObjectURL(url); return; }
     const a = new Audio(url); ttsAudio = a;
-    a.onplay = () => { clearTimeout(talkTimer); robot.classList.add('talking'); refreshStatus(); };
-    a.onended = a.onerror = a.onpause = () => { robot.classList.remove('talking'); refreshStatus(); URL.revokeObjectURL(url); };
+    a.onplay = () => { clearTimeout(talkTimer); robot.classList.add('talking'); refreshStatus(); typeWithVoice(text, a.duration); };
+    a.onended = () => finishTyping(text);
+    a.onerror = a.onpause = a.onended = ((done) => () => { done(); robot.classList.remove('talking'); refreshStatus(); URL.revokeObjectURL(url); })(a.onended);
     await a.play();
   }
   function speakBrowser(text, lang){
@@ -454,20 +471,19 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text.replace(/[ʻʼ’]/g, "'"));
     u.voice = v; u.lang = v.lang; u.pitch = 1.4; u.rate = 1.04;
-    u.onstart = () => { clearTimeout(talkTimer); robot.classList.add('talking'); refreshStatus(); };
+    u.onstart = () => { clearTimeout(talkTimer); robot.classList.add('talking'); refreshStatus(); typeWithVoice(text, text.length * 0.065); };
     u.onend = u.onerror = () => { robot.classList.remove('talking'); refreshStatus(); };
     speechSynthesis.speak(u);
   }
   function show(text, lang, question){
     youEl.hidden = !question; if (question) youEl.textContent = question;
-    typeOut(text);
     stopSpeaking();
-    if (!voiceChk.checked || ytPlaying) { talkFor(Math.min(9000, 600 + text.length * 45)); return; }
+    if (!voiceChk.checked || ytPlaying) { typeOut(text); talkFor(Math.min(9000, 600 + text.length * 45)); return; }
     const seq = speakSeq;
     if (serverTts && cfg.token) {
-      talkFor(Math.min(9000, 600 + text.length * 45));
-      speakServer(text, lang, seq).catch(() => { if (seq === speakSeq) speakBrowser(text, lang); });
-    } else speakBrowser(text, lang);
+      typeWhenSpeaking(text);
+      speakServer(text, lang, seq).catch(() => { if (seq === speakSeq) { typeOut(text); speakBrowser(text, lang); } });
+    } else { typeWhenSpeaking(text, 800); speakBrowser(text, lang); }
   }
 
   // ---------- client actions from the server ----------

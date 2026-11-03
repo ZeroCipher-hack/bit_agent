@@ -70,8 +70,9 @@ class OpenAICompatLLM:
             elif m["role"] == "assistant":
                 msg = {"role": "assistant", "content": m.get("content") or ""}
                 if m.get("tool_calls"):
-                    msg["tool_calls"] = [{"id": c["id"], "type": "function",
-                                          "function": {"name": c["name"], "arguments": json.dumps(c["input"], ensure_ascii=False)}}
+                    msg["tool_calls"] = [{**c.get("extra", {}), "id": c["id"], "type": "function",
+                                          "function": {**c.get("fn_extra", {}), "name": c["name"],
+                                                       "arguments": json.dumps(c["input"], ensure_ascii=False)}}
                                          for c in m["tool_calls"]]
                 out.append(msg)
             elif m["role"] == "tool_results":
@@ -125,8 +126,16 @@ class OpenAICompatLLM:
                 args = json.loads(fn.get("arguments") or "{}")
             except json.JSONDecodeError:
                 args = {}
-            calls.append({"id": c.get("id") or "call_" + uuid.uuid4().hex[:8], "name": fn.get("name", ""),
-                          "input": args if isinstance(args, dict) else {}})
+            call = {"id": c.get("id") or "call_" + uuid.uuid4().hex[:8], "name": fn.get("name", ""),
+                    "input": args if isinstance(args, dict) else {}}
+            # keep provider-specific fields (e.g. Gemini's extra_content.google.thought_signature) to send back unchanged
+            extra = {k: v for k, v in c.items() if k not in ("id", "type", "function", "index")}
+            fn_extra = {k: v for k, v in fn.items() if k not in ("name", "arguments")}
+            if extra:
+                call["extra"] = extra
+            if fn_extra:
+                call["fn_extra"] = fn_extra
+            calls.append(call)
         return {"text": msg.get("content") or "", "tool_calls": calls}
 
 

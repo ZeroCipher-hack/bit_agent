@@ -277,3 +277,20 @@ def test_tts_endpoint_and_cache(monkeypatch):
     assert len(calls) == 1  # second time served from cache
     c.post("/api/tts", json={"text": "Привет", "lang": "ru"}, headers=h)
     assert calls[-1][1] == config.TTS_VOICE_RU
+
+
+def test_openai_compat_echoes_gemini_thought_signature(mem):
+    seen = []
+    sig = {"google": {"thought_signature": "SIG123"}}
+    responses = [
+        (200, {"choices": [{"message": {"role": "assistant", "tool_calls": [
+            {"id": "c1", "type": "function", "extra_content": sig,
+             "function": {"name": "set_timer", "arguments": '{"seconds": 30}'}}]}}]}),
+        (200, {"choices": [{"message": {"content": '{"reply":"ok","emotion":"happy","lang":"uz"}'}}]}),
+    ]
+    llm = OpenAICompatLLM("https://example.test/v1", "k", "gemini-x", transport=_oa_transport(responses, seen))
+    out = run(Agent(mem, load_tools(), llm=llm).chat("30 soniya"))
+    assert out["reply"] == "ok"
+    sent_call = seen[1]["messages"][-2]["tool_calls"][0]
+    assert sent_call["extra_content"] == sig and sent_call["id"] == "c1"
+    assert sent_call["function"]["name"] == "set_timer"
