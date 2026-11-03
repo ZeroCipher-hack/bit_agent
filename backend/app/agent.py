@@ -147,6 +147,9 @@ class Agent:
         extra.append("Smart home: " + ("connected through Home Assistant; use home_devices / home_status / home_control."
                                        if config.HA_URL and config.HA_TOKEN else "not connected; if asked, say it can be "
                                        "connected through Home Assistant."))
+        look = self.memory.kv_get("appearance") or {}
+        extra.append("Your look: eyes " + look.get("eye", "change colour with your mood") + ", body " + look.get("body", "white")
+                     + ". If asked to change your colours, use set_appearance.")
         extra.append(f"For an exact time ('tomorrow at 8') use set_reminder; for a countdown use set_timer. "
                      f"Weather: get_weather (home city: {config.HOME_CITY}).")
         return build_system(self.memory.facts(), lang_mode, list(self.tools), today, soon, "\n".join(extra))

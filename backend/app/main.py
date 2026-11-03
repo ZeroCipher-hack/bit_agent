@@ -124,6 +124,11 @@ class GreetIn(BaseModel):
     lang_mode: str = "auto"
 
 
+class AppearanceIn(BaseModel):
+    eye: str | None = None
+    body: str | None = None
+
+
 class ConfirmIn(BaseModel):
     id: str = Field(min_length=1, max_length=40)
     approve: bool
@@ -193,6 +198,21 @@ def list_reminders():
 def due_reminders():
     """Polled by the app every ~20 s; each reminder is handed out once."""
     return {"items": memory.take_due_for_app(time.time())}
+
+
+@app.get("/api/appearance", dependencies=[Depends(auth)])
+def get_appearance():
+    return memory.kv_get("appearance") or {}
+
+
+@app.post("/api/appearance", dependencies=[Depends(auth)])
+def set_appearance(body: AppearanceIn):
+    from .tools.appearance_tool import clean, merge
+    from .tools.base import ToolError
+    try:
+        return merge(memory, clean(body.eye), clean(body.body))
+    except ToolError as e:
+        raise HTTPException(400, str(e))
 
 
 @app.post("/api/confirm", dependencies=[Depends(auth)])

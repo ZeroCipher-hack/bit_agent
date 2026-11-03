@@ -544,3 +544,19 @@ def test_congratulation_always_brings_fireworks(mem):
     assert run(Agent(mem, load_tools(), fc2).chat("havo qanday?"))["actions"] == []
     fc3 = FakeClient([text('{"reply":"Afsus, bayram bekor boʻlibdi.","emotion":"sad"}')])
     assert run(Agent(mem, load_tools(), fc3).chat("bayram bekor"))["actions"] == []   # no fireworks when sad
+
+
+def test_appearance_tool_and_api(mem):
+    fc = FakeClient([use("set_appearance", {"eye_color": "#4da3ff"}), use("set_appearance", {"body_color": "pink"}, "t2"),
+                     text('{"reply":"Koʻzlarim endi koʻk!","emotion":"happy"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("koʻzingni koʻk qil"))
+    assert mem.kv_get("appearance") == {"eye": "#4DA3FF"}
+    assert {"type": "appearance", "eye": "#4DA3FF", "replace": True} in out["actions"]
+    assert fc.calls[2]["messages"][-1]["content"][0]["is_error"] is True        # "pink" is not hex
+    run(Agent(mem, load_tools(), FakeClient([use("set_appearance", {"eye_color": "default", "body_color": "#26242E"}),
+                                              text('{"reply":"ok"}')])).chat("x"))
+    assert mem.kv_get("appearance") == {"body": "#26242E"}
+    c = TestClient(main.app); h = {"Authorization": "Bearer test-token"}
+    assert c.post("/api/appearance", json={"eye": "#00FF00"}, headers=h).json()["eye"] == "#00FF00"
+    assert c.get("/api/appearance", headers=h).json()["eye"] == "#00FF00"
+    assert c.post("/api/appearance", json={"eye": "javascript:x"}, headers=h).status_code == 400

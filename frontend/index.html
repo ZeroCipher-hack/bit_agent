@@ -294,6 +294,8 @@ dialog h2{margin:0 0 12px;font-size:20px}
 dialog label{display:block;font-size:14px;color:var(--muted);margin:12px 0 4px}
 dialog input,dialog select{font:inherit;width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 12px}
 dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+dialog .colors{display:grid;grid-template-columns:auto 56px 1fr;gap:8px;align-items:center}
+dialog .colors input{width:56px;height:40px;padding:2px;border-radius:10px}
 dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 </style>
 </head>
@@ -409,6 +411,11 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       <label for="sLocal">Kompyuter agenti tokeni (ixtiyoriy)</label>
       <input id="sLocal" type="password" autocomplete="off">
       <p class="hint">Kompyuterda ilova va papkalarni ochish uchun. bit_local_agent.py oynasida koʻrinadi.</p>
+      <label>Koʻz va korpus rangi</label>
+      <div class="colors">
+        <span>Koʻz</span><input type="color" id="sEye" value="#7CF5D6"><button class="btn" type="button" id="sEyeReset">Emotsiyaga qarab</button>
+        <span>Korpus</span><input type="color" id="sBody" value="#FFFFFF"><button class="btn" type="button" id="sBodyReset">Oq</button>
+      </div>
       <label for="sAnim">Animatsiya</label>
       <select id="sAnim"><option value="auto">Avto</option><option value="full">Toʻliq (hammasi)</option><option value="calm">Yengil harakat</option><option value="lite">Kuchsiz kompyuter uchun</option></select>
       <p class="hint" id="sDiag"></p>
@@ -549,9 +556,28 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   }
   $('#lblHistory').parentElement.addEventListener('toggle', e => { if (e.target.open) loadNotes(); });
 
+  // ---------- look: user-chosen eye and body colours ----------
+  let skin = store.get('look', {});
+  function shade(hex, k){   // k<0 darker, k>0 lighter
+    const n = parseInt(hex.slice(1), 16), f = c => Math.max(0, Math.min(255, Math.round(k < 0 ? c * (1 + k) : c + (255 - c) * k)));
+    return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(f).map(c => c.toString(16).padStart(2, '0')).join('');
+  }
+  function applyLook(l, save = true){
+    skin = l || {}; if (save) store.set('look', skin);
+    if (skin.body) { robot.style.setProperty('--shell', skin.body); robot.style.setProperty('--shell-edge', shade(skin.body, -.22)); }
+    else { robot.style.removeProperty('--shell'); robot.style.removeProperty('--shell-edge'); }
+    setEmotion(robot.dataset.emotion || 'neutral');
+  }
+  async function loadLook(){ try { applyLook(await api('/api/appearance')); } catch {} }
+  async function saveLook(part, value){
+    try { applyLook(await api('/api/appearance', { [part]: value })); } catch (e) { note(errText(e)); }
+  }
+
   // ---------- emotions & life ----------
   function setEmotion(emo, holdMs){
     robot.dataset.emotion = EMOTIONS.includes(emo) ? emo : 'neutral';
+    if (skin && skin.eye && !['angry', 'love'].includes(robot.dataset.emotion)) robot.style.setProperty('--eye', skin.eye);
+    else robot.style.removeProperty('--eye');
     statusEl.style.setProperty('--eye', getComputedStyle(robot).getPropertyValue('--eye'));
     clearTimeout(holdTimer);
     if (holdMs) holdTimer = setTimeout(() => { if (!asleep && !busy) setEmotion('neutral'); }, holdMs);
@@ -924,6 +950,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       else if (a.type === 'youtube') playYoutube(a);
       else if (a.type === 'local' && a.action === 'open') openLocal(a.target);
       else if (a.type === 'game') runGame(a);
+      else if (a.type === 'appearance') { applyLook({ eye:a.eye, body:a.body }); pulse('bounce', 1200); chirp('wink'); }
       else if (a.type === 'pomodoro') startPomodoro(a);
       else if (a.type === 'pomodoro_stop') stopTimer();
       else if (a.type === 'notify_permission') { try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch {} }
@@ -1150,10 +1177,17 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   const dlg = $('#settings');
   function openSettings(){
     $('#sUrl').value = cfg.url; $('#sToken').value = cfg.token; $('#sLocal').value = cfg.local; $('#sAnim').value = store.get('anim', 'auto');
+    $('#sEye').value = skin.eye || '#7CF5D6'; $('#sBody').value = skin.body || '#FFFFFF';
     $('#sDiag').textContent = 'Tizim: ' + (sysCalm ? 'animatsiyalar kamaytirilgan' : 'animatsiyalar yoqilgan') + ' · FPS ≈ ' + (fps || '…') + ' · rejim: ' + animMode();
     if (!dlg.open) dlg.showModal();
   }
   $('#gear').onclick = openSettings;
+  $('#sEye').addEventListener('input', e => applyLook({ ...skin, eye:e.target.value.toUpperCase() }, false));   // live preview
+  $('#sBody').addEventListener('input', e => applyLook({ ...skin, body:e.target.value.toUpperCase() }, false));
+  $('#sEye').addEventListener('change', e => saveLook('eye', e.target.value.toUpperCase()));
+  $('#sBody').addEventListener('change', e => saveLook('body', e.target.value.toUpperCase()));
+  $('#sEyeReset').onclick = () => saveLook('eye', 'default');
+  $('#sBodyReset').onclick = () => saveLook('body', 'default');
   dlg.addEventListener('close', () => {
     if (dlg.returnValue !== 'save') return;
     cfg = { url: $('#sUrl').value.trim(), token: $('#sToken').value.trim(), local: $('#sLocal').value.trim() };
@@ -1167,8 +1201,9 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
+  applyLook(skin, false);
   applyUI(); setEmotion('happy', 2500); typeOut(t().greet); playGesture('wave'); poke();
-  if (!cfg.token) setTimeout(openSettings, 800); else setTimeout(greetToday, 1200);
+  if (!cfg.token) setTimeout(openSettings, 800); else { loadLook(); setTimeout(greetToday, 1200); }
 })();
 
 </script>

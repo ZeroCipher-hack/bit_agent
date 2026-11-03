@@ -139,6 +139,10 @@ Telefonda `open_on_computer` ishlamaydi, bu normal holat. Telegram, YouTube va t
 - Rasmlar serverda saqlanmaydi, faqat oʻsha savol bilan modelga yuboriladi. Bepul Gemini tierida Google ularni koʻrishi mumkin — maxfiy narsani koʻrsatmang.
 - YouTube endi Bitning yuzida (ekranida) oʻynaydi; "Katta ekran" va "Yuzdan olish" tugmalari bor.
 
+### Rangini oʻzgartirish
+
+"Koʻzingni koʻk qil", "Korpusingni qora qil", "Rangingni asl holiga qaytar" — yoki ⚙ → *Koʻz va korpus rangi*. Rang serverda saqlanadi va hamma qurilmada bir xil boʻladi. Jahldor (qizil) va sevgi (pushti yurak) holatlari oʻz rangida qoladi.
+
 ### Qoʻllar va oʻyinlar
 
 Qoʻllar Bitning **ekranida** (koʻzlari kabi yonib) paydo boʻladi: "qoʻlingni koʻtar", "qarsak chal", "salom ber", "barmogʻingni koʻrsat" va h.k. Oʻyinlar (tasodif serverda tanlanadi, Bit aldamaydi):
