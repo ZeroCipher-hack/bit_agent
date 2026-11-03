@@ -306,12 +306,14 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     } catch { throw { code:'network' }; }
     if (r.status === 401) throw { code:'bad' };
     if (r.status === 429) throw { code:'rate' };
-    if (!r.ok) throw { code:'server', status:r.status };
+    if (!r.ok) { let d = ''; try { d = (await r.json()).detail || ''; } catch {} throw { code:'server', status:r.status, detail:String(d).slice(0, 300) }; }
     return r.json();
   }
   function errText(e){
     const L = t();
-    return { token:L.needToken, bad:L.bad, rate:L.rate }[e && e.code] || L.fail;
+    const known = { token:L.needToken, bad:L.bad, rate:L.rate }[e && e.code];
+    if (known) return known;
+    return e && e.detail ? L.fail + ' [' + e.status + ': ' + e.detail + ']' : L.fail;
   }
 
   // ---------- UI text ----------

@@ -166,3 +166,17 @@ def test_api_auth_and_flow(monkeypatch):
     r = c.post("/api/chat", json={"text": "hi"}, headers={"Authorization": "Bearer test-token"})
     assert r.status_code == 200 and r.json()["reply"] == "Hello"
     assert c.get("/api/audit", headers={"Authorization": "Bearer test-token"}).status_code == 200
+
+
+def test_llm_error_detail_is_returned_and_key_masked(monkeypatch):
+    class Boom:
+        def __init__(self): self.messages = self
+        async def create(self, **kw):
+            e = RuntimeError("Your credit balance is too low (key sk-test)")
+            e.status_code = 400
+            raise e
+    c = TestClient(main.app)
+    main._agent = Agent(main.memory, main.tools, Boom())
+    r = c.post("/api/chat", json={"text": "hi"}, headers={"Authorization": "Bearer test-token"})
+    assert r.status_code == 502
+    assert "credit balance" in r.json()["detail"] and "sk-test" not in r.json()["detail"]

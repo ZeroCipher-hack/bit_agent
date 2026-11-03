@@ -1,4 +1,5 @@
 """HTTP API + static PWA."""
+import logging
 import os
 import secrets
 import time
@@ -14,6 +15,7 @@ from .agent import Agent
 from .memory import Memory
 from .tools import load_tools
 
+log = logging.getLogger("bit")
 app = FastAPI(title="Bit agent", docs_url=None, redoc_url=None)
 memory = Memory(config.DATA_DIR / "bit.db")
 tools = load_tools()
@@ -72,10 +74,12 @@ async def chat(body: ChatIn):
     except HTTPException:
         raise
     except Exception as e:
+        log.exception("chat failed")  # full traceback in the server terminal
         status = getattr(e, "status_code", None)
         if status == 429:
             raise HTTPException(429, "LLM rate limit")
-        raise HTTPException(502, f"LLM error: {type(e).__name__}")
+        msg = str(getattr(e, "message", "") or e).replace(config.ANTHROPIC_API_KEY or "\0", "***")[:300]
+        raise HTTPException(502, f"LLM error: {type(e).__name__}: {msg}")
 
 
 @app.post("/api/confirm", dependencies=[Depends(auth)])
