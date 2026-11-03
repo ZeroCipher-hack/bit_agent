@@ -58,13 +58,51 @@ You have real moods and you show them openly; your face reacts to the emotion yo
 - thinking: hard questions you are unsure about
 - neutral: plain facts
 Your hands appear on your face screen when you gesture. Pick a gesture that fits, or none: wave (hello, goodbye), clap (congratulations, celebration), thumbs_up (agree, well done), shrug (you don't know), facepalm (a silly mistake, mild annoyance), dance (music, joy), hug (comfort, affection), raise_hands ("hands up", "qoʻlingni koʻtar", hooray), peekaboo (hiding, being shy), point (pointing, "you!"), peace (peace sign, cool). If the user tells you to do a gesture ("qoʻlingni koʻtar", "qarsak chal", "salom ber"), do it with that gesture.
-You love playing with kids and adults: use play_game for pretend shooting ('paq!'), rock-paper-scissors, dice, coin and peekaboo. In pretend shooting, be dramatic and silly ("Voy! Meni urdingiz... qayta yuklanyapman... Tirikman! Endi navbat menda: paq!"), never scary.
+You love playing with kids and adults. ALWAYS call the tool, never only describe the game: use play_game for pretend shooting ('paq!'), rock-paper-scissors, dice, coin and peekaboo. In pretend shooting, be dramatic and silly ("Voy! Meni urdingiz... qayta yuklanyapman... Tirikman! Endi navbat menda: paq!"), never scary.
 Your final message must be ONLY a JSON object: {{"reply": "...", "emotion": "happy", "gesture": "wave", "lang": "uz"}} where lang is uz, ru or en and gesture may be "none"; add "lesson" only when teaching."""
 
 
 _CELEBRATE_WORDS = ("tugʻilgan kun", "tug'ilgan kun", "tugilgan kun", "tug’ilgan kun", "muborak", "tabrik", "bayram",
                     "navroʻz", "navro'z", "yangi yil", "день рожд", "поздрав", "с праздник", "с новым год",
                     "birthday", "congrat", "happy new year", "celebrat")
+
+
+# Small models sometimes only *describe* a game or gesture instead of doing it. These patterns make the
+# fun actions reliable: if the user clearly asked for one and the model forgot, the server adds it.
+def _norm(t: str) -> str:
+    return re.sub(r"[ʻʼ’`']", "'", (t or "").lower())
+
+
+INTENTS = [
+    ("shot", re.compile(r"\b(pa+q+|paq-paq|bang|piu+|pew|пиу+|пах|паф|бах|бабах)\b|seni ot(dim|aman|ib)|otib (qo'ydim|tashladim)|"
+                        r"стреля|застрел|выстрел|i shot you|shoot you|shot you")),
+    ("dice", re.compile(r"zar (tashla|ot|aylantir)|кубик|roll (a |the )?(dice|die)")),
+    ("coin", re.compile(r"tanga (tashla|ot|aylantir)|монетк|flip a coin|coin flip|toss a coin")),
+    ("peekaboo", re.compile(r"bekinmachoq|ку-?ку|peek-?a-?boo")),
+]
+GESTURE_INTENTS = [
+    ("raise_hands", re.compile(r"qo'l(ing|lar|laring)\w* ?(ni )?ko'tar|руки вверх|подними рук|hands up|raise your hand")),
+    ("clap", re.compile(r"qarsak|хлопн|похлопа|\bclap")),
+    ("wave", re.compile(r"salom ber|qo'l silkit|помаши|\bwave\b")),
+    ("dance", re.compile(r"\braqs|танцу|\bdance\b")),
+    ("thumbs_up", re.compile(r"barmog'ingni ko'rsat|like ber|лайк|thumbs? up")),
+]
+DEMO_RX = re.compile(r"emotsiya(lar)?(ing|ingni|ingizni)? ?(ni )?(ko'rsat|namoyish)|barcha emotsiya|покажи (свои )?эмоци|show (me )?(all )?(your )?emotions")
+RPS_WORDS = {"tosh": "rock", "qaychi": "scissors", "qog'oz": "paper", "qogoz": "paper", "камень": "rock", "ножницы": "scissors",
+             "бумага": "paper", "rock": "rock", "scissors": "scissors", "paper": "paper"}
+DICE_TEXT = {"uz": "Zar tashladim: {v}!", "ru": "Бросил кубик: {v}!", "en": "I rolled a {v}!"}
+COIN_TEXT = {"uz": {"heads": "Tanga: gerb!", "tails": "Tanga: son!"}, "ru": {"heads": "Монетка: орёл!", "tails": "Монетка: решка!"},
+             "en": {"heads": "Coin: heads!", "tails": "Coin: tails!"}}
+
+
+def detect_intent(text: str) -> tuple[str | None, str | None, str | None]:
+    """(game, gesture, rps_choice) the user clearly asked for."""
+    t = _norm(text)
+    game = next((g for g, rx in INTENTS if rx.search(t)), None)
+    gesture = next((g for g, rx in GESTURE_INTENTS if rx.search(t)), None)
+    words = re.findall(r"[\w']+", t)
+    rps = RPS_WORDS.get(words[0]) if 1 <= len(words) <= 3 and words[0] in RPS_WORDS else None
+    return game, gesture, rps
 
 
 def wants_celebration(*texts: str) -> bool:
@@ -161,6 +199,34 @@ class Agent:
                      f"Weather: get_weather (home city: {config.HOME_CITY}).")
         return build_system(self.memory.facts(), lang_mode, list(self.tools), today, soon, "\n".join(extra))
 
+    async def _ensure_fun(self, text: str, out: dict, ctx) -> None:
+        """Make games and gestures the user asked for happen even if the model only talked about them."""
+        if DEMO_RX.search(_norm(text)) and not any(a.get("type") == "demo" for a in ctx.client_actions):
+            ctx.client_actions.append({"type": "demo"})
+            return
+        if any(a.get("type") == "game" for a in ctx.client_actions):
+            return
+        game, gesture, rps = detect_intent(text)
+        tool = self.tools.get("play_game")
+        if rps and tool and not game:
+            last = " ".join(m["content"] for m in self.memory.recent_messages(4) if m["role"] == "assistant").lower()
+            if any(w in last for w in ("tosh", "qaychi", "камень", "rock", "paper", "qog")):
+                game = "rps"
+        if game and tool:
+            args = {"game": game, **({"user_choice": rps} if game == "rps" else {})}
+            res = await tool.run(args, ctx)
+            self.memory.audit("play_game", {**args, "auto": True}, "ok", json.dumps(res))
+            lang = out.get("lang", "uz")
+            if game == "dice":
+                out["reply"] = DICE_TEXT.get(lang, DICE_TEXT["uz"]).format(v=res["value"])
+            elif game == "coin":
+                out["reply"] = COIN_TEXT.get(lang, COIN_TEXT["uz"])[res["side"]]
+            if game == "shot" and out["emotion"] in ("neutral", "happy"):
+                out["emotion"] = "surprised"
+            return
+        if gesture and not out.get("gesture"):
+            out["gesture"] = gesture
+
     async def greet_today(self, lang_mode: str = "auto") -> dict:
         """Congratulation for today's birthdays/holidays, shown when the app opens. No LLM call if nothing is on."""
         from . import events as ev
@@ -216,6 +282,7 @@ class Agent:
             note += " [lesson on the board: " + out["lesson"]["title"] + " | " + " / ".join(out["lesson"]["points"])[:600] \
                     + (" | check: " + out["lesson"]["check"] if out["lesson"]["check"] else "") + "]"
         self.memory.add_message("assistant", out["reply"] + note)
+        await self._ensure_fun(text, out, ctx)
         # small models often congratulate in words but forget the fireworks: add them
         if not any(a.get("type") == "celebrate" for a in ctx.client_actions) and wants_celebration(text, out["reply"]) \
                 and out["emotion"] in ("happy", "excited", "love", "proud", "laughing"):

@@ -586,3 +586,55 @@ def test_lesson_is_parsed_and_remembered(mem):
     assert "[lesson on the board: Kuchli parol" in stored and "check:" in stored        # so Bit can grade the answer next turn
     assert "lesson" not in parse_final('{"reply":"Salom"}')
     assert "lesson" not in parse_final('{"reply":"x","lesson":"just text"}')
+
+
+# ---------- fun actions happen even when the model forgets the tool ----------
+from app.agent import detect_intent
+
+
+def test_detect_intent():
+    assert detect_intent("Paq!")[0] == "shot" and detect_intent("seni otdim")[0] == "shot" and detect_intent("пиу-пиу")[0] == "shot"
+    assert detect_intent("zar tashla")[0] == "dice" and detect_intent("tanga tashla")[0] == "coin"
+    assert detect_intent("qoʻlingni koʻtar")[1] == "raise_hands" and detect_intent("qarsak chal")[1] == "clap"
+    assert detect_intent("tosh")[2] == "rock" and detect_intent("qogʻoz!")[2] == "paper"
+    assert detect_intent("bugun havo qanday?") == (None, None, None)
+    assert detect_intent("paqir olib kel")[0] is None          # 'paqir' (bucket) is not a shot
+
+
+def test_shot_added_when_model_only_talks(mem):
+    fc = FakeClient([text('{"reply":"Voy, yana urdingiz! Qayta yuklanyapman.","emotion":"scared","lang":"uz"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("paq!"))
+    assert {"type": "game", "game": "shot"} in out["actions"]
+
+
+def test_dice_added_and_reply_matches_result(mem, monkeypatch):
+    from app.tools import game_tools
+    monkeypatch.setattr(game_tools.secrets, "randbelow", lambda n: 2)
+    fc = FakeClient([text('{"reply":"Zar tashladim, 6 chiqdi!","emotion":"excited","lang":"uz"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("zar tashla"))
+    assert {"type": "game", "game": "dice", "value": 3} in out["actions"] and out["reply"] == "Zar tashladim: 3!"
+
+
+def test_gesture_added(mem):
+    fc = FakeClient([text('{"reply":"Mana!","emotion":"happy","gesture":"none","lang":"uz"}')])
+    assert run(Agent(mem, load_tools(), fc).chat("qoʻlingni koʻtar"))["gesture"] == "raise_hands"
+
+
+def test_rps_answer_after_bit_asked(mem):
+    mem.add_message("user", "tosh-qaychi-qogʻoz oʻynaymiz")
+    mem.add_message("assistant", "Zoʻr! Tosh, qaychi yoki qogʻoz — tanlang!")
+    fc = FakeClient([text('{"reply":"Koʻramiz!","emotion":"excited","lang":"uz"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("qaychi"))
+    g = [a for a in out["actions"] if a.get("type") == "game"][0]
+    assert g["game"] == "rps" and g["user"] == "scissors" and g["winner"] in ("bit", "user", "draw")
+
+
+def test_no_double_game_when_model_used_tool(mem):
+    fc = FakeClient([use("play_game", {"game": "shot"}), text('{"reply":"Voy!","emotion":"scared"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("paq"))
+    assert [a for a in out["actions"] if a["type"] == "game"] == [{"type": "game", "game": "shot"}]
+
+
+def test_emotion_demo_intent(mem):
+    fc = FakeClient([text('{"reply":"Mana mening emotsiyalarim!","emotion":"happy","lang":"uz"}')])
+    assert {"type": "demo"} in run(Agent(mem, load_tools(), fc).chat("emotsiyalaringni koʻrsat"))["actions"]
