@@ -234,3 +234,18 @@ def test_openai_compat_timeout_is_clear(monkeypatch):
     with pytest.raises(LLMError) as e:
         run(llm.complete("s", [{"role": "user", "content": "hi"}], []))
     assert e.value.status_code == 504 and "did not answer" in e.value.message
+
+
+def test_openai_compat_falls_back_on_overload(monkeypatch):
+    seen = []
+    monkeypatch.setattr(config, "OPENAI_MODEL_FALLBACKS", ["backup-a", "backup-b"])
+    llm = OpenAICompatLLM("https://example.test/v1", "k", "busy", transport=_oa_transport([
+        (503, [{"error": {"code": 503, "message": "high demand"}}]),
+        (429, {"error": {"message": "quota"}}),
+        (200, {"choices": [{"message": {"content": "ok"}}]})], seen))
+    step = run(llm.complete("s", [{"role": "user", "content": "hi"}], []))
+    assert step["text"] == "ok" and [b["model"] for b in seen] == ["busy", "backup-a", "backup-b"]
+    llm2 = OpenAICompatLLM("https://example.test/v1", "k", "m", transport=_oa_transport(
+        [(400, {"error": {"message": "bad schema"}})], seen))
+    with pytest.raises(LLMError):  # non-retryable errors are not hidden by fallbacks
+        run(llm2.complete("s", [{"role": "user", "content": "hi"}], []))

@@ -78,8 +78,23 @@ class OpenAICompatLLM:
                 out += [{"role": "tool", "tool_call_id": r["id"], "content": r["content"]} for r in m["results"]]
         return out
 
+    RETRYABLE = {408, 429, 500, 502, 503, 504}
+
     async def complete(self, system, transcript, tools, smart=False):
-        body = {"model": self.model_smart if smart else self.model_fast, "max_tokens": 1024,
+        first = self.model_smart if smart else self.model_fast
+        models = [first] + [m for m in config.OPENAI_MODEL_FALLBACKS if m != first]
+        last_err = None
+        for model in models:
+            try:
+                return await self._complete_once(model, system, transcript, tools)
+            except LLMError as e:
+                if e.status_code not in self.RETRYABLE:
+                    raise
+                last_err = e  # overloaded / rate-limited / slow -> try the next model
+        raise last_err
+
+    async def _complete_once(self, model, system, transcript, tools):
+        body = {"model": model, "max_tokens": 1024,
                 "messages": self._convert(system, transcript),
                 "tools": [{"type": "function", "function": {"name": t.name, "description": t.description,
                                                              "parameters": t.input_schema}} for t in tools]}
@@ -90,7 +105,7 @@ class OpenAICompatLLM:
             async with httpx.AsyncClient(timeout=config.LLM_TIMEOUT, transport=self.transport) as client:
                 r = await client.post(f"{self.base_url}/chat/completions", json=body, headers=headers)
         except httpx.TimeoutException:
-            raise LLMError(f"{body['model']} did not answer within {config.LLM_TIMEOUT:.0f}s "
+            raise LLMError(f"{model} did not answer within {config.LLM_TIMEOUT:.0f}s "
                            "(slow/thinking model, free-tier queue, or blocked network)", 504)
         except httpx.HTTPError as e:
             raise LLMError(f"cannot reach {self.base_url}: {type(e).__name__}", 503)
@@ -101,7 +116,7 @@ class OpenAICompatLLM:
                 detail = (err.get("error") or {}).get("message") or r.text
             except (ValueError, AttributeError):
                 detail = r.text
-            raise LLMError(f"HTTP {r.status_code}: {detail[:300]}", r.status_code)
+            raise LLMError(f"{model}: HTTP {r.status_code}: {detail[:300]}", r.status_code)
         msg = (r.json().get("choices") or [{}])[0].get("message") or {}
         calls = []
         for c in msg.get("tool_calls") or []:
