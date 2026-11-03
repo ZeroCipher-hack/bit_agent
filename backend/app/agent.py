@@ -31,6 +31,7 @@ How you work:
 - You never pretend to be human.
 {lang_rule}
 Your reply is shown and read aloud: 1-3 short sentences, under 60 words, plain text, no markdown, no emojis. If more is needed, give the core and offer to continue.
+When the user sends an image (a camera photo or a screenshot of their screen), look at it carefully and answer about it; you see only that one image. Never guess who a person in a photo is.
 Tools available: {", ".join(tool_names)}. Use a tool only when the user asks for that action or it is clearly implied. Risky actions (messages to people) wait for the user's yes; tell the user what will happen and that they should confirm.
 Current date and time: {datetime.now().strftime("%A, %d %B %Y, %H:%M")}.
 Today's dates: {today_txt}. Coming in the next 7 days: {soon_txt}.
@@ -147,13 +148,15 @@ class Agent:
         style = "fireworks" if any(e["kind"] in ("birthday", "anniversary") for e in todays) else "confetti"
         return {**out, "events": [e["name"] for e in todays], "style": style}
 
-    async def chat(self, text: str, lang_mode: str = "auto", smart: bool = False) -> dict:
+    async def chat(self, text: str, lang_mode: str = "auto", smart: bool = False, image: dict | None = None) -> dict:
         ctx = ToolContext(memory=self.memory)
         system = self._system(lang_mode)
         messages = self.memory.recent_messages(20) + [{"role": "user", "content": text}]
         if len(messages) > 1 and messages[-2]["role"] == "user":  # previous reply failed: merge
             last = messages.pop()
             messages[-1] = {"role": "user", "content": messages[-1]["content"] + "\n" + last["content"]}
+        if image:  # the current turn carries a photo/screenshot: image part + text part
+            messages[-1] = {"role": "user", "content": [{"type": "image", **image}, {"type": "text", "text": messages[-1]["content"]}]}
         transcript = list(messages)
         tool_list = list(self.tools.values())
         final_text = '{"reply": "…", "emotion": "confused"}'
@@ -170,7 +173,7 @@ class Agent:
             transcript.append({"role": "tool_results", "results": results})
 
         out = parse_final(final_text)
-        self.memory.add_message("user", text)
+        self.memory.add_message("user", text + (" [rasm biriktirilgan]" if image else ""))  # the image itself is not stored
         note = ""
         if ctx.pending:
             note = " [waiting for confirmation: " + "; ".join(p["summary"] for p in ctx.pending) + "]"

@@ -39,7 +39,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Rubik,"Segoe UI"
 button,input{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 
-main{max-width:560px;min-height:100%;margin:0 auto;padding:14px 18px 20px;display:flex;flex-direction:column;gap:14px}
+main{overflow-x:clip;max-width:560px;min-height:100%;margin:0 auto;padding:14px 18px 20px;display:flex;flex-direction:column;gap:14px}
 
 /* header */
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -192,6 +192,29 @@ main{max-width:560px;min-height:100%;margin:0 auto;padding:14px 18px 20px;displa
   transition:transform .4s cubic-bezier(.3,1.6,.5,1),opacity .2s;pointer-events:none}
 .robot.party .hat{opacity:1;transform:translate(-50%,0) rotate(-8deg) scale(1)}
 .robot.party .antenna{opacity:0}
+
+/* TV mode: YouTube plays on Bit's face */
+.tvscreen{position:absolute;inset:0;z-index:3;display:none;background:#000}
+.tvscreen iframe{width:100%;height:100%;border:0;display:block}
+.robot.tv .tvscreen{display:block}
+.robot.tv .look,.robot.tv .mouth,.robot.tv .cheek,.robot.tv .steam{visibility:hidden}
+.robot.tv .bulb{animation:tvglow 1.2s ease-in-out infinite alternate}
+@keyframes tvglow{0%{background:#FF7EB6;box-shadow:0 0 14px #FF7EB6}50%{background:#7CF5D6;box-shadow:0 0 14px #7CF5D6}100%{background:#FFD15C;box-shadow:0 0 14px #FFD15C}}
+.flash{position:absolute;inset:0;z-index:4;background:#fff;opacity:0;pointer-events:none}
+.robot.snap .flash{animation:flash .45s ease-out}
+@keyframes flash{0%{opacity:.95}100%{opacity:0}}
+/* attachment chip + camera dialog */
+.attach{display:flex;align-items:center;gap:10px;background:var(--field);border:1px solid var(--line);border-radius:14px;padding:6px 8px;align-self:flex-start;max-width:100%}
+.attach[hidden]{display:none}
+.attach img{width:56px;height:40px;object-fit:cover;border-radius:8px}
+.attach span{font-size:14px;color:var(--muted)}
+.attach button{border:0;background:var(--bg);border-radius:999px;width:28px;height:28px;cursor:pointer}
+dialog.cam{padding:12px}
+dialog.cam video{width:100%;border-radius:12px;background:#000;display:block;max-height:60vh}
+dialog.cam .row{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.ask .mic{flex:none}
+.send svg{display:none;width:20px;height:20px}
+@media (max-width:520px){.ask{gap:6px}.ask .mic{width:44px;height:44px}.ask input{height:44px;padding:0 12px}.send{width:44px;height:44px;padding:0;display:grid;place-items:center}.send svg{display:block}#sendTxt{display:none}}
 .robot.listening{--ew:21cqw;--eh:26cqw}
 .robot.listening .bulb{animation:pulse .7s ease-in-out infinite}
 .robot.bounce{animation:bounce .5s ease-in-out 3}
@@ -273,12 +296,14 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 
   <div class="robot" id="robot" data-emotion="neutral">
     <div class="antenna"><span class="bulb"></span></div>
-    <button class="head" id="head" aria-label="Bitni silash">
+    <div class="head" id="head" role="button" tabindex="0" aria-label="Bitni silash">
       <span class="arm left" aria-hidden="true"><span class="hand"></span></span>
       <span class="arm right" aria-hidden="true"><span class="hand"></span></span>
       <span class="hat" aria-hidden="true"></span>
       <div class="screen">
         <canvas class="fx" id="fx" aria-hidden="true"></canvas>
+        <div class="tvscreen" id="tv"></div>
+        <div class="flash" aria-hidden="true"></div>
         <div class="look" id="look">
           <div class="eye left"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
           <div class="eye right"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
@@ -288,7 +313,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
         <svg class="steam" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#FF3B30" stroke-width="2.6" stroke-linecap="round"><path d="M9 3c0 3-1 5-6 6"/><path d="M15 3c0 3 1 5 6 6"/><path d="M9 21c0-3-1-5-6-6"/><path d="M15 21c0-3 1-5 6-6"/></g></svg>
         <div class="zzz" aria-hidden="true">z z Z</div>
       </div>
-    </button>
+    </div>
     <div class="neck"></div>
     <div class="feet"><span></span><span></span></div>
   </div>
@@ -304,9 +329,17 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     <button type="button" class="mic" id="mic" aria-pressed="false" aria-label="Gapirish">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
     </button>
+    <button type="button" class="mic" id="camBtn" aria-label="Kamera">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+    </button>
+    <button type="button" class="mic" id="scrBtn" aria-label="Ekran rasmi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+    </button>
     <input id="q" type="text" placeholder="Bitga savol bering…" aria-label="Savol">
-    <button type="submit" class="send" id="send">Yuborish</button>
+    <button type="submit" class="send" id="send"><span id="sendTxt">Yuborish</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
   </form>
+
+  <div class="attach" id="attach" hidden><img id="attachImg" alt=""><span id="attachTxt">Rasm biriktirildi</span><button type="button" id="attachDel" aria-label="Olib tashlash">×</button></div>
 
   <div class="opts">
     <label><input type="checkbox" id="voice" checked> <span id="lblVoice">Ovozli javob</span></label>
@@ -320,6 +353,11 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     <ol class="log" id="log"></ol>
     <p class="notes" id="notesView"></p>
   </details>
+
+  <dialog id="camDlg" class="cam">
+    <video id="camVideo" autoplay playsinline muted></video>
+    <div class="row"><button class="btn" type="button" id="camFlip">⟲</button><button class="btn" type="button" id="camCancel">Bekor qilish</button><button class="btn primary" type="button" id="camSnap">Rasmga olish</button></div>
+  </dialog>
 
   <dialog id="settings">
     <form method="dialog" id="settingsForm">
@@ -347,7 +385,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   const EMOTIONS = ['neutral','happy','laughing','excited','love','shy','wink','proud','sad','angry','scared','surprised','confused','bored','sleepy','thinking'];
   const BCP = { uz:'uz-UZ', ru:'ru-RU', en:'en-US' };
   const T = {
-    uz:{ name:'Bit', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
+    uz:{ name:'Bit', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
       ph:'Bitga yozing yoki gapiring…', send:'Yuborish', mic:'Gapirish', voice:'Ovozli javob', smart:'Chuqur oʻylash', history:'Suhbat tarixi', you:'Siz', pet:'Bitni silash',
       greet:'Salom, hamkasb! Men tayyorman. Telegramga yozish, musiqa qoʻyish yoki kompyuterda biror narsani ochish kerak boʻlsa, ayting.',
       tickle:['Hihi, qitiq boʻlyapti!','Yana silang!','Voy, yoqimli!','Ha-ha, bas, kulgim qistayapti!','Mmm, rahmat!','Uyalib ketdim-ku…'], annoyed:['Boʻldi-da, bas qiling!','Hoy! Men oʻyinchoq emasman!','Yana bossangiz, xafa boʻlaman!'], wake:'Ha? Uygʻondim!', timerDone:'Vaqt tugadi!',
@@ -357,7 +395,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Avval sozlamalarda kirish tokenini kiriting.', bad:'Token notoʻgʻri. Sozlamalarni tekshiring.', rate:'Soʻrovlar juda koʻp. Bir oz kuting.',
       fail:'Server javob bermadi. Internet va serverni tekshiring.', settings:'Sozlamalar', micBlocked:'Mikrofonga ruxsat yoʻq. Yozib yuboring.',
       micLang:'Brauzer bu tilda nutqni tanimaydi. Yozib yuboring.', noVoice:'Bu qurilmada shu til uchun ovoz yoʻq, javob matnda koʻrinadi.', notes:'Eslab qolganlarim:', clear:'Tozalash' },
-    ru:{ name:'Бит', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
+    ru:{ name:'Бит', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
       ph:'Напишите или скажите Биту…', send:'Отправить', mic:'Говорить', voice:'Отвечать голосом', smart:'Думать глубже', history:'История', you:'Вы', pet:'Погладить Бита',
       greet:'Привет, коллега! Я готов. Написать в Telegram, включить музыку или открыть что-то на компьютере — просто скажите.',
       tickle:['Хи-хи, щекотно!','Ещё погладь!','Ой, приятно!','Ха-ха, хватит, я сейчас лопну!','Ммм, спасибо!','Ой, я смущаюсь…'], annoyed:['Всё, хватит!','Эй! Я не игрушка!','Ещё раз — и я обижусь!'], wake:'А? Я проснулся!', timerDone:'Время вышло!',
@@ -367,7 +405,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Сначала укажите токен доступа в настройках.', bad:'Неверный токен. Проверьте настройки.', rate:'Слишком много запросов. Подождите.',
       fail:'Сервер не ответил. Проверьте интернет и сервер.', settings:'Настройки', micBlocked:'Нет доступа к микрофону. Напишите.',
       micLang:'Браузер не распознаёт речь на этом языке. Напишите.', noVoice:'Нет голоса для этого языка, ответ показан текстом.', notes:'Я запомнил:', clear:'Очистить' },
-    en:{ name:'Bit', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
+    en:{ name:'Bit', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
       ph:'Type or talk to Bit…', send:'Send', mic:'Speak', voice:'Spoken replies', smart:'Think deeper', history:'Chat history', you:'You', pet:'Pet Bit',
       greet:'Hi, colleague! I’m ready. Message someone on Telegram, play music or open something on your computer — just say it.',
       tickle:['Hehe, that tickles!','Do it again!','Aww, nice!','Haha, stop, I can’t breathe!','Mmm, thanks!','Oh, you’re making me blush…'], annoyed:['Okay, that’s enough!','Hey! I’m not a toy!','One more time and I’ll be mad!'], wake:'Huh? I’m awake!', timerDone:'Time’s up!',
@@ -419,8 +457,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     const L = t();
     document.documentElement.lang = uiLang();
     $('#name').textContent = L.name;
-    q.placeholder = L.ph; sendBtn.textContent = L.send; micBtn.setAttribute('aria-label', L.mic);
-    head.setAttribute('aria-label', L.pet); $('#gear').setAttribute('aria-label', L.settings);
+    q.placeholder = L.ph; $('#sendTxt').textContent = L.send; sendBtn.setAttribute('aria-label', L.send); micBtn.setAttribute('aria-label', L.mic);
+    head.setAttribute('aria-label', L.pet); $('#camBtn').setAttribute('aria-label', L.camera); $('#scrBtn').setAttribute('aria-label', L.screen); $('#gear').setAttribute('aria-label', L.settings);
     $('#lblVoice').textContent = L.voice; $('#lblSmart').textContent = L.smart; $('#lblHistory').textContent = L.history;
     document.querySelectorAll('#langs button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.lang === mode)));
     refreshStatus();
@@ -482,8 +520,9 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   ['keydown','pointerdown'].forEach(ev => addEventListener(ev, poke));
   let taps = [];
   let pokeLog = [];
+  head.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); head.click(); } });
   head.addEventListener('click', () => {
-    if (busy) return;
+    if (busy || robot.classList.contains('tv')) return;
     const now = Date.now(); taps = taps.filter(x => now - x < 1300); taps.push(now);
     pokeLog = pokeLog.filter(x => now - x < 8000); pokeLog.push(now);
     const L = t(), pick = a => a[Math.floor(Math.random() * a.length)];
@@ -700,17 +739,23 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     if (!w) { const c = card(); const p = document.createElement('p'); p.textContent = url; const row = document.createElement('div'); row.className = 'row';
       row.append(btn(t().open, true, () => { window.open(url, '_blank', 'noopener'); c.remove(); })); c.append(p, row); }
   }
-  function playYoutube(a){
+  function stopTv(){
+    $('#tv').textContent = ''; robot.classList.remove('tv'); ytPlaying = false;
     cards.querySelectorAll('.yt').forEach(n => n.remove());
+  }
+  function playYoutube(a){
+    stopTv(); stopSpeaking();
+    const f = document.createElement('iframe');
+    f.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(a.id) + '?autoplay=1&playsinline=1&rel=0&modestbranding=1';
+    f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen = true; f.title = a.title || 'YouTube';
+    $('#tv').append(f); robot.classList.add('tv'); ytPlaying = true; setEmotion('happy'); playGesture('dance', 3000);
     const c = card(); c.classList.add('yt');
-    const f = document.createElement('iframe'); f.className = 'player';
-    f.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(a.id) + '?autoplay=1&playsinline=1';
-    f.allow = 'autoplay; encrypted-media; picture-in-picture'; f.allowFullscreen = true; f.title = a.title || 'YouTube';
-    const p = document.createElement('p'); p.textContent = a.title || '';
+    const p = document.createElement('p'); p.textContent = '📺 ' + (a.title || '');
     const row = document.createElement('div'); row.className = 'row';
     const link = document.createElement('a'); link.href = a.url; link.target = '_blank'; link.rel = 'noopener'; link.textContent = t().ytOpen;
-    row.append(link, btn('×', false, () => { c.remove(); ytPlaying = false; }));
-    c.append(f, p, row); ytPlaying = true; pulse('dance', 3000);
+    row.append(btn(t().tvBig, false, () => { (f.requestFullscreen || f.webkitRequestFullscreen || (() => {})).call(f); }),
+               btn(t().tvOff, true, stopTv), link);
+    c.append(p, row);
   }
   async function openLocal(target){
     if (!cfg.local) { note(t().noLocal); return; }
@@ -750,15 +795,67 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     c.append(txt, row);
   }
 
+  // ---------- eyes for Bit: camera photo and screenshot ----------
+  let attached = null, camStream = null, camFacing = 'user';
+  function shrink(source, w, h){
+    const max = 1280, k = Math.min(1, max / Math.max(w, h));
+    const c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+    c.getContext('2d').drawImage(source, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', .82);
+  }
+  function attach(dataUrl){
+    attached = dataUrl; $('#attachImg').src = dataUrl; $('#attachTxt').textContent = t().attached; $('#attach').hidden = false;
+    robot.classList.remove('snap'); void robot.offsetWidth; robot.classList.add('snap'); setTimeout(() => robot.classList.remove('snap'), 500);
+    tone(1800, 900, 0, .06, 'square', .04); tone(1200, 600, .07, .08, 'square', .03);
+    setEmotion('surprised', 1500); q.focus();
+  }
+  function clearAttach(){ attached = null; $('#attach').hidden = true; $('#attachImg').removeAttribute('src'); }
+  $('#attachDel').onclick = clearAttach;
+  const camDlg = $('#camDlg'), camVideo = $('#camVideo');
+  function stopCam(){ if (camStream) camStream.getTracks().forEach(tr => tr.stop()); camStream = null; camVideo.srcObject = null; }
+  async function startCam(){
+    stopCam();
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: camFacing, width: { ideal: 1280 } }, audio: false });
+    camVideo.srcObject = camStream;
+  }
+  $('#camBtn').onclick = async () => {
+    audio();
+    try { await startCam(); $('#camSnap').textContent = t().snap; $('#camCancel').textContent = t().cancel; camDlg.showModal(); setLook(0, 6); }
+    catch { note(t().noCam); setEmotion('sad', 2500); }
+  };
+  $('#camFlip').onclick = async () => { camFacing = camFacing === 'user' ? 'environment' : 'user'; try { await startCam(); } catch { note(t().noCam); } };
+  $('#camCancel').onclick = () => camDlg.close();
+  camDlg.addEventListener('close', stopCam);
+  $('#camSnap').onclick = () => {
+    if (!camVideo.videoWidth) return;
+    attach(shrink(camVideo, camVideo.videoWidth, camVideo.videoHeight)); camDlg.close();
+  };
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) $('#camBtn').hidden = true;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) $('#scrBtn').hidden = true;  // phones
+  $('#scrBtn').onclick = async () => {
+    audio();
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      const v = document.createElement('video'); v.srcObject = stream; v.muted = true; v.playsInline = true;
+      await v.play(); await new Promise(r => setTimeout(r, 350));   // let the first real frame arrive
+      attach(shrink(v, v.videoWidth, v.videoHeight));
+    } catch { note(t().noScreen); }
+    finally { if (stream) stream.getTracks().forEach(tr => tr.stop()); }
+  };
+
   // ---------- ask ----------
   async function ask(text){
-    text = text.trim(); if (!text || busy) return;
+    text = text.trim(); if (busy) return;
+    if (!text && attached) text = t().askImage;
+    if (!text) return;
+    const image = attached; clearAttach();
     poke(); busy = true; sendBtn.disabled = true; q.value = ''; note('');
     stopSpeaking();
     youEl.textContent = text; youEl.hidden = false; sayEl.textContent = '…';
-    addLog('you', text); setEmotion('thinking'); refreshStatus();
+    addLog('you', text + (image ? ' 🖼' : '')); setEmotion('thinking'); refreshStatus();
     try {
-      const out = await api('/api/chat', { text, lang_mode: mode, smart: smartChk.checked });
+      const out = await api('/api/chat', image ? { text, lang_mode: mode, smart: smartChk.checked, image } : { text, lang_mode: mode, smart: smartChk.checked });
       busy = false;
       const lang = BCP[out.lang] ? out.lang : uiLang();
       if (mode === 'auto') { lastLang = lang; store.set('lastLang', lang); applyUI(); }

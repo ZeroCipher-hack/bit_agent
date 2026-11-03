@@ -358,3 +358,35 @@ def test_greet_today(mem, monkeypatch):
     assert "tools" not in fc.calls[0]                          # greeting call sends no tools
     rows = mem._exec("SELECT role, content FROM messages ORDER BY id DESC LIMIT 1").fetchall()
     assert tuple(rows[0]) == ("assistant", "Tugʻilgan kuningiz bilan!")   # kept for conversation context
+
+
+# ---------- images (camera / screenshot) ----------
+PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+
+
+def test_image_goes_to_anthropic_and_is_not_stored(mem):
+    fc = FakeClient([text('{"reply":"Bu kichkina rasm","emotion":"surprised","lang":"uz"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("bu nima?", image={"media_type": "image/png", "data": PNG}))
+    assert out["reply"] == "Bu kichkina rasm"
+    content = fc.calls[0]["messages"][-1]["content"]
+    assert content[0] == {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": PNG}}
+    assert content[1] == {"type": "text", "text": "bu nima?"}
+    stored = mem.recent_messages()[0]["content"]
+    assert stored == "bu nima? [rasm biriktirilgan]" and PNG not in stored
+
+
+def test_image_goes_to_openai_compat_as_data_url(mem):
+    seen = []
+    llm = OpenAICompatLLM("https://example.test/v1", "k", "m", transport=_oa_transport(
+        [(200, {"choices": [{"message": {"content": '{"reply":"Ekranda terminal","emotion":"neutral"}'}}]})], seen))
+    out = run(Agent(mem, load_tools(), llm=llm).chat("ekranimda nima bor?", image={"media_type": "image/png", "data": PNG}))
+    part = seen[0]["messages"][-1]["content"][0]
+    assert out["reply"] == "Ekranda terminal" and part["image_url"]["url"].startswith("data:image/png;base64,iVBOR")
+
+
+def test_api_image_validation():
+    c = TestClient(main.app)
+    h = {"Authorization": "Bearer test-token"}
+    main._agent = Agent(main.memory, main.tools, FakeClient([text('{"reply":"ok"}')]))
+    assert c.post("/api/chat", json={"text": "x", "image": "data:text/html;base64,PHNjcmlwdD4="}, headers=h).status_code == 400
+    assert c.post("/api/chat", json={"text": "x", "image": "data:image/png;base64," + PNG}, headers=h).status_code == 200

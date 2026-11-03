@@ -132,6 +132,13 @@ Telefonda `open_on_computer` ishlamaydi, bu normal holat. Telegram, YouTube va t
 - Doimiy bayramlar: `backend/app/holidays_uz.json` (tahrirlash mumkin). Hayitlar har yili oʻzgaradi — toʻliq sana bilan ayting: "2027-03-10 Ramazon hayiti".
 - Roʻyxat: "Yaqin bayramlar qaysi?" yoki `GET /api/events`.
 
+### Koʻrish: kamera va ekran rasmi, yuzidagi YouTube
+
+- 📷 tugmasi: kamera ochiladi → "Rasmga olish" → savol bering ("bu nima?", "bu kodda xato bormi?") yoki shunchaki yuboring. ⟲ — old/orqa kamera.
+- 🖥 tugmasi: ekraningiz (yoki bitta oyna) rasmga olinadi va Bitga koʻrsatiladi. Telefonlarda brauzer buni qoʻllamaydi.
+- Rasmlar serverda saqlanmaydi, faqat oʻsha savol bilan modelga yuboriladi. Bepul Gemini tierida Google ularni koʻrishi mumkin — maxfiy narsani koʻrsatmang.
+- YouTube endi Bitning yuzida (ekranida) oʻynaydi; "Katta ekran" va "Yuzdan olish" tugmalari bor.
+
 ## 9. Yangi qobiliyat qoʻshish
 
 `backend/app/tools/` ichiga yangi fayl qoʻshing, server uni oʻzi topadi:

@@ -1,6 +1,7 @@
 """HTTP API + static PWA."""
 import logging
 import os
+import re
 import secrets
 import time
 from collections import deque
@@ -54,6 +55,8 @@ class ChatIn(BaseModel):
     text: str = Field(min_length=1, max_length=4000)
     lang_mode: str = "auto"
     smart: bool = False
+    # camera photo or screenshot as a data URL (jpeg/png/webp, <= ~4.5 MB); never stored on the server
+    image: str | None = Field(default=None, max_length=6_000_000)
 
 
 class TtsIn(BaseModel):
@@ -79,8 +82,14 @@ def health():
 @app.post("/api/chat", dependencies=[Depends(auth)])
 async def chat(body: ChatIn):
     agent = get_agent()
+    image = None
+    if body.image:
+        m = re.match(r"^data:(image/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$", body.image)
+        if not m:
+            raise HTTPException(400, "image must be a jpeg/png/webp data URL")
+        image = {"media_type": m.group(1), "data": m.group(2)}
     try:
-        return await agent.chat(body.text.strip(), body.lang_mode, body.smart)
+        return await agent.chat(body.text.strip(), body.lang_mode, body.smart, image=image)
     except HTTPException:
         raise
     except Exception as e:

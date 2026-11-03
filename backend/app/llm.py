@@ -33,7 +33,12 @@ class AnthropicLLM:
         out = []
         for m in transcript:
             if m["role"] == "user":
-                out.append({"role": "user", "content": m["content"]})
+                if isinstance(m["content"], list):
+                    out.append({"role": "user", "content": [
+                        {"type": "image", "source": {"type": "base64", "media_type": p["media_type"], "data": p["data"]}}
+                        if p["type"] == "image" else {"type": "text", "text": p["text"]} for p in m["content"]]})
+                else:
+                    out.append({"role": "user", "content": m["content"]})
             elif m["role"] == "assistant":
                 blocks = [{"type": "text", "text": m["content"]}] if m.get("content", "").strip() else []
                 blocks += [{"type": "tool_use", "id": c["id"], "name": c["name"], "input": c["input"]} for c in m.get("tool_calls", [])]
@@ -67,7 +72,12 @@ class OpenAICompatLLM:
         out = [{"role": "system", "content": system}]
         for m in transcript:
             if m["role"] == "user":
-                out.append({"role": "user", "content": m["content"]})
+                if isinstance(m["content"], list):
+                    out.append({"role": "user", "content": [
+                        {"type": "image_url", "image_url": {"url": f"data:{p['media_type']};base64,{p['data']}"}}
+                        if p["type"] == "image" else {"type": "text", "text": p["text"]} for p in m["content"]]})
+                else:
+                    out.append({"role": "user", "content": m["content"]})
             elif m["role"] == "assistant":
                 msg = {"role": "assistant", "content": m.get("content") or ""}
                 if m.get("tool_calls"):
