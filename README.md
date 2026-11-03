@@ -166,4 +166,6 @@ Testlar soxta Claude javoblari yordamida butun agent zanjirini tekshiradi: tool 
 | Telegram: "not authorized" | `telegram_login.py`ni qayta ishga tushiring |
 | YouTube qidiruv ishlamadi | `docker compose build --no-cache` (yt-dlp yangilanadi). Bu holatda ham Bit qidiruv sahifasini ochib beradi |
 | Kompyuter agenti javob bermaydi | `bit_local_agent.py` ishlayotganini, token toʻgʻriligini va brauzer Chrome ekanini tekshiring |
+| Bit gapirmayapti | `.env` da `BIT_TTS=edge` boʻlsin (server Microsoft neyron ovozlari bilan gapiradi, internet kerak). Brave brauzer ovozlarini bloklaydi, shuning uchun server ovozi tavsiya etiladi |
+| Mikrofon ishlamaydi | Brave va Chromium nutqni tanimaydi — Google Chromeʼda oching |
 | Oʻzbekcha ovoz yoʻq | Windows: Sozlamalar → Vaqt va til → Nutq. Oʻzbekcha ovoz boʻlmasa, turkcha ovoz ishlatiladi yoki javob matnda chiqadi |

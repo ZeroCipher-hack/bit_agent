@@ -6,7 +6,7 @@ import time
 from collections import deque
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -42,10 +42,10 @@ def auth(request: Request):
     token = header[7:] if header.lower().startswith("bearer ") else ""
     if not secrets.compare_digest(token.encode(), config.API_TOKEN.encode()):
         raise HTTPException(401, "bad token")
-    now = time.time()  # simple global rate limit: 30 requests per minute
+    now = time.time()  # simple global rate limit: 60 requests per minute
     while _hits and now - _hits[0] > 60:
         _hits.popleft()
-    if len(_hits) >= 30:
+    if len(_hits) >= 60:
         raise HTTPException(429, "too many requests")
     _hits.append(now)
 
@@ -56,6 +56,11 @@ class ChatIn(BaseModel):
     smart: bool = False
 
 
+class TtsIn(BaseModel):
+    text: str = Field(min_length=1, max_length=1000)
+    lang: str = "uz"
+
+
 class ConfirmIn(BaseModel):
     id: str = Field(min_length=1, max_length=40)
     approve: bool
@@ -64,7 +69,7 @@ class ConfirmIn(BaseModel):
 @app.get("/api/health")
 def health():
     return {"ok": True, "tools": sorted(tools), "autonomy": config.AUTONOMY_LEVEL,
-            "telegram": bool(config.TELEGRAM_SESSION), "llm": config.llm_configured(), "provider": config.LLM_PROVIDER}
+            "telegram": bool(config.TELEGRAM_SESSION), "llm": config.llm_configured(), "provider": config.LLM_PROVIDER, "tts": config.TTS_MODE}
 
 
 @app.post("/api/chat", dependencies=[Depends(auth)])
@@ -81,6 +86,19 @@ async def chat(body: ChatIn):
             raise HTTPException(429, "LLM rate limit")
         msg = str(getattr(e, "message", "") or e).replace(config.ANTHROPIC_API_KEY or "\0", "***").replace(config.OPENAI_API_KEY or "\0", "***")[:300]
         raise HTTPException(502, f"LLM error: {type(e).__name__}: {msg}")
+
+
+@app.post("/api/tts", dependencies=[Depends(auth)])
+async def tts(body: TtsIn):
+    if config.TTS_MODE != "edge":
+        raise HTTPException(404, "server TTS is off (BIT_TTS)")
+    from .tts import synthesize
+    try:
+        audio = await synthesize(body.text, body.lang if body.lang in ("uz", "ru", "en") else "uz")
+    except Exception as e:
+        log.warning("tts failed: %r", e)
+        raise HTTPException(502, f"TTS error: {type(e).__name__}")
+    return Response(content=audio, media_type="audio/mpeg", headers={"Cache-Control": "no-store"})
 
 
 @app.post("/api/confirm", dependencies=[Depends(auth)])

@@ -425,12 +425,30 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => {};
   function talkFor(ms){ clearTimeout(talkTimer); robot.classList.add('talking'); refreshStatus();
     talkTimer = setTimeout(() => { robot.classList.remove('talking'); refreshStatus(); }, ms); }
-  function show(text, lang, question){
-    youEl.hidden = !question; if (question) youEl.textContent = question;
-    typeOut(text);
-    const v = voiceChk.checked && !ytPlaying ? pickVoice(lang) : null;
+  // speech: neural voice from the server first, the browser's own voices as a fallback
+  let serverTts = true, ttsAudio = null, speakSeq = 0;
+  fetch(apiBase() + '/api/health').then(r => r.json()).then(h => { serverTts = h.tts === 'edge'; }).catch(() => {});
+  function stopSpeaking(){
+    speakSeq++;
+    if (ttsAudio) { ttsAudio.pause(); ttsAudio = null; }
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    robot.classList.remove('talking'); refreshStatus();
+  }
+  async function speakServer(text, lang, seq){
+    const r = await fetch(apiBase() + '/api/tts', { method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.token }, body: JSON.stringify({ text, lang }) });
+    if (!r.ok) throw new Error('tts ' + r.status);
+    const url = URL.createObjectURL(await r.blob());
+    if (seq !== speakSeq) { URL.revokeObjectURL(url); return; }
+    const a = new Audio(url); ttsAudio = a;
+    a.onplay = () => { clearTimeout(talkTimer); robot.classList.add('talking'); refreshStatus(); };
+    a.onended = a.onerror = a.onpause = () => { robot.classList.remove('talking'); refreshStatus(); URL.revokeObjectURL(url); };
+    await a.play();
+  }
+  function speakBrowser(text, lang){
+    const v = pickVoice(lang);
     if (!v) {
-      if (voiceChk.checked && !warnedVoice[lang] && 'speechSynthesis' in window && speechSynthesis.getVoices().length) { warnedVoice[lang] = true; note(T[lang].noVoice); }
+      if (!warnedVoice[lang] && 'speechSynthesis' in window) { warnedVoice[lang] = true; note(T[lang].noVoice); }
       talkFor(Math.min(9000, 600 + text.length * 45)); return;
     }
     speechSynthesis.cancel();
@@ -439,6 +457,17 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     u.onstart = () => { clearTimeout(talkTimer); robot.classList.add('talking'); refreshStatus(); };
     u.onend = u.onerror = () => { robot.classList.remove('talking'); refreshStatus(); };
     speechSynthesis.speak(u);
+  }
+  function show(text, lang, question){
+    youEl.hidden = !question; if (question) youEl.textContent = question;
+    typeOut(text);
+    stopSpeaking();
+    if (!voiceChk.checked || ytPlaying) { talkFor(Math.min(9000, 600 + text.length * 45)); return; }
+    const seq = speakSeq;
+    if (serverTts && cfg.token) {
+      talkFor(Math.min(9000, 600 + text.length * 45));
+      speakServer(text, lang, seq).catch(() => { if (seq === speakSeq) speakBrowser(text, lang); });
+    } else speakBrowser(text, lang);
   }
 
   // ---------- client actions from the server ----------
@@ -513,7 +542,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   async function ask(text){
     text = text.trim(); if (!text || busy) return;
     poke(); busy = true; sendBtn.disabled = true; q.value = ''; note('');
-    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    stopSpeaking();
     youEl.textContent = text; youEl.hidden = false; sayEl.textContent = '…';
     addLog('you', text); setEmotion('thinking'); refreshStatus();
     try {
@@ -540,7 +569,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   micBtn.addEventListener('click', () => {
     audio();
     if (listening) { rec && rec.stop(); return; }
-    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    stopSpeaking();
     rec = new SR(); rec.lang = BCP[uiLang()]; rec.interimResults = true;
     let finalText = '';
     rec.onresult = e => { let s = ''; for (let i = 0; i < e.results.length; i++) s += e.results[i][0].transcript;
@@ -563,7 +592,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   document.querySelectorAll('#langs button').forEach(b => b.addEventListener('click', () => {
     mode = b.dataset.lang; store.set('mode', mode); if (mode !== 'auto') lastLang = mode; applyUI(); note('');
   }));
-  voiceChk.addEventListener('change', () => { store.set('voice', voiceChk.checked); if (!voiceChk.checked && 'speechSynthesis' in window) speechSynthesis.cancel(); });
+  voiceChk.addEventListener('change', () => { store.set('voice', voiceChk.checked); if (!voiceChk.checked) stopSpeaking(); });
   smartChk.addEventListener('change', () => store.set('smart', smartChk.checked));
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});

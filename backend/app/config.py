@@ -39,6 +39,14 @@ API_TOKEN = os.getenv("BIT_API_TOKEN", "")
 # 0 = confirm every action, 1 = confirm only risky actions (default), 2 = run whitelisted actions without asking
 AUTONOMY_LEVEL = int(os.getenv("BIT_AUTONOMY", "1"))
 
+# Speech: "edge" = neural voices from the server (recommended), "browser" = the browser's own voices
+TTS_MODE = os.getenv("BIT_TTS", "edge").strip().lower()
+TTS_VOICE_UZ = os.getenv("BIT_TTS_VOICE_UZ", "uz-UZ-SardorNeural")   # or uz-UZ-MadinaNeural
+TTS_VOICE_RU = os.getenv("BIT_TTS_VOICE_RU", "ru-RU-DmitryNeural")   # or ru-RU-SvetlanaNeural
+TTS_VOICE_EN = os.getenv("BIT_TTS_VOICE_EN", "en-US-GuyNeural")      # or en-US-AriaNeural
+TTS_RATE = os.getenv("BIT_TTS_RATE", "+5%")
+TTS_PITCH = os.getenv("BIT_TTS_PITCH", "+25Hz")  # a bit higher = more robot-like
+
 TELEGRAM_API_ID = int(os.getenv("TELEGRAM_API_ID", "0") or 0)
 TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH", "")
 TELEGRAM_SESSION = os.getenv("TELEGRAM_SESSION", "")  # StringSession from scripts/telegram_login.py

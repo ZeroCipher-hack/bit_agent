@@ -6,3 +6,4 @@ yt-dlp>=2026.10.26
 python-dotenv>=1.0
 httpx>=0.27
 pytest>=8
+edge-tts>=7.0

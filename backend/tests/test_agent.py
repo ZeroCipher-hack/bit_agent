@@ -249,3 +249,31 @@ def test_openai_compat_falls_back_on_overload(monkeypatch):
         [(400, {"error": {"message": "bad schema"}})], seen))
     with pytest.raises(LLMError):  # non-retryable errors are not hidden by fallbacks
         run(llm2.complete("s", [{"role": "user", "content": "hi"}], []))
+
+
+# ---------- server TTS ----------
+def test_tts_endpoint_and_cache(monkeypatch):
+    import sys
+    import types
+    calls = []
+
+    class FakeCommunicate:
+        def __init__(self, text, voice, **kw):
+            calls.append((text, voice, kw))
+
+        async def stream(self):
+            yield {"type": "WordBoundary"}
+            yield {"type": "audio", "data": b"ID3fake"}
+    monkeypatch.setitem(sys.modules, "edge_tts", types.SimpleNamespace(Communicate=FakeCommunicate))
+    from app import tts
+    tts._cache.clear()
+    c = TestClient(main.app)
+    h = {"Authorization": "Bearer test-token"}
+    assert c.post("/api/tts", json={"text": "salom"}).status_code == 401
+    r = c.post("/api/tts", json={"text": "Salom,   qalaysiz?", "lang": "uz"}, headers=h)
+    assert r.status_code == 200 and r.headers["content-type"] == "audio/mpeg" and r.content == b"ID3fake"
+    assert calls[0][1] == config.TTS_VOICE_UZ and calls[0][0] == "Salom, qalaysiz?"
+    c.post("/api/tts", json={"text": "Salom, qalaysiz?", "lang": "uz"}, headers=h)
+    assert len(calls) == 1  # second time served from cache
+    c.post("/api/tts", json={"text": "Привет", "lang": "ru"}, headers=h)
+    assert calls[-1][1] == config.TTS_VOICE_RU
