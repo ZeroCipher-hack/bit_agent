@@ -61,6 +61,10 @@ class TtsIn(BaseModel):
     lang: str = "uz"
 
 
+class GreetIn(BaseModel):
+    lang_mode: str = "auto"
+
+
 class ConfirmIn(BaseModel):
     id: str = Field(min_length=1, max_length=40)
     approve: bool
@@ -99,6 +103,20 @@ async def tts(body: TtsIn):
         log.warning("tts failed: %r", e)
         raise HTTPException(502, f"TTS error: {type(e).__name__}")
     return Response(content=audio, media_type="audio/mpeg", headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/greet", dependencies=[Depends(auth)])
+async def greet(body: GreetIn):
+    from . import events as ev
+    if not ev.on_day(memory):
+        return {"events": []}
+    return await get_agent().greet_today(body.lang_mode)
+
+
+@app.get("/api/events", dependencies=[Depends(auth)])
+def list_events(days: int = 30):
+    from . import events as ev
+    return {"today": ev.on_day(memory), "upcoming": ev.upcoming(memory, days=min(max(days, 1), 366)), "saved": memory.events()}
 
 
 @app.post("/api/confirm", dependencies=[Depends(auth)])

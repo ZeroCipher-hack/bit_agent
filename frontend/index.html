@@ -123,6 +123,7 @@ main{max-width:560px;min-height:100%;margin:0 auto;padding:14px 18px 20px;displa
 .robot[data-emotion="angry"] .bulb{background:#FF3B30;box-shadow:0 0 18px #FF3B30;animation:pulse .5s ease-in-out infinite}
 .robot[data-emotion="scared"]{--eye:#CFE6FF;--ew:13cqw;--eh:16cqw;--er:50%}
 .robot[data-emotion="scared"] .look{gap:17cqw}
+.robot[data-emotion="scared"] .arm{animation:tremble .07s linear infinite alternate}
 .robot[data-emotion="scared"] .head{animation:tremble .07s linear infinite alternate}
 @keyframes tremble{from{transform:translate(-1px,0)}to{transform:translate(1px,1px)}}
 .robot[data-emotion="bored"]{--eye:#8FA3B8;--lt:.5;--eh:22cqw}
@@ -133,6 +134,64 @@ main{max-width:560px;min-height:100%;margin:0 auto;padding:14px 18px 20px;displa
 .robot[data-emotion="shy"] .cheek,.robot[data-emotion="love"] .cheek,.robot[data-emotion="laughing"] .cheek{opacity:.75}
 .steam{position:absolute;top:9%;right:13%;width:9cqw;height:9cqw;opacity:0;transform:scale(.4);transition:opacity .2s,transform .25s}
 .robot[data-emotion="angry"] .steam{opacity:1;transform:scale(1);animation:pulse .6s ease-in-out infinite}
+
+/* arms: rotate from the shoulder; --al / --ar per emotion, g-* classes for gestures */
+.head{position:relative}
+.look,.mouth{position:relative;z-index:1}
+.fx{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.arm{position:absolute;top:54%;width:9%;height:38%;transform-origin:50% 7%;z-index:2;pointer-events:none;
+  transition:transform .45s cubic-bezier(.3,1.4,.5,1);filter:drop-shadow(0 3px 4px rgba(20,10,60,.22))}
+.arm::before{content:"";position:absolute;left:22%;right:22%;top:0;bottom:24%;background:var(--shell);border-radius:999px}
+.arm .hand{position:absolute;left:50%;bottom:0;width:100%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;
+  background:var(--shell);box-shadow:inset 0 -3px 0 rgba(20,10,60,.08)}
+.arm.left{left:-5.5%;transform:rotate(var(--al,14deg))}
+.arm.right{right:-5.5%;transform:rotate(var(--ar,-14deg))}
+.robot[data-emotion="happy"]{--al:38deg;--ar:-38deg}
+.robot[data-emotion="laughing"]{--al:150deg;--ar:-150deg}
+.robot[data-emotion="laughing"] .arm.left{animation:shakeL .18s ease-in-out infinite alternate}
+.robot[data-emotion="laughing"] .arm.right{animation:shakeR .18s ease-in-out infinite alternate}
+.robot[data-emotion="excited"]{--al:160deg;--ar:-160deg}
+.robot[data-emotion="love"]{--al:-55deg;--ar:55deg}
+.robot[data-emotion="shy"],.robot[data-emotion="scared"]{--al:-118deg;--ar:118deg}
+.robot[data-emotion="wink"]{--ar:-125deg}
+.robot[data-emotion="proud"]{--al:-30deg;--ar:-155deg}
+.robot[data-emotion="angry"]{--al:28deg;--ar:-28deg}
+.robot[data-emotion="angry"] .arm.left{animation:fistL .14s linear infinite alternate}
+.robot[data-emotion="angry"] .arm.right{animation:fistR .14s linear infinite alternate}
+.robot[data-emotion="sad"]{--al:3deg;--ar:-3deg}
+.robot[data-emotion="surprised"]{--al:120deg;--ar:-120deg}
+.robot[data-emotion="confused"]{--al:100deg;--ar:-100deg}
+.robot[data-emotion="thinking"]{--ar:122deg}
+.robot[data-emotion="bored"],.robot[data-emotion="sleepy"]{--al:4deg;--ar:-4deg}
+@keyframes shakeL{from{transform:rotate(140deg)}to{transform:rotate(165deg)}}
+@keyframes shakeR{from{transform:rotate(-140deg)}to{transform:rotate(-165deg)}}
+@keyframes fistL{from{transform:rotate(24deg)}to{transform:rotate(34deg)}}
+@keyframes fistR{from{transform:rotate(-24deg)}to{transform:rotate(-34deg)}}
+/* gestures (temporary classes) */
+.robot.g-wave .arm.right{animation:wave .32s ease-in-out infinite alternate}
+@keyframes wave{from{transform:rotate(-125deg)}to{transform:rotate(-170deg)}}
+.robot.g-clap .arm.left{animation:clapL .2s ease-in-out infinite alternate}
+.robot.g-clap .arm.right{animation:clapR .2s ease-in-out infinite alternate}
+@keyframes clapL{from{transform:rotate(130deg)}to{transform:rotate(172deg)}}
+@keyframes clapR{from{transform:rotate(-130deg)}to{transform:rotate(-172deg)}}
+.robot.g-thumbs_up .arm.right{animation:none;--ar:-150deg}
+.robot.g-thumbs_up .arm.right .hand{transform:translateX(-50%) scale(1.25)}
+.robot.g-shrug{--al:105deg;--ar:-105deg}
+.robot.g-shrug .head{animation:shrug .5s ease-in-out 2}
+@keyframes shrug{50%{transform:translateY(-6px)}}
+.robot.g-facepalm .arm.right{animation:none;--ar:112deg}
+.robot.g-dance .arm.left{animation:danceL .3s ease-in-out infinite alternate}
+.robot.g-dance .arm.right{animation:danceR .3s ease-in-out infinite alternate}
+@keyframes danceL{from{transform:rotate(20deg)}to{transform:rotate(150deg)}}
+@keyframes danceR{from{transform:rotate(-150deg)}to{transform:rotate(-20deg)}}
+.robot.g-hug{--al:-60deg;--ar:60deg}
+/* party hat */
+.hat{position:absolute;left:50%;top:-17%;width:20%;aspect-ratio:.8;transform:translate(-50%,30%) scale(.2);opacity:0;z-index:3;
+  clip-path:polygon(50% 0,100% 100%,0 100%);
+  background:repeating-linear-gradient(135deg,#FF7EB6 0 10%,#FFD15C 10% 20%,#7CF5D6 20% 30%);
+  transition:transform .4s cubic-bezier(.3,1.6,.5,1),opacity .2s;pointer-events:none}
+.robot.party .hat{opacity:1;transform:translate(-50%,0) rotate(-8deg) scale(1)}
+.robot.party .antenna{opacity:0}
 .robot.listening{--ew:21cqw;--eh:26cqw}
 .robot.listening .bulb{animation:pulse .7s ease-in-out infinite}
 .robot.bounce{animation:bounce .5s ease-in-out 3}
@@ -174,7 +233,7 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
 .notes button{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;margin-left:6px;font-size:14px}
 
 @media (prefers-reduced-motion: reduce){
-  .robot.bounce,.robot.dance,.robot.asleep .zzz,.robot[data-emotion="love"] .heart,.bulb,.head,.steam{animation:none!important}
+  .robot.bounce,.robot.dance,.robot.asleep .zzz,.robot[data-emotion="love"] .heart,.bulb,.head,.steam,.arm{animation:none!important}
   .look,.eye,.lid,.glow{transition:none}
 }
 
@@ -215,7 +274,11 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   <div class="robot" id="robot" data-emotion="neutral">
     <div class="antenna"><span class="bulb"></span></div>
     <button class="head" id="head" aria-label="Bitni silash">
+      <span class="arm left" aria-hidden="true"><span class="hand"></span></span>
+      <span class="arm right" aria-hidden="true"><span class="hand"></span></span>
+      <span class="hat" aria-hidden="true"></span>
       <div class="screen">
+        <canvas class="fx" id="fx" aria-hidden="true"></canvas>
         <div class="look" id="look">
           <div class="eye left"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
           <div class="eye right"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
@@ -455,6 +518,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     proud:()=>{tone(523,523,0,.1);tone(659,659,.11,.1);tone(784,784,.22,.2)},
     scared:()=>{for(let i=0;i<6;i++) tone(1200+(i%2)*150,1200+(i%2)*150,i*.06,.05,'square',.03)},
     bored:()=>tone(300,260,0,.45,'sine',.04),
+    clap:()=>{for(let i=0;i<4;i++) tone(2400,900,i*.2,.04,'square',.03)},
+    boom:()=>{tone(180,50,0,.35,'triangle',.06);for(let i=0;i<5;i++) tone(2600+Math.random()*1500,1800,.12+i*.05,.03,'square',.012)},
     alarm:()=>{for(let i=0;i<4;i++) tone(1046,1046,i*.28,.16,'square',.045)}
   };
   function chirp(k){ if (voiceChk.checked && CHIRPS[k]) CHIRPS[k](); }
@@ -536,6 +601,85 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     } else { typeWhenSpeaking(text, 800); speakBrowser(text, lang); }
   }
 
+  // ---------- gestures & celebrations ----------
+  const GESTURES = ['wave','clap','thumbs_up','shrug','facepalm','dance','hug'];
+  let gestureTimer = 0;
+  function playGesture(g, ms = 2600){
+    if (!GESTURES.includes(g)) return;
+    GESTURES.forEach(x => robot.classList.remove('g-' + x));
+    clearTimeout(gestureTimer); void robot.offsetWidth;
+    robot.classList.add('g-' + g);
+    if (g === 'clap') chirp('clap');
+    gestureTimer = setTimeout(() => robot.classList.remove('g-' + g), ms);
+  }
+  const fx = $('#fx'); let fxRun = 0, partyTimer = 0;
+  const FX_COLORS = ['#FFD15C','#FF7EB6','#7CF5D6','#A99DFF','#FF9F45','#5CF2A8','#FFFFFF','#6FA8FF'];
+  function celebrate(style = 'fireworks', ms = 5000){
+    robot.classList.add('party'); clearTimeout(partyTimer);
+    partyTimer = setTimeout(() => robot.classList.remove('party'), ms + 1500);
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const rect = fx.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    fx.width = Math.round(rect.width * dpr); fx.height = Math.round(rect.height * dpr);
+    const ctx = fx.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = rect.width, H = rect.height, parts = [], id = ++fxRun, t0 = performance.now();
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    let next = 0;
+    function spawn(now){
+      if (style === 'fireworks') {
+        const x = W * (.12 + Math.random() * .76), y = H * (.12 + Math.random() * .5), col = pick(FX_COLORS), n = 34;
+        for (let i = 0; i < n; i++) { const a = Math.PI * 2 * i / n + Math.random() * .2, sp = .8 + Math.random() * 2.1;
+          parts.push({ k:'spark', x, y, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp, life:1, col, r:1.3 + Math.random() * 1.3 }); }
+        chirp('boom'); next = now + 380 + Math.random() * 260;
+      } else if (style === 'confetti') {
+        for (let i = 0; i < 4; i++) parts.push({ k:'conf', x:Math.random() * W, y:-6, vx:(Math.random() - .5) * 1.2, vy:.8 + Math.random() * 1.4,
+          rot:Math.random() * 6, vr:(Math.random() - .5) * .3, life:1, col:pick(FX_COLORS), r:2.5 + Math.random() * 2.5 });
+        next = now + 60;
+      } else {
+        parts.push({ k:'heart', x:W * (.1 + Math.random() * .8), y:H + 8, vx:(Math.random() - .5) * .4, vy:-(.7 + Math.random() * .9),
+          life:1, col:pick(['#FF7EB6','#FF5E9A','#FFB3D1']), r:5 + Math.random() * 5 });
+        next = now + 160;
+      }
+    }
+    function heart(x, y, r){ ctx.beginPath(); ctx.moveTo(x, y + r * .3);
+      ctx.bezierCurveTo(x, y - r * .3, x - r, y - r * .3, x - r, y + r * .25); ctx.bezierCurveTo(x - r, y + r * .75, x, y + r, x, y + r * 1.25);
+      ctx.bezierCurveTo(x, y + r, x + r, y + r * .75, x + r, y + r * .25); ctx.bezierCurveTo(x + r, y - r * .3, x, y - r * .3, x, y + r * .3); ctx.fill(); }
+    function frame(now){
+      if (id !== fxRun) return;
+      ctx.clearRect(0, 0, W, H);
+      if (now - t0 < ms && now >= next) spawn(now);
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const p = parts[i];
+        p.x += p.vx; p.y += p.vy;
+        if (p.k === 'spark') { p.vy += .028; p.vx *= .985; p.life -= .014; }
+        else if (p.k === 'conf') { p.rot += p.vr; p.vx += (Math.random() - .5) * .05; if (p.y > H + 8) p.life = 0; }
+        else { p.life -= .006; if (p.y < -12) p.life = 0; }
+        if (p.life <= 0) { parts.splice(i, 1); continue; }
+        ctx.globalAlpha = Math.max(0, Math.min(1, p.life)); ctx.fillStyle = p.col;
+        if (p.k === 'spark') { ctx.shadowColor = p.col; ctx.shadowBlur = 6; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; }
+        else if (p.k === 'conf') { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillRect(-p.r, -p.r / 2.5, p.r * 2, p.r / 1.25); ctx.restore(); }
+        else heart(p.x, p.y, p.r);
+      }
+      ctx.globalAlpha = 1;
+      if (now - t0 < ms || parts.length) requestAnimationFrame(frame); else ctx.clearRect(0, 0, W, H);
+    }
+    requestAnimationFrame(frame);
+  }
+  window.__celebrate = s => celebrate(s, 4000);
+  window.__fxStop = () => { fxRun++; fx.getContext('2d').clearRect(0, 0, fx.width, fx.height); robot.classList.remove('party'); };
+  async function greetToday(){
+    if (!cfg.token) return;
+    const key = 'greeted:' + new Date().toISOString().slice(0, 10);
+    if (store.get(key, false)) return;
+    try {
+      const r = await api('/api/greet', { lang_mode: mode });
+      if (!r || !r.events || !r.events.length) return;
+      store.set(key, true);
+      const lang = BCP[r.lang] ? r.lang : uiLang();
+      setEmotion(r.emotion || 'excited', 8000); celebrate(r.style || 'fireworks', 6000); playGesture(r.gesture || 'clap', 3500);
+      addLog('bit', r.reply); show(r.reply, lang);
+    } catch {}
+  }
+
   // ---------- client actions from the server ----------
   let timerEnd = 0, timerLabel = '', timerTick = 0, ytPlaying = false;
   function startTimer(sec, label){ timerEnd = Date.now() + sec*1000; timerLabel = label; $('#timer').classList.add('on'); clearInterval(timerTick); tickTimer(); timerTick = setInterval(tickTimer, 500); }
@@ -584,6 +728,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       else if (a.type === 'open_url') openLink(a.url);
       else if (a.type === 'youtube') playYoutube(a);
       else if (a.type === 'local' && a.action === 'open') openLocal(a.target);
+      else if (a.type === 'celebrate') { celebrate(a.style || 'fireworks'); if (!robot.className.includes('g-')) playGesture('clap', 3000); }
     }
   }
   function confirmCard(p){
@@ -620,6 +765,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       const emo = EMOTIONS.includes(out.emotion) ? out.emotion : 'neutral';
       setEmotion(emo, emo === 'sleepy' ? 0 : 7000); chirp(emo); if (emo === 'excited' || emo === 'proud') pulse('bounce', 1500);
       addLog('bit', out.reply); show(out.reply, lang, text);
+      if (out.gesture) playGesture(out.gesture);
       runActions(out.actions); (out.pending || []).forEach(confirmCard);
       if (emo === 'sleepy') setTimeout(sleep, 4000);
     } catch (e) {
@@ -664,8 +810,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
-  applyUI(); setEmotion('happy', 2500); typeOut(t().greet); poke();
-  if (!cfg.token) setTimeout(openSettings, 800);
+  applyUI(); setEmotion('happy', 2500); typeOut(t().greet); playGesture('wave'); poke();
+  if (!cfg.token) setTimeout(openSettings, 800); else setTimeout(greetToday, 1200);
 })();
 
 </script>

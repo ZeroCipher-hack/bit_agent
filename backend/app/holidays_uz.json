@@ -1,0 +1,10 @@
+[
+  {"month": 1,  "day": 1,  "name": "Yangi yil"},
+  {"month": 1,  "day": 14, "name": "Vatan himoyachilari kuni"},
+  {"month": 3,  "day": 8,  "name": "Xalqaro xotin-qizlar kuni"},
+  {"month": 3,  "day": 21, "name": "Navroʻz bayrami"},
+  {"month": 5,  "day": 9,  "name": "Xotira va qadrlash kuni"},
+  {"month": 9,  "day": 1,  "name": "Mustaqillik kuni"},
+  {"month": 10, "day": 1,  "name": "Oʻqituvchi va murabbiylar kuni"},
+  {"month": 10, "day": 21, "name": "Oʻzbek tili bayrami kuni"}
+]

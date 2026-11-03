@@ -17,6 +17,8 @@ class Memory:
             CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY, ts REAL, role TEXT, content TEXT);
             CREATE TABLE IF NOT EXISTS facts(id INTEGER PRIMARY KEY, ts REAL, text TEXT UNIQUE);
             CREATE TABLE IF NOT EXISTS pending(id TEXT PRIMARY KEY, ts REAL, tool TEXT, args TEXT, summary TEXT, status TEXT);
+            CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY, kind TEXT, name TEXT, month INT, day INT,
+                                              year INT, person TEXT, UNIQUE(name, month, day));
             CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY, ts REAL, tool TEXT, args TEXT, status TEXT, detail TEXT);
             """
         )
@@ -56,6 +58,19 @@ class Memory:
 
     def facts(self) -> list[str]:
         return [r["text"] for r in self._exec("SELECT text FROM facts ORDER BY id").fetchall()]
+
+    # dates: birthdays, holidays, anniversaries
+    def add_event(self, kind: str, name: str, month: int, day: int, year: int | None = None, person: str = ""):
+        self._exec("INSERT OR REPLACE INTO events(kind, name, month, day, year, person) VALUES(?,?,?,?,?,?)",
+                   (kind, name.strip()[:120], month, day, year, person.strip()[:60]))
+
+    def events(self) -> list[dict]:
+        rows = self._exec("SELECT kind, name, month, day, year, person FROM events ORDER BY month, day").fetchall()
+        return [dict(r) for r in rows]
+
+    def delete_events(self, needle: str) -> int:
+        return self._exec("DELETE FROM events WHERE name LIKE ? OR person LIKE ?",
+                          (f"%{needle.strip()}%", f"%{needle.strip()}%")).rowcount
 
     # pending actions awaiting the user's yes/no
     def add_pending(self, tool: str, args: dict, summary: str) -> str:

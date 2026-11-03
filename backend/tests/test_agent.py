@@ -48,7 +48,7 @@ def test_parse_final_variants():
     assert parse_final('{"reply":"Salom","emotion":"happy","lang":"uz"}')["emotion"] == "happy"
     assert parse_final('Mana:\n```json\n{"reply":"Hi","emotion":"love","lang":"en"}\n```')["reply"] == "Hi"
     p = parse_final("just text")
-    assert p == {"reply": "just text", "emotion": "neutral", "lang": "uz"}
+    assert p == {"reply": "just text", "emotion": "neutral", "gesture": "", "lang": "uz"}
     assert parse_final('{"reply":"x","emotion":"furious"}')["emotion"] == "neutral"
 
 
@@ -299,3 +299,62 @@ def test_openai_compat_echoes_gemini_thought_signature(mem):
 def test_new_emotions_accepted():
     for e in ("laughing", "shy", "wink", "proud", "scared", "bored"):
         assert parse_final('{"reply":"x","emotion":"%s"}' % e)["emotion"] == e
+
+
+
+# ---------- dates, celebrations, gestures ----------
+from datetime import date as _date
+
+from app import events as ev
+
+
+def test_gesture_parsing():
+    assert parse_final('{"reply":"Salom","emotion":"happy","gesture":"wave"}')["gesture"] == "wave"
+    assert parse_final('{"reply":"x","gesture":"backflip"}')["gesture"] == ""
+
+
+def test_parse_date():
+    assert ev.parse_date("05-15") == (None, 5, 15)
+    assert ev.parse_date("1995-05-15") == (1995, 5, 15)
+    assert ev.parse_date("02-29") == (None, 2, 29)
+    for bad in ("13-01", "2025-02-30", "hello", ""):
+        with pytest.raises(ValueError):
+            ev.parse_date(bad)
+
+
+def test_events_today_upcoming_and_holidays(mem):
+    mem.add_event("birthday", "Mening tugʻilgan kunim", 5, 15, 1995, "user")
+    mem.add_event("holiday", "Ramazon hayiti", 3, 10, 2027)
+    today = ev.on_day(mem, _date(2026, 5, 15))
+    assert today[0]["name"] == "Mening tugʻilgan kunim" and today[0]["age"] == 31
+    assert [e["name"] for e in ev.on_day(mem, _date(2026, 3, 21))] == ["Navroʻz bayrami"]
+    assert ev.on_day(mem, _date(2026, 3, 10)) == []           # one-time date only in its own year
+    assert ev.on_day(mem, _date(2027, 3, 10))[0]["name"] == "Ramazon hayiti"
+    soon = ev.upcoming(mem, _date(2026, 5, 10), days=7)
+    assert soon[0]["in_days"] == 5 and soon[0]["date"] == "2026-05-15"
+
+
+def test_save_event_and_celebrate_tools(mem):
+    fc = FakeClient([use("save_event", {"name": "Alining tugʻilgan kuni", "date": "11-03", "kind": "birthday", "person": "Ali"}),
+                     use("celebrate", {"style": "confetti"}, "t2"),
+                     use("save_event", {"name": "x", "date": "31-12", "kind": "birthday"}, "t3"),
+                     text('{"reply":"Saqladim!","emotion":"proud","gesture":"thumbs_up","lang":"uz"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("Alining tugʻilgan kuni 3-noyabr"))
+    assert mem.events()[0]["name"] == "Alining tugʻilgan kuni"
+    assert {"type": "celebrate", "style": "confetti"} in out["actions"]
+    assert fc.calls[3]["messages"][-1]["content"][0]["is_error"] is True   # bad date rejected
+    assert out["gesture"] == "thumbs_up" and out["emotion"] == "proud"
+    assert "Coming in the next 7 days" in fc.calls[0]["system"]
+
+
+def test_greet_today(mem, monkeypatch):
+    a = Agent(mem, load_tools(), FakeClient([]))
+    monkeypatch.setattr(ev, "on_day", lambda m, d=None: [])
+    assert run(a.greet_today()) == {"events": []}            # nothing today -> no LLM call
+    monkeypatch.setattr(ev, "on_day", lambda m, d=None: [{"kind": "birthday", "name": "Mening tugʻilgan kunim", "person": "user"}])
+    fc = FakeClient([text('{"reply":"Tugʻilgan kuningiz bilan!","emotion":"excited","gesture":"clap","lang":"uz"}')])
+    out = run(Agent(mem, load_tools(), fc).greet_today())
+    assert out["reply"] == "Tugʻilgan kuningiz bilan!" and out["style"] == "fireworks" and out["gesture"] == "clap"
+    assert "tools" not in fc.calls[0]                          # greeting call sends no tools
+    rows = mem._exec("SELECT role, content FROM messages ORDER BY id DESC LIMIT 1").fetchall()
+    assert tuple(rows[0]) == ("assistant", "Tugʻilgan kuningiz bilan!")   # kept for conversation context

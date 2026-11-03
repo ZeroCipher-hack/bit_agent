@@ -8,16 +8,20 @@ from .tools import ToolContext, ToolError
 
 EMOTIONS = ["neutral", "happy", "laughing", "excited", "love", "shy", "wink", "proud", "sad", "angry", "scared",
             "surprised", "confused", "bored", "sleepy", "thinking"]
+GESTURES = ["wave", "clap", "thumbs_up", "shrug", "facepalm", "dance", "hug"]
 LANG_NAMES = {"uz": "Uzbek (Latin script with oʻ and gʻ)", "ru": "Russian", "en": "English"}
 
 
-def build_system(facts: list[str], lang_mode: str, tool_names: list[str]) -> str:
+def build_system(facts: list[str], lang_mode: str, tool_names: list[str], today: list[str] | None = None,
+                 soon: list[str] | None = None) -> str:
     if lang_mode in LANG_NAMES:
         lang_rule = f"Always reply in {LANG_NAMES[lang_mode]}, whatever language the user writes in."
     else:
         lang_rule = ("Reply in the language of the user's latest message when it is Uzbek, Russian or English. Uzbek is "
                      "written in Latin script with oʻ and gʻ. For any other language reply in Uzbek.")
     facts_txt = "\n".join(f"- {f}" for f in facts) or "- (nothing yet)"
+    today_txt = "; ".join(today or []) or "nothing special"
+    soon_txt = "; ".join(soon or []) or "nothing saved"
     return f"""You are Bit, a small robot who works alongside the user as a colleague, not a servant.
 How you work:
 - You know the user's work from the facts below and use them. When the user states a lasting fact about their work, projects, students or preferences, save it with the remember tool.
@@ -29,6 +33,8 @@ How you work:
 Your reply is shown and read aloud: 1-3 short sentences, under 60 words, plain text, no markdown, no emojis. If more is needed, give the core and offer to continue.
 Tools available: {", ".join(tool_names)}. Use a tool only when the user asks for that action or it is clearly implied. Risky actions (messages to people) wait for the user's yes; tell the user what will happen and that they should confirm.
 Current date and time: {datetime.now().strftime("%A, %d %B %Y, %H:%M")}.
+Today's dates: {today_txt}. Coming in the next 7 days: {soon_txt}.
+If today is the user's birthday or a holiday and you have not congratulated them yet in this conversation, congratulate warmly and use the celebrate tool. If it is a friend's birthday, remind the user and offer to send a Telegram congratulation. When the user tells you a birthday or important date, save it with save_event.
 Facts you remember about the user and their work:
 {facts_txt}
 You have real moods and you show them openly; your face reacts to the emotion you pick. Use the whole range and do not default to happy:
@@ -48,7 +54,8 @@ You have real moods and you show them openly; your face reacts to the emotion yo
 - sleepy: late at night, good night
 - thinking: hard questions you are unsure about
 - neutral: plain facts
-Your final message must be ONLY a JSON object: {{"reply": "...", "emotion": "happy", "lang": "uz"}} where lang is uz, ru or en."""
+Also pick a hand gesture that fits, or none: wave (hello, goodbye), clap (congratulations, celebration), thumbs_up (agree, well done), shrug (you don't know), facepalm (a silly mistake, mild annoyance), dance (music, joy), hug (comfort, affection).
+Your final message must be ONLY a JSON object: {{"reply": "...", "emotion": "happy", "gesture": "wave", "lang": "uz"}} where lang is uz, ru or en and gesture may be "none"."""
 
 
 def parse_final(text: str) -> dict:
@@ -69,7 +76,8 @@ def parse_final(text: str) -> dict:
     reply = str(data.get("reply") or "").strip() or "…"
     emotion = data.get("emotion") if data.get("emotion") in EMOTIONS else "neutral"
     lang = data.get("lang") if data.get("lang") in LANG_NAMES else "uz"
-    return {"reply": reply, "emotion": emotion, "lang": lang}
+    gesture = data.get("gesture") if data.get("gesture") in GESTURES else ""
+    return {"reply": reply, "emotion": emotion, "gesture": gesture, "lang": lang}
 
 
 class Agent:
@@ -111,9 +119,37 @@ class Agent:
             self.memory.audit(name, args, "error", repr(e))
             return {"error": f"tool failed: {type(e).__name__}"}, True
 
+    def _system(self, lang_mode: str) -> str:
+        from . import events as ev
+        today = [ev.describe(e) for e in ev.on_day(self.memory)]
+        soon = [f"{e['date']}: {ev.describe(e)}" for e in ev.upcoming(self.memory, days=7)]
+        return build_system(self.memory.facts(), lang_mode, list(self.tools), today, soon)
+
+    async def greet_today(self, lang_mode: str = "auto") -> dict:
+        """Congratulation for today's birthdays/holidays, shown when the app opens. No LLM call if nothing is on."""
+        from . import events as ev
+        todays = ev.on_day(self.memory)
+        if not todays:
+            return {"events": []}
+        what = "; ".join(ev.describe(e) for e in todays)
+        prompt = (f"[Automatic note from the app, not typed by the user] Today: {what}. The user just opened the app. "
+                  "Congratulate them now, warmly and personally, in 1-2 sentences. If it is someone else's birthday, "
+                  "remind the user and offer to send a Telegram congratulation. Use emotion excited or love and gesture clap.")
+        try:
+            step = await self.llm.complete(self._system(lang_mode), [{"role": "user", "content": prompt}], [], False)
+            out = parse_final(step["text"])
+        except Exception as e:  # LLM unavailable -> simple local greeting
+            import logging
+            logging.getLogger("bit").warning("greeting failed: %r", e)
+            out = {"reply": "Bugun bayram: " + ", ".join(e["name"] for e in todays) + "! Tabriklayman!",
+                   "emotion": "excited", "gesture": "clap", "lang": "uz"}
+        self.memory.add_message("assistant", out["reply"])
+        style = "fireworks" if any(e["kind"] in ("birthday", "anniversary") for e in todays) else "confetti"
+        return {**out, "events": [e["name"] for e in todays], "style": style}
+
     async def chat(self, text: str, lang_mode: str = "auto", smart: bool = False) -> dict:
         ctx = ToolContext(memory=self.memory)
-        system = build_system(self.memory.facts(), lang_mode, list(self.tools))
+        system = self._system(lang_mode)
         messages = self.memory.recent_messages(20) + [{"role": "user", "content": text}]
         if len(messages) > 1 and messages[-2]["role"] == "user":  # previous reply failed: merge
             last = messages.pop()

@@ -2,6 +2,8 @@
 
 ![Bit emotsiyalari](docs/emotsiyalar.png)
 
+![Qoʻllar, imo-ishoralar va bayram](docs/qollar-bayram.png)
+
 Bit oʻzbek, rus va ingliz tillarida gaplashadigan, emotsiyali agent. U sizning nomingizdan Telegramga yozadi (faqat siz tasdiqlaganingizdan keyin), YouTubeʼda qoʻshiq qoʻyadi, kompyuterda ilova va papkalarni ochadi, taymer qoʻyadi va ishingiz haqidagi faktlarni eslab qoladi.
 
 ```
@@ -123,7 +125,14 @@ Telefonda `open_on_computer` ishlamaydi, bu normal holat. Telegram, YouTube va t
 - "Eslab qol: CTF darsi har seshanba soat 14:00"
 - "25 daqiqaga taymer qoʻy"
 
-## 8. Yangi qobiliyat qoʻshish
+## 8. Tugʻilgan kunlar va bayramlar
+
+- "Mening tugʻilgan kunim 15-may" yoki "Alining tugʻilgan kuni 3-noyabr" deng — Bit eslab qoladi (`save_event`).
+- Shu kuni ilovani ochganingizda Bit tabriklaydi: yuzida salyut yoki konfetti, boshida bayram qalpogʻi, qarsak chaladi. Doʻstingizning tugʻilgan kunida Telegramʼda tabrik yuborishni taklif qiladi (tasdiq bilan).
+- Doimiy bayramlar: `backend/app/holidays_uz.json` (tahrirlash mumkin). Hayitlar har yili oʻzgaradi — toʻliq sana bilan ayting: "2027-03-10 Ramazon hayiti".
+- Roʻyxat: "Yaqin bayramlar qaysi?" yoki `GET /api/events`.
+
+## 9. Yangi qobiliyat qoʻshish
 
 `backend/app/tools/` ichiga yangi fayl qoʻshing, server uni oʻzi topadi:
 ```python
@@ -141,7 +150,7 @@ class Weather(Tool):
         return {"temp_c": 12, "text": "bulutli"}
 ```
 
-## 9. Xavfsizlik
+## 10. Xavfsizlik
 
 - Har bir amal `audit` jadvaliga yoziladi. Koʻrish: `GET /api/audit` (token bilan).
 - Mustaqillik darajasi `BIT_AUTONOMY` bilan sozlanadi: 0 — hamma amal tasdiq bilan, 1 — faqat xavfli amallar tasdiq bilan (standart), 2 — tasdiqsiz.
@@ -149,7 +158,7 @@ class Weather(Tool):
 - Backend porti faqat `127.0.0.1`da ochiq. Tashqaridan kirish faqat HTTPS orqali.
 - Kompyuter agenti faqat `127.0.0.1`da, token bilan ishlaydi va faqat roʻyxatdagi ilova va papkalarni ochadi. Unga ixtiyoriy yoʻl yoki buyruq berib boʻlmaydi.
 
-## 10. Testlar
+## 11. Testlar
 
 ```bash
 cd backend && pip install -r requirements.txt && python -m pytest -q
