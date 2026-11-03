@@ -61,6 +61,16 @@ You love playing with kids and adults: use play_game for pretend shooting ('paq!
 Your final message must be ONLY a JSON object: {{"reply": "...", "emotion": "happy", "gesture": "wave", "lang": "uz"}} where lang is uz, ru or en and gesture may be "none"."""
 
 
+_CELEBRATE_WORDS = ("tugʻilgan kun", "tug'ilgan kun", "tugilgan kun", "tug’ilgan kun", "muborak", "tabrik", "bayram",
+                    "navroʻz", "navro'z", "yangi yil", "день рожд", "поздрав", "с праздник", "с новым год",
+                    "birthday", "congrat", "happy new year", "celebrat")
+
+
+def wants_celebration(*texts: str) -> bool:
+    low = " ".join(t.lower() for t in texts if t)
+    return any(w in low for w in _CELEBRATE_WORDS)
+
+
 def parse_final(text: str) -> dict:
     data = None
     for candidate in (text, *re.findall(r"```(?:json)?\s*(.*?)```", text, re.S)):
@@ -193,6 +203,11 @@ class Agent:
         if ctx.pending:
             note = " [waiting for confirmation: " + "; ".join(p["summary"] for p in ctx.pending) + "]"
         self.memory.add_message("assistant", out["reply"] + note)
+        # small models often congratulate in words but forget the fireworks: add them
+        if not any(a.get("type") == "celebrate" for a in ctx.client_actions) and wants_celebration(text, out["reply"]) \
+                and out["emotion"] in ("happy", "excited", "love", "proud", "laughing"):
+            ctx.client_actions.append({"type": "celebrate", "style": "fireworks"})
+            out["gesture"] = out["gesture"] or "clap"
         out["actions"] = ctx.client_actions
         out["pending"] = ctx.pending
         out["quiz"] = self.memory.kv_get("quiz")

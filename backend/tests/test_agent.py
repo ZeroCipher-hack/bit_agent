@@ -534,3 +534,13 @@ def test_games(mem, monkeypatch):
 def test_new_gestures_parse():
     for g in ("raise_hands", "peekaboo", "point", "peace"):
         assert parse_final('{"reply":"x","gesture":"%s"}' % g)["gesture"] == g
+
+
+def test_congratulation_always_brings_fireworks(mem):
+    fc = FakeClient([text('{"reply":"Tugʻilgan kuningiz muborak boʻlsin!","emotion":"excited","gesture":"none","lang":"uz"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("bugun mening tugʻilgan kunim"))
+    assert {"type": "celebrate", "style": "fireworks"} in out["actions"] and out["gesture"] == "clap"
+    fc2 = FakeClient([text('{"reply":"Bugun havo yaxshi.","emotion":"neutral"}')])
+    assert run(Agent(mem, load_tools(), fc2).chat("havo qanday?"))["actions"] == []
+    fc3 = FakeClient([text('{"reply":"Afsus, bayram bekor boʻlibdi.","emotion":"sad"}')])
+    assert run(Agent(mem, load_tools(), fc3).chat("bayram bekor"))["actions"] == []   # no fireworks when sad

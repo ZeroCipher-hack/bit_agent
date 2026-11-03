@@ -62,13 +62,13 @@ main{overflow-x:clip;max-width:560px;min-height:100%;margin:0 auto;padding:14px 
   box-shadow:inset 0 -9px 0 rgba(20,10,60,.07),0 22px 34px -20px rgba(40,30,90,.5)}
 .screen{position:relative;width:100%;height:100%;background:var(--screen);overflow:hidden;
   border-radius:34% 34% 26% 26%/40% 40% 28% 28%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5cqw}
-.look{display:flex;gap:12cqw;transform:translate(var(--lx,0px),var(--ly,0px));transition:transform .28s ease-out}
-.eye{position:relative;width:var(--ew);height:var(--eh);transition:width .35s cubic-bezier(.3,1.5,.5,1),height .35s cubic-bezier(.3,1.5,.5,1),transform .08s}
+.look{display:flex;gap:12cqw;transform:translate(var(--lx,0px),var(--ly,0px));transition:transform .32s cubic-bezier(.25,.8,.35,1);will-change:transform}
+.eye{position:relative;width:var(--ew);height:var(--eh);transition:width .42s cubic-bezier(.34,1.3,.5,1),height .42s cubic-bezier(.34,1.3,.5,1),transform .09s}
 .look.blink .eye{transform:scaleY(.08)}
 .glow{position:absolute;inset:0;background:var(--eye);border-radius:var(--er);box-shadow:0 0 4cqw var(--eye);
   transition:background .4s,box-shadow .4s,border-radius .35s,transform .35s,opacity .2s}
 .heart{position:absolute;inset:-12%;width:124%;height:124%;color:var(--eye);opacity:0;transform:scale(.4);transition:opacity .2s,transform .3s;filter:drop-shadow(0 0 3cqw var(--eye))}
-.lid{position:absolute;left:-30%;width:160%;height:100%;background:var(--screen);transition:transform .35s cubic-bezier(.3,1.3,.5,1)}
+.lid{position:absolute;left:-30%;width:160%;height:100%;background:var(--screen);transition:transform .42s cubic-bezier(.34,1.2,.5,1);will-change:transform}
 .lid.top{top:-100%}
 .eye.left .lid.top{transform:translateY(calc(var(--lt) * 100%)) rotate(var(--lrl))}
 .eye.right .lid.top{transform:translateY(calc(var(--lt) * 100%)) rotate(var(--lrr))}
@@ -128,7 +128,7 @@ main{overflow-x:clip;max-width:560px;min-height:100%;margin:0 auto;padding:14px 
 .robot[data-emotion="bored"]{--eye:#8FA3B8;--lt:.5;--eh:22cqw}
 .robot[data-emotion="bored"] .look{transform:translate(4cqw,1cqw)!important}
 /* blush and anger mark */
-.cheek{position:absolute;top:58%;width:9cqw;height:4.5cqw;border-radius:50%;background:#FF7EB6;opacity:0;filter:blur(1.4cqw);transition:opacity .35s}
+.cheek{position:absolute;top:57%;width:11cqw;height:6cqw;border-radius:50%;background:radial-gradient(closest-side,rgba(255,126,182,.95),rgba(255,126,182,0));opacity:0;transition:opacity .35s}
 .cheek.left{left:17%}.cheek.right{right:17%}
 .robot[data-emotion="shy"] .cheek,.robot[data-emotion="love"] .cheek,.robot[data-emotion="laughing"] .cheek{opacity:.75}
 .steam{position:absolute;top:9%;right:13%;width:9cqw;height:9cqw;opacity:0;transform:scale(.4);transition:opacity .2s,transform .25s}
@@ -271,10 +271,12 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
 .notes{margin:8px 0 0;font-size:14px;color:var(--muted)}
 .notes button{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;margin-left:6px;font-size:14px}
 
-@media (prefers-reduced-motion: reduce){
-  .robot.bounce,.robot.dance,.robot.asleep .zzz,.robot[data-emotion="love"] .heart,.bulb,.head,.steam,.hnd,.stars b,.dice,.coin{animation:none!important}
-  .look,.eye,.lid,.glow{transition:none}
-}
+/* calm: system asks for less motion -> stop shaking loops, keep smooth face changes and (gentler) celebrations */
+html.calm .robot.bounce,html.calm .robot.dance,html.calm .head,html.calm .steam,html.calm .stars b,html.calm .robot.tv .bulb{animation:none!important}
+/* lite: slow computer / no GPU (often a VM) -> drop the expensive blur filters */
+html.lite .hnd,html.lite .heart{filter:none}
+html.lite .glow{box-shadow:0 0 1.5cqw var(--eye)}
+html.lite .bulb{box-shadow:none}
 
 .cards{display:flex;flex-direction:column;gap:10px}
 .card{background:var(--field);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
@@ -290,7 +292,7 @@ dialog{border:1px solid var(--line);border-radius:20px;background:var(--field);c
 dialog::backdrop{background:rgba(10,8,20,.5)}
 dialog h2{margin:0 0 12px;font-size:20px}
 dialog label{display:block;font-size:14px;color:var(--muted);margin:12px 0 4px}
-dialog input,dialog select{width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 12px}
+dialog input,dialog select{font:inherit;width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 12px}
 dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 </style>
@@ -407,6 +409,9 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       <label for="sLocal">Kompyuter agenti tokeni (ixtiyoriy)</label>
       <input id="sLocal" type="password" autocomplete="off">
       <p class="hint">Kompyuterda ilova va papkalarni ochish uchun. bit_local_agent.py oynasida koʻrinadi.</p>
+      <label for="sAnim">Animatsiya</label>
+      <select id="sAnim"><option value="auto">Avto</option><option value="full">Toʻliq (hammasi)</option><option value="calm">Yengil harakat</option><option value="lite">Kuchsiz kompyuter uchun</option></select>
+      <p class="hint" id="sDiag"></p>
       <div class="row"><button class="btn" value="cancel" formnovalidate>Bekor qilish</button><button class="btn primary" value="save" id="sSave">Saqlash</button></div>
     </form>
   </dialog>
@@ -422,7 +427,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   const EMOTIONS = ['neutral','happy','laughing','excited','love','shy','wink','proud','sad','angry','scared','surprised','confused','bored','sleepy','thinking'];
   const BCP = { uz:'uz-UZ', ru:'ru-RU', en:'en-US' };
   const T = {
-    uz:{ name:'Bit', heads:'GERB', tails:'SON', wake:'«Hey Bit» bilan chaqirish', track:'👀 Meni kuzat', wakeHeard:'Ha, eshitaman!', wakeOff:'«Hey Bit» faqat Google Chromeʼda ishlaydi.', remind:'Eslatma', pomoWork:'Diqqat vaqti', pomoBreak:'Tanaffus', pomoStartWork:'Ishga qaytamiz! Diqqat bilan.', pomoStartBreak:'Tanaffus! Choy iching, choʻzilib oling.', pomoDone:'Pomodoro tugadi, zoʻr ishladingiz!', quiz:'Viktorina', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
+    uz:{ name:'Bit', heads:'GERB', tails:'SON', wakeOpt:'«Hey Bit» bilan chaqirish', track:'👀 Meni kuzat', wakeHeard:'Ha, eshitaman!', wakeOff:'«Hey Bit» faqat Google Chromeʼda ishlaydi.', remind:'Eslatma', pomoWork:'Diqqat vaqti', pomoBreak:'Tanaffus', pomoStartWork:'Ishga qaytamiz! Diqqat bilan.', pomoStartBreak:'Tanaffus! Choy iching, choʻzilib oling.', pomoDone:'Pomodoro tugadi, zoʻr ishladingiz!', quiz:'Viktorina', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
       ph:'Bitga yozing yoki gapiring…', send:'Yuborish', mic:'Gapirish', voice:'Ovozli javob', smart:'Chuqur oʻylash', history:'Suhbat tarixi', you:'Siz', pet:'Bitni silash',
       greet:'Salom, hamkasb! Men tayyorman. Telegramga yozish, musiqa qoʻyish yoki kompyuterda biror narsani ochish kerak boʻlsa, ayting.',
       tickle:['Hihi, qitiq boʻlyapti!','Yana silang!','Voy, yoqimli!','Ha-ha, bas, kulgim qistayapti!','Mmm, rahmat!','Uyalib ketdim-ku…'], annoyed:['Boʻldi-da, bas qiling!','Hoy! Men oʻyinchoq emasman!','Yana bossangiz, xafa boʻlaman!'], wake:'Ha? Uygʻondim!', timerDone:'Vaqt tugadi!',
@@ -432,7 +437,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Avval sozlamalarda kirish tokenini kiriting.', bad:'Token notoʻgʻri. Sozlamalarni tekshiring.', rate:'Soʻrovlar juda koʻp. Bir oz kuting.',
       fail:'Server javob bermadi. Internet va serverni tekshiring.', settings:'Sozlamalar', micBlocked:'Mikrofonga ruxsat yoʻq. Yozib yuboring.',
       micLang:'Brauzer bu tilda nutqni tanimaydi. Yozib yuboring.', noVoice:'Bu qurilmada shu til uchun ovoz yoʻq, javob matnda koʻrinadi.', notes:'Eslab qolganlarim:', clear:'Tozalash' },
-    ru:{ name:'Бит', heads:'ОРЁЛ', tails:'РЕШКА', wake:'Вызов «Hey Bit»', track:'👀 Следи за мной', wakeHeard:'Да, слушаю!', wakeOff:'«Hey Bit» работает только в Google Chrome.', remind:'Напоминание', pomoWork:'Фокус', pomoBreak:'Перерыв', pomoStartWork:'Возвращаемся к работе! Сосредоточимся.', pomoStartBreak:'Перерыв! Выпейте чаю, потянитесь.', pomoDone:'Помодоро закончено, отличная работа!', quiz:'Викторина', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
+    ru:{ name:'Бит', heads:'ОРЁЛ', tails:'РЕШКА', wakeOpt:'Вызов «Hey Bit»', track:'👀 Следи за мной', wakeHeard:'Да, слушаю!', wakeOff:'«Hey Bit» работает только в Google Chrome.', remind:'Напоминание', pomoWork:'Фокус', pomoBreak:'Перерыв', pomoStartWork:'Возвращаемся к работе! Сосредоточимся.', pomoStartBreak:'Перерыв! Выпейте чаю, потянитесь.', pomoDone:'Помодоро закончено, отличная работа!', quiz:'Викторина', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
       ph:'Напишите или скажите Биту…', send:'Отправить', mic:'Говорить', voice:'Отвечать голосом', smart:'Думать глубже', history:'История', you:'Вы', pet:'Погладить Бита',
       greet:'Привет, коллега! Я готов. Написать в Telegram, включить музыку или открыть что-то на компьютере — просто скажите.',
       tickle:['Хи-хи, щекотно!','Ещё погладь!','Ой, приятно!','Ха-ха, хватит, я сейчас лопну!','Ммм, спасибо!','Ой, я смущаюсь…'], annoyed:['Всё, хватит!','Эй! Я не игрушка!','Ещё раз — и я обижусь!'], wake:'А? Я проснулся!', timerDone:'Время вышло!',
@@ -442,7 +447,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Сначала укажите токен доступа в настройках.', bad:'Неверный токен. Проверьте настройки.', rate:'Слишком много запросов. Подождите.',
       fail:'Сервер не ответил. Проверьте интернет и сервер.', settings:'Настройки', micBlocked:'Нет доступа к микрофону. Напишите.',
       micLang:'Браузер не распознаёт речь на этом языке. Напишите.', noVoice:'Нет голоса для этого языка, ответ показан текстом.', notes:'Я запомнил:', clear:'Очистить' },
-    en:{ name:'Bit', heads:'HEADS', tails:'TAILS', wake:'Wake with “Hey Bit”', track:'👀 Watch me', wakeHeard:'Yes, I’m listening!', wakeOff:'“Hey Bit” only works in Google Chrome.', remind:'Reminder', pomoWork:'Focus', pomoBreak:'Break', pomoStartWork:'Back to work! Let’s focus.', pomoStartBreak:'Break time! Grab some tea and stretch.', pomoDone:'Pomodoro done, great work!', quiz:'Quiz', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
+    en:{ name:'Bit', heads:'HEADS', tails:'TAILS', wakeOpt:'Wake with “Hey Bit”', track:'👀 Watch me', wakeHeard:'Yes, I’m listening!', wakeOff:'“Hey Bit” only works in Google Chrome.', remind:'Reminder', pomoWork:'Focus', pomoBreak:'Break', pomoStartWork:'Back to work! Let’s focus.', pomoStartBreak:'Break time! Grab some tea and stretch.', pomoDone:'Pomodoro done, great work!', quiz:'Quiz', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
       ph:'Type or talk to Bit…', send:'Send', mic:'Speak', voice:'Spoken replies', smart:'Think deeper', history:'Chat history', you:'You', pet:'Pet Bit',
       greet:'Hi, colleague! I’m ready. Message someone on Telegram, play music or open something on your computer — just say it.',
       tickle:['Hehe, that tickles!','Do it again!','Aww, nice!','Haha, stop, I can’t breathe!','Mmm, thanks!','Oh, you’re making me blush…'], annoyed:['Okay, that’s enough!','Hey! I’m not a toy!','One more time and I’ll be mad!'], wake:'Huh? I’m awake!', timerDone:'Time’s up!',
@@ -454,6 +459,25 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       micLang:'This browser can’t recognise speech in that language. Type instead.', noVoice:'No voice for this language on this device, so the reply is shown as text.', notes:'Things I remember:', clear:'Clear' }
   };
 
+  // animation mode: auto = full, but calm when the OS asks for less motion, lite when the computer is slow
+  const sysCalm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let fps = 0;
+  function animMode(){
+    const m = (() => { try { return JSON.parse(localStorage.getItem('bit:anim')) || 'auto'; } catch { return 'auto'; } })();
+    if (m !== 'auto') return m;
+    return fps && fps < 28 ? 'lite' : sysCalm ? 'calm' : 'full';
+  }
+  function applyAnim(){
+    const m = animMode(), h = document.documentElement;
+    h.classList.toggle('calm', m === 'calm');
+    h.classList.toggle('lite', m === 'lite');
+  }
+  (function probeFps(){            // measure ~2 s of frames once, to spot slow machines/VMs
+    let n = 0; const t0 = performance.now();
+    function f(now){ n++; if (now - t0 < 2000) requestAnimationFrame(f); else { fps = Math.round(n * 1000 / (now - t0)); applyAnim(); } }
+    requestAnimationFrame(f);
+  })();
+  applyAnim();
   const store = {
     get(k, d){ try{ const v = localStorage.getItem('bit:'+k); return v == null ? d : JSON.parse(v); }catch{ return d; } },
     set(k, v){ try{ localStorage.setItem('bit:'+k, JSON.stringify(v)); }catch{} }
@@ -496,7 +520,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     $('#name').textContent = L.name;
     q.placeholder = L.ph; $('#sendTxt').textContent = L.send; sendBtn.setAttribute('aria-label', L.send); micBtn.setAttribute('aria-label', L.mic);
     head.setAttribute('aria-label', L.pet); $('#camBtn').setAttribute('aria-label', L.camera); $('#scrBtn').setAttribute('aria-label', L.screen); $('#gear').setAttribute('aria-label', L.settings);
-    $('#lblWake').textContent = L.wake; $('#lblTrack').textContent = L.track;
+    $('#lblWake').textContent = L.wakeOpt; $('#lblTrack').textContent = L.track;
     $('#lblVoice').textContent = L.voice; $('#lblSmart').textContent = L.smart; $('#lblHistory').textContent = L.history;
     document.querySelectorAll('#langs button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.lang === mode)));
     refreshStatus();
@@ -779,7 +803,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   function celebrate(style = 'fireworks', ms = 5000){
     robot.classList.add('party'); clearTimeout(partyTimer);
     partyTimer = setTimeout(() => robot.classList.remove('party'), ms + 1500);
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const mode = animMode(), few = mode === 'calm' || mode === 'lite';
     const rect = fx.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
     fx.width = Math.round(rect.width * dpr); fx.height = Math.round(rect.height * dpr);
     const ctx = fx.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -788,10 +812,10 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     let next = 0;
     function spawn(now){
       if (style === 'fireworks') {
-        const x = W * (.12 + Math.random() * .76), y = H * (.12 + Math.random() * .5), col = pick(FX_COLORS), n = 34;
+        const x = W * (.12 + Math.random() * .76), y = H * (.12 + Math.random() * .5), col = pick(FX_COLORS), n = few ? 18 : 34;
         for (let i = 0; i < n; i++) { const a = Math.PI * 2 * i / n + Math.random() * .2, sp = .8 + Math.random() * 2.1;
           parts.push({ k:'spark', x, y, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp, life:1, col, r:1.3 + Math.random() * 1.3 }); }
-        chirp('boom'); next = now + 380 + Math.random() * 260;
+        chirp('boom'); next = now + (few ? 700 : 380) + Math.random() * 260;
       } else if (style === 'confetti') {
         for (let i = 0; i < 4; i++) parts.push({ k:'conf', x:Math.random() * W, y:-6, vx:(Math.random() - .5) * 1.2, vy:.8 + Math.random() * 1.4,
           rot:Math.random() * 6, vr:(Math.random() - .5) * .3, life:1, col:pick(FX_COLORS), r:2.5 + Math.random() * 2.5 });
@@ -817,7 +841,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
         else { p.life -= .006; if (p.y < -12) p.life = 0; }
         if (p.life <= 0) { parts.splice(i, 1); continue; }
         ctx.globalAlpha = Math.max(0, Math.min(1, p.life)); ctx.fillStyle = p.col;
-        if (p.k === 'spark') { ctx.shadowColor = p.col; ctx.shadowBlur = 6; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; }
+        if (p.k === 'spark') { ctx.shadowColor = p.col; ctx.shadowBlur = mode === 'lite' ? 0 : 6; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; }
         else if (p.k === 'conf') { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillRect(-p.r, -p.r / 2.5, p.r * 2, p.r / 1.25); ctx.restore(); }
         else heart(p.x, p.y, p.r);
       }
@@ -1124,12 +1148,16 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 
   // ---------- settings ----------
   const dlg = $('#settings');
-  function openSettings(){ $('#sUrl').value = cfg.url; $('#sToken').value = cfg.token; $('#sLocal').value = cfg.local; if (!dlg.open) dlg.showModal(); }
+  function openSettings(){
+    $('#sUrl').value = cfg.url; $('#sToken').value = cfg.token; $('#sLocal').value = cfg.local; $('#sAnim').value = store.get('anim', 'auto');
+    $('#sDiag').textContent = 'Tizim: ' + (sysCalm ? 'animatsiyalar kamaytirilgan' : 'animatsiyalar yoqilgan') + ' · FPS ≈ ' + (fps || '…') + ' · rejim: ' + animMode();
+    if (!dlg.open) dlg.showModal();
+  }
   $('#gear').onclick = openSettings;
   dlg.addEventListener('close', () => {
     if (dlg.returnValue !== 'save') return;
     cfg = { url: $('#sUrl').value.trim(), token: $('#sToken').value.trim(), local: $('#sLocal').value.trim() };
-    store.set('cfg', cfg); note('');
+    store.set('cfg', cfg); store.set('anim', $('#sAnim').value); applyAnim(); note('');
   });
   document.querySelectorAll('#langs button').forEach(b => b.addEventListener('click', () => {
     mode = b.dataset.lang; store.set('mode', mode); if (mode !== 'auto') lastLang = mode; applyUI(); note('');
