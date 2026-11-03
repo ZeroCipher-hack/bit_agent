@@ -16,7 +16,7 @@ LLM_PROVIDER = os.getenv("BIT_LLM_PROVIDER", "anthropic").strip().lower()
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL_FAST = os.getenv("OPENAI_MODEL_FAST", "gemini-2.5-flash")
+OPENAI_MODEL_FAST = os.getenv("OPENAI_MODEL_FAST", "gemini-3.8-flash")
 OPENAI_MODEL_SMART = os.getenv("OPENAI_MODEL_SMART", "")
 
 
