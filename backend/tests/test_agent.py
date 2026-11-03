@@ -390,3 +390,121 @@ def test_api_image_validation():
     main._agent = Agent(main.memory, main.tools, FakeClient([text('{"reply":"ok"}')]))
     assert c.post("/api/chat", json={"text": "x", "image": "data:text/html;base64,PHNjcmlwdD4="}, headers=h).status_code == 400
     assert c.post("/api/chat", json={"text": "x", "image": "data:image/png;base64," + PNG}, headers=h).status_code == 200
+
+
+# ---------- reminders, weather, quiz, pomodoro, smart home ----------
+import time as _time
+from datetime import datetime as _dt, timedelta as _td
+
+
+def test_reminder_flow(mem):
+    when = (_dt.now() + _td(minutes=10)).strftime("%Y-%m-%d %H:%M")
+    fc = FakeClient([use("set_reminder", {"when": when, "text": "Darsga tayyorlan"}),
+                     use("set_reminder", {"when": "2020-01-01 08:00", "text": "eski"}, "t2"),
+                     text('{"reply":"Eslataman!","emotion":"happy"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("10 daqiqadan keyin eslat"))
+    assert [r["text"] for r in mem.reminders()] == ["Darsga tayyorlan"]
+    assert {"type": "notify_permission"} in out["actions"]
+    assert "past" in fc.calls[2]["messages"][-1]["content"][0]["content"]
+    assert mem.take_due_for_app(_time.time()) == []                       # not yet due
+    due = mem.take_due_for_app(_time.time() + 3600)
+    assert [r["text"] for r in due] == ["Darsga tayyorlan"]
+    assert mem.take_due_for_app(_time.time() + 3600) == []                # handed out once
+
+
+def test_reminders_go_to_telegram_saved_messages(monkeypatch):
+    main.memory.add_reminder(_time.time() - 5, "Telegramga ham")
+    monkeypatch.setattr(config, "TELEGRAM_SESSION", "s"); monkeypatch.setattr(config, "TELEGRAM_API_ID", 1)
+    got = []
+
+    async def sender(t):
+        got.append(t)
+    assert run(main.deliver_reminders_once(sender)) >= 1 and "⏰ Bit: Telegramga ham" in got
+    got.clear()
+    run(main.deliver_reminders_once(sender))
+    assert "⏰ Bit: Telegramga ham" not in got                              # not sent twice
+
+
+def test_weather_tool(mem, monkeypatch):
+    from app.tools import weather_tool
+
+    def handler(req):
+        if "geocoding" in req.url.host:
+            assert req.url.params["name"] == "Tashkent"
+            return _httpx.Response(200, json={"results": [{"name": "Tashkent", "country": "Uzbekistan", "latitude": 41.3, "longitude": 69.2}]})
+        return _httpx.Response(200, json={
+            "current": {"temperature_2m": 12.5, "apparent_temperature": 10.1, "relative_humidity_2m": 40, "weather_code": 2, "wind_speed_10m": 9},
+            "daily": {"time": ["2026-11-03"], "temperature_2m_max": [15], "temperature_2m_min": [5],
+                      "precipitation_probability_max": [10], "weather_code": [61]}})
+    monkeypatch.setattr(weather_tool, "TRANSPORT", _httpx.MockTransport(handler))
+    res = run(weather_tool.GetWeather().run({}, None))
+    assert res["place"] == "Tashkent, Uzbekistan" and res["now"]["sky"] == "partly cloudy" and res["days"][0]["sky"] == "light rain"
+
+
+def test_quiz_flow(mem):
+    fc = FakeClient([use("quiz_start", {"topic": "Linux", "total": 2, "level": "kids"}), text('{"reply":"1-savol: ls nima qiladi? A) ... "}')])
+    out = run(Agent(mem, load_tools(), fc).chat("Linux boʻyicha viktorina"))
+    assert out["quiz"]["total"] == 2 and out["quiz"]["asked"] == 0
+    fc2 = FakeClient([use("quiz_answer", {"correct": True}), text('{"reply":"Toʻgʻri! 2-savol..."}')])
+    out2 = run(Agent(mem, load_tools(), fc2).chat("A"))
+    assert out2["quiz"]["correct"] == 1 and "QUIZ RUNNING" in fc2.calls[0]["system"]
+    fc3 = FakeClient([use("quiz_answer", {"correct": False}), use("quiz_end", {}, "t2"), text('{"reply":"1/2","emotion":"proud"}')])
+    out3 = run(Agent(mem, load_tools(), fc3).chat("B"))
+    assert out3["quiz"] is None
+    ended = json.loads(fc3.calls[2]["messages"][-1]["content"][0]["content"])
+    assert ended["correct"] == 1 and ended["asked"] == 2 and ended["ended"] is True
+
+
+def test_pomodoro_action(mem):
+    fc = FakeClient([use("pomodoro", {"work_min": 25, "break_min": 5, "cycles": 2}), text('{"reply":"Boshladik!"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("pomodoro"))
+    assert out["actions"] == [{"type": "pomodoro", "work_min": 25, "break_min": 5, "cycles": 2}]
+
+
+def _ha_setup(monkeypatch, calls):
+    from app.tools import home_tools
+    monkeypatch.setattr(config, "HA_URL", "http://ha.test:8123"); monkeypatch.setattr(config, "HA_TOKEN", "tok")
+    config.DEVICES_FILE.write_text(json.dumps({"konditsioner": "climate.zal", "eshik": "lock.front"}), encoding="utf-8")
+    states = [{"entity_id": "climate.zal", "state": "cool", "attributes": {"friendly_name": "Zal konditsioner", "temperature": 22}},
+              {"entity_id": "number.fridge_temp", "state": "4", "attributes": {"friendly_name": "Muzlatgich harorati"}},
+              {"entity_id": "lock.front", "state": "locked", "attributes": {"friendly_name": "Old eshik"}},
+              {"entity_id": "sensor.cpu", "state": "3", "attributes": {"friendly_name": "CPU"}}]
+
+    def handler(req):
+        assert req.headers["authorization"] == "Bearer tok"
+        if req.method == "GET":
+            return _httpx.Response(200, json=states)
+        calls.append((req.url.path, json.loads(req.content)))
+        return _httpx.Response(200, json=[])
+    monkeypatch.setattr(home_tools, "TRANSPORT", _httpx.MockTransport(handler))
+
+
+def test_smart_home_control(mem, monkeypatch):
+    calls = []
+    _ha_setup(monkeypatch, calls)
+    fc = FakeClient([use("home_control", {"device": "konditsioner", "action": "turn_off"}),
+                     use("home_control", {"device": "muzlatgich", "action": "set_temperature", "value": 3}, "t2"),
+                     text('{"reply":"Konditsionerni oʻchirdim, muzlatgichni 3 gradusga qoʻydim.","emotion":"proud"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("konditsionerni oʻchir, muzlatgichni 3 ga tushir"))
+    assert calls == [("/api/services/climate/turn_off", {"entity_id": "climate.zal"}),
+                     ("/api/services/number/set_value", {"entity_id": "number.fridge_temp", "value": 3.0})]
+    assert out["pending"] == []
+
+
+def test_smart_home_lock_needs_confirmation(mem, monkeypatch):
+    calls = []
+    _ha_setup(monkeypatch, calls)
+    fc = FakeClient([use("home_control", {"device": "eshik", "action": "unlock"}), text('{"reply":"Tasdiqlang"}')])
+    a = Agent(mem, load_tools(), fc)
+    out = run(a.chat("eshikni och"))
+    assert calls == [] and out["pending"][0]["tool"] == "home_control"
+    assert run(a.confirm(out["pending"][0]["id"], True))["status"] == "done"
+    assert calls == [("/api/services/lock/unlock", {"entity_id": "lock.front"})]
+
+
+def test_smart_home_not_configured(mem, monkeypatch):
+    monkeypatch.setattr(config, "HA_URL", "")
+    fc = FakeClient([use("home_control", {"device": "chiroq", "action": "turn_on"}), text('{"reply":"Ulanmagan"}')])
+    run(Agent(mem, load_tools(), fc).chat("chiroqni yoq"))
+    res = fc.calls[1]["messages"][-1]["content"][0]
+    assert res["is_error"] and "not connected" in res["content"]

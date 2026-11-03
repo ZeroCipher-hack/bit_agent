@@ -12,6 +12,7 @@ class ToolContext:
     memory: Any
     client_actions: list = field(default_factory=list)  # things the app must do on the device (open URL, play video...)
     pending: list = field(default_factory=list)          # actions waiting for the user's yes/no
+    confirmed: bool = False                              # True when running an action the user approved
 
 
 class Tool:
@@ -23,6 +24,10 @@ class Tool:
 
     def schema(self) -> dict:
         return {"name": self.name, "description": self.description, "input_schema": self.input_schema}
+
+    def is_risky(self, args: dict) -> bool:
+        """Override when only some uses are risky (e.g. unlocking a door, but not turning on a lamp)."""
+        return self.risky
 
     def validate(self, args: dict) -> None:
         """Check arguments before anything is queued or run. Raise ToolError on bad input."""

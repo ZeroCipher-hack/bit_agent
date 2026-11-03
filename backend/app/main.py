@@ -1,7 +1,9 @@
 """HTTP API + static PWA."""
+import asyncio
 import logging
 import os
 import re
+from contextlib import asynccontextmanager
 import secrets
 import time
 from collections import deque
@@ -17,9 +19,53 @@ from .memory import Memory
 from .tools import load_tools
 
 log = logging.getLogger("bit")
-app = FastAPI(title="Bit agent", docs_url=None, redoc_url=None)
 memory = Memory(config.DATA_DIR / "bit.db")
 tools = load_tools()
+
+
+async def send_telegram_to_self(text: str):
+    from telethon import TelegramClient
+    from telethon.sessions import StringSession
+    client = TelegramClient(StringSession(config.TELEGRAM_SESSION), config.TELEGRAM_API_ID, config.TELEGRAM_API_HASH)
+    await client.connect()
+    try:
+        if await client.is_user_authorized():
+            await client.send_message("me", text)   # your own "Saved Messages"
+    finally:
+        await client.disconnect()
+
+
+async def deliver_reminders_once(sender=send_telegram_to_self, now: float | None = None) -> int:
+    """Send due reminders to Telegram Saved Messages (so they arrive even when the app is closed)."""
+    if not (config.REMIND_TELEGRAM and config.TELEGRAM_SESSION and config.TELEGRAM_API_ID):
+        return 0
+    sent = 0
+    for r in memory.due_for_telegram(now or time.time()):
+        try:
+            await sender("⏰ Bit: " + r["text"])
+            memory.mark_tg_sent(r["id"])
+            memory.audit("reminder_telegram", {"id": r["id"]}, "ok")
+            sent += 1
+        except Exception as e:
+            log.warning("reminder to telegram failed: %r", e)
+    return sent
+
+
+@asynccontextmanager
+async def lifespan(_app):
+    async def loop():
+        while True:
+            try:
+                await deliver_reminders_once()
+            except Exception as e:  # never let the loop die
+                log.warning("reminder loop: %r", e)
+            await asyncio.sleep(20)
+    task = asyncio.create_task(loop())
+    yield
+    task.cancel()
+
+
+app = FastAPI(title="Bit agent", docs_url=None, redoc_url=None, lifespan=lifespan)
 _agent: Agent | None = None
 
 
@@ -37,12 +83,22 @@ _hits: deque = deque()
 
 
 def auth(request: Request):
+    _check_token(request)
+    if request.url.path == "/api/reminders/due":
+        return  # polled often; token-checked but not rate-limited
+    _rate_limit()
+
+
+def _check_token(request: Request):
     if not config.API_TOKEN:
         raise HTTPException(503, "BIT_API_TOKEN is not set on the server")
     header = request.headers.get("authorization", "")
     token = header[7:] if header.lower().startswith("bearer ") else ""
     if not secrets.compare_digest(token.encode(), config.API_TOKEN.encode()):
         raise HTTPException(401, "bad token")
+
+
+def _rate_limit():
     now = time.time()  # simple global rate limit: 60 requests per minute
     while _hits and now - _hits[0] > 60:
         _hits.popleft()
@@ -126,6 +182,17 @@ async def greet(body: GreetIn):
 def list_events(days: int = 30):
     from . import events as ev
     return {"today": ev.on_day(memory), "upcoming": ev.upcoming(memory, days=min(max(days, 1), 366)), "saved": memory.events()}
+
+
+@app.get("/api/reminders", dependencies=[Depends(auth)])
+def list_reminders():
+    return {"items": memory.reminders()}
+
+
+@app.get("/api/reminders/due", dependencies=[Depends(auth)])
+def due_reminders():
+    """Polled by the app every ~20 s; each reminder is handed out once."""
+    return {"items": memory.take_due_for_app(time.time())}
 
 
 @app.post("/api/confirm", dependencies=[Depends(auth)])

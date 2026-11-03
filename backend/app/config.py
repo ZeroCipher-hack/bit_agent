@@ -53,6 +53,15 @@ TELEGRAM_SESSION = os.getenv("TELEGRAM_SESSION", "")  # StringSession from scrip
 TELEGRAM_MAX_PER_HOUR = int(os.getenv("TELEGRAM_MAX_PER_HOUR", "20"))
 
 CONTACTS_FILE = DATA_DIR / "contacts.json"
+DEVICES_FILE = DATA_DIR / "devices.json"
+
+# Weather (Open-Meteo, free, no key): default city when the user does not name one
+HOME_CITY = os.getenv("BIT_HOME_CITY", "Tashkent")
+# Reminders: also send them to your Telegram "Saved Messages" so they arrive when the app is closed
+REMIND_TELEGRAM = os.getenv("BIT_REMIND_TELEGRAM", "1") == "1"
+# Smart home through Home Assistant (REST API + long-lived access token)
+HA_URL = os.getenv("HA_URL", "").rstrip("/")
+HA_TOKEN = os.getenv("HA_TOKEN", "")
 
 
 def load_contacts() -> dict:

@@ -1,0 +1,7 @@
+{
+  "konditsioner": "climate.zal_konditsioner",
+  "muzlatgich": "number.muzlatgich_harorati",
+  "chiroq": "light.xona",
+  "televizor": "media_player.tv",
+  "eshik": "lock.old_eshik"
+}

@@ -215,6 +215,11 @@ dialog.cam .row{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
 .ask .mic{flex:none}
 .send svg{display:none;width:20px;height:20px}
 @media (max-width:520px){.ask{gap:6px}.ask .mic{width:44px;height:44px}.ask input{height:44px;padding:0 12px}.send{width:44px;height:44px;padding:0;display:grid;place-items:center}.send svg{display:block}#sendTxt{display:none}}
+.quiz{font-size:13px;background:var(--accent);color:var(--on-accent);border-radius:999px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.quiz[hidden]{display:none}
+.robot.focus{--eye:#FF8A65}
+.robot.camdot::after{content:"";position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:#FF3B30;box-shadow:0 0 6px #FF3B30}
+.robot{position:relative}
 .robot.listening{--ew:21cqw;--eh:26cqw}
 .robot.listening .bulb{animation:pulse .7s ease-in-out infinite}
 .robot.bounce{animation:bounce .5s ease-in-out 3}
@@ -282,7 +287,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 <body>
 <main>
   <header class="top">
-    <div class="who"><h1 id="name">Bit</h1><span class="status" id="status">Uygʻoq</span></div>
+    <div class="who"><h1 id="name">Bit</h1><span class="status" id="status">Uygʻoq</span><span class="quiz" id="quizBadge" hidden></span></div>
     <div style="display:flex;gap:8px;align-items:center">
     <div class="langs" role="radiogroup" aria-label="Javob tili" id="langs">
       <button role="radio" data-lang="auto" aria-checked="true">Avto</button>
@@ -344,6 +349,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   <div class="opts">
     <label><input type="checkbox" id="voice" checked> <span id="lblVoice">Ovozli javob</span></label>
     <label><input type="checkbox" id="smart"> <span id="lblSmart">Chuqur oʻylash</span></label>
+    <label id="wakeWrap"><input type="checkbox" id="wake"> <span id="lblWake">«Hey Bit» bilan chaqirish</span></label>
+    <label id="trackWrap"><input type="checkbox" id="track"> <span id="lblTrack">👀 Meni kuzat</span></label>
     <span class="timer" id="timer"><span id="timerText">00:00</span><button type="button" id="timerStop">×</button></span>
   </div>
   <p class="note" id="note" role="status"></p>
@@ -385,7 +392,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   const EMOTIONS = ['neutral','happy','laughing','excited','love','shy','wink','proud','sad','angry','scared','surprised','confused','bored','sleepy','thinking'];
   const BCP = { uz:'uz-UZ', ru:'ru-RU', en:'en-US' };
   const T = {
-    uz:{ name:'Bit', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
+    uz:{ name:'Bit', wake:'«Hey Bit» bilan chaqirish', track:'👀 Meni kuzat', wakeHeard:'Ha, eshitaman!', wakeOff:'«Hey Bit» faqat Google Chromeʼda ishlaydi.', remind:'Eslatma', pomoWork:'Diqqat vaqti', pomoBreak:'Tanaffus', pomoStartWork:'Ishga qaytamiz! Diqqat bilan.', pomoStartBreak:'Tanaffus! Choy iching, choʻzilib oling.', pomoDone:'Pomodoro tugadi, zoʻr ishladingiz!', quiz:'Viktorina', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
       ph:'Bitga yozing yoki gapiring…', send:'Yuborish', mic:'Gapirish', voice:'Ovozli javob', smart:'Chuqur oʻylash', history:'Suhbat tarixi', you:'Siz', pet:'Bitni silash',
       greet:'Salom, hamkasb! Men tayyorman. Telegramga yozish, musiqa qoʻyish yoki kompyuterda biror narsani ochish kerak boʻlsa, ayting.',
       tickle:['Hihi, qitiq boʻlyapti!','Yana silang!','Voy, yoqimli!','Ha-ha, bas, kulgim qistayapti!','Mmm, rahmat!','Uyalib ketdim-ku…'], annoyed:['Boʻldi-da, bas qiling!','Hoy! Men oʻyinchoq emasman!','Yana bossangiz, xafa boʻlaman!'], wake:'Ha? Uygʻondim!', timerDone:'Vaqt tugadi!',
@@ -395,7 +402,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Avval sozlamalarda kirish tokenini kiriting.', bad:'Token notoʻgʻri. Sozlamalarni tekshiring.', rate:'Soʻrovlar juda koʻp. Bir oz kuting.',
       fail:'Server javob bermadi. Internet va serverni tekshiring.', settings:'Sozlamalar', micBlocked:'Mikrofonga ruxsat yoʻq. Yozib yuboring.',
       micLang:'Brauzer bu tilda nutqni tanimaydi. Yozib yuboring.', noVoice:'Bu qurilmada shu til uchun ovoz yoʻq, javob matnda koʻrinadi.', notes:'Eslab qolganlarim:', clear:'Tozalash' },
-    ru:{ name:'Бит', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
+    ru:{ name:'Бит', wake:'Вызов «Hey Bit»', track:'👀 Следи за мной', wakeHeard:'Да, слушаю!', wakeOff:'«Hey Bit» работает только в Google Chrome.', remind:'Напоминание', pomoWork:'Фокус', pomoBreak:'Перерыв', pomoStartWork:'Возвращаемся к работе! Сосредоточимся.', pomoStartBreak:'Перерыв! Выпейте чаю, потянитесь.', pomoDone:'Помодоро закончено, отличная работа!', quiz:'Викторина', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
       ph:'Напишите или скажите Биту…', send:'Отправить', mic:'Говорить', voice:'Отвечать голосом', smart:'Думать глубже', history:'История', you:'Вы', pet:'Погладить Бита',
       greet:'Привет, коллега! Я готов. Написать в Telegram, включить музыку или открыть что-то на компьютере — просто скажите.',
       tickle:['Хи-хи, щекотно!','Ещё погладь!','Ой, приятно!','Ха-ха, хватит, я сейчас лопну!','Ммм, спасибо!','Ой, я смущаюсь…'], annoyed:['Всё, хватит!','Эй! Я не игрушка!','Ещё раз — и я обижусь!'], wake:'А? Я проснулся!', timerDone:'Время вышло!',
@@ -405,7 +412,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Сначала укажите токен доступа в настройках.', bad:'Неверный токен. Проверьте настройки.', rate:'Слишком много запросов. Подождите.',
       fail:'Сервер не ответил. Проверьте интернет и сервер.', settings:'Настройки', micBlocked:'Нет доступа к микрофону. Напишите.',
       micLang:'Браузер не распознаёт речь на этом языке. Напишите.', noVoice:'Нет голоса для этого языка, ответ показан текстом.', notes:'Я запомнил:', clear:'Очистить' },
-    en:{ name:'Bit', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
+    en:{ name:'Bit', wake:'Wake with “Hey Bit”', track:'👀 Watch me', wakeHeard:'Yes, I’m listening!', wakeOff:'“Hey Bit” only works in Google Chrome.', remind:'Reminder', pomoWork:'Focus', pomoBreak:'Break', pomoStartWork:'Back to work! Let’s focus.', pomoStartBreak:'Break time! Grab some tea and stretch.', pomoDone:'Pomodoro done, great work!', quiz:'Quiz', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
       ph:'Type or talk to Bit…', send:'Send', mic:'Speak', voice:'Spoken replies', smart:'Think deeper', history:'Chat history', you:'You', pet:'Pet Bit',
       greet:'Hi, colleague! I’m ready. Message someone on Telegram, play music or open something on your computer — just say it.',
       tickle:['Hehe, that tickles!','Do it again!','Aww, nice!','Haha, stop, I can’t breathe!','Mmm, thanks!','Oh, you’re making me blush…'], annoyed:['Okay, that’s enough!','Hey! I’m not a toy!','One more time and I’ll be mad!'], wake:'Huh? I’m awake!', timerDone:'Time’s up!',
@@ -459,6 +466,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     $('#name').textContent = L.name;
     q.placeholder = L.ph; $('#sendTxt').textContent = L.send; sendBtn.setAttribute('aria-label', L.send); micBtn.setAttribute('aria-label', L.mic);
     head.setAttribute('aria-label', L.pet); $('#camBtn').setAttribute('aria-label', L.camera); $('#scrBtn').setAttribute('aria-label', L.screen); $('#gear').setAttribute('aria-label', L.settings);
+    $('#lblWake').textContent = L.wake; $('#lblTrack').textContent = L.track;
     $('#lblVoice').textContent = L.voice; $('#lblSmart').textContent = L.smart; $('#lblHistory').textContent = L.history;
     document.querySelectorAll('#langs button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.lang === mode)));
     refreshStatus();
@@ -721,12 +729,14 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 
   // ---------- client actions from the server ----------
   let timerEnd = 0, timerLabel = '', timerTick = 0, ytPlaying = false;
-  function startTimer(sec, label){ timerEnd = Date.now() + sec*1000; timerLabel = label; $('#timer').classList.add('on'); clearInterval(timerTick); tickTimer(); timerTick = setInterval(tickTimer, 500); }
-  function stopTimer(){ clearInterval(timerTick); $('#timer').classList.remove('on'); timerEnd = 0; }
+  let timerDoneCb = null;
+  function startTimer(sec, label, onDone){ timerEnd = Date.now() + sec*1000; timerLabel = label; timerDoneCb = onDone || null; $('#timer').classList.add('on'); clearInterval(timerTick); tickTimer(); timerTick = setInterval(tickTimer, 500); }
+  function stopTimer(){ clearInterval(timerTick); $('#timer').classList.remove('on'); timerEnd = 0; timerDoneCb = null; pomo = null; robot.classList.remove('focus'); }
   function tickTimer(){
     const left = Math.max(0, Math.round((timerEnd - Date.now())/1000));
     const h = Math.floor(left/3600), m = Math.floor(left%3600/60), s = left%60;
     $('#timerText').textContent = (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(s).padStart(2,'0') + (timerLabel ? '  ' + timerLabel : '');
+    if (left === 0 && timerDoneCb) { const cb = timerDoneCb; clearInterval(timerTick); timerDoneCb = null; cb(); return; }
     if (left === 0) { stopTimer(); if (asleep) wake(); setEmotion('surprised', 4000); pulse('bounce', 1500); chirp('alarm');
       show(T[uiLang()].timerDone + (timerLabel ? ' ' + timerLabel : ''), uiLang()); }
   }
@@ -773,6 +783,9 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       else if (a.type === 'open_url') openLink(a.url);
       else if (a.type === 'youtube') playYoutube(a);
       else if (a.type === 'local' && a.action === 'open') openLocal(a.target);
+      else if (a.type === 'pomodoro') startPomodoro(a);
+      else if (a.type === 'pomodoro_stop') stopTimer();
+      else if (a.type === 'notify_permission') { try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch {} }
       else if (a.type === 'celebrate') { celebrate(a.style || 'fireworks'); if (!robot.className.includes('g-')) playGesture('clap', 3000); }
     }
   }
@@ -794,6 +807,105 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     row.append(btn(t().yes, true, () => decide(true)), btn(t().no, false, () => decide(false)));
     c.append(txt, row);
   }
+
+  // ---------- Pomodoro ----------
+  let pomo = null;
+  function pomoPhase(){
+    if (!pomo) return;
+    const L = T[uiLang()];
+    if (pomo.phase === 'work') {
+      robot.classList.add('focus'); setEmotion('thinking');
+      startTimer(pomo.work * 60, '🍅 ' + L.pomoWork + ' ' + pomo.cycle + '/' + pomo.cycles, () => {
+        if (pomo.cycle >= pomo.cycles) { stopTimer(); setEmotion('proud', 6000); celebrate('confetti', 4000); playGesture('clap', 3000); chirp('proud'); show(L.pomoDone, uiLang()); return; }
+        pomo.phase = 'break'; chirp('alarm'); show(L.pomoStartBreak, uiLang()); pomoPhase();
+      });
+    } else {
+      robot.classList.remove('focus'); setEmotion('happy', 4000); playGesture('dance', 3000);
+      startTimer(pomo.brk * 60, '☕ ' + L.pomoBreak, () => { pomo.cycle++; pomo.phase = 'work'; chirp('alarm'); show(L.pomoStartWork, uiLang()); pomoPhase(); });
+    }
+  }
+  function startPomodoro(a){ stopTimer(); pomo = { work:a.work_min || 25, brk:a.break_min || 5, cycles:a.cycles || 4, cycle:1, phase:'work' }; pomoPhase(); }
+
+  // ---------- reminders (polled; also delivered to Telegram by the server) ----------
+  function notify(title, body){
+    try { if ('Notification' in window && Notification.permission === 'granted' && document.hidden) new Notification(title, { body, icon:'icon-192.png' }); } catch {}
+  }
+  async function pollReminders(){
+    if (!cfg.token) return;
+    try {
+      const r = await fetch(apiBase() + '/api/reminders/due', { headers:{ Authorization:'Bearer ' + cfg.token } });
+      if (!r.ok) return;
+      for (const it of (await r.json()).items || []) {
+        if (asleep) wake();
+        const L = t(); const c = card(); const p = document.createElement('p'); p.textContent = '⏰ ' + it.text;
+        const row = document.createElement('div'); row.className = 'row'; row.append(btn('OK', true, () => c.remove())); c.append(p, row);
+        setEmotion('surprised', 5000); pulse('bounce', 1500); playGesture('wave'); chirp('alarm');
+        notify('Bit — ' + L.remind, it.text); show('⏰ ' + it.text, uiLang());
+      }
+    } catch {}
+  }
+  setInterval(pollReminders, 20000); setTimeout(pollReminders, 3000);
+
+  // ---------- quiz badge ----------
+  function showQuiz(qz){
+    const b = $('#quizBadge');
+    if (!qz) { b.hidden = true; return; }
+    b.hidden = false; b.textContent = '🎯 ' + t().quiz + ' ' + Math.min(qz.asked + 1, qz.total) + '/' + qz.total + ' · ✓' + qz.correct;
+  }
+
+  // ---------- "Hey Bit" wake word (Chrome's speech service; off by default) ----------
+  const WAKE_RE = /(?:^|\s)(?:hey|hay|hei|ey|эй|хей|salom|привет)?[\s,]*(?:bit|bet|бит|бид)(?=$|[\s,.!?])/i;
+  let wakeRec = null, wakeOn = false;
+  function wakeStart(){
+    if (!wakeOn || !SR || listening || busy || wakeRec) return;
+    wakeRec = new SR(); wakeRec.lang = BCP[uiLang()]; wakeRec.continuous = true; wakeRec.interimResults = false;
+    wakeRec.onresult = e => {
+      const said = e.results[e.results.length - 1][0].transcript.trim();
+      const m = said.match(WAKE_RE);
+      if (!m) return;
+      const cmd = said.slice(m.index + m[0].length).replace(/^[\s,.!?]+/, '').trim();
+      wakeStop();
+      poke(); setEmotion('surprised', 1200); playGesture('wave', 1500); chirp('wink');
+      if (cmd.length > 2) ask(cmd); else { show(t().wakeHeard, uiLang()); setTimeout(() => micBtn.click(), 900); }
+    };
+    wakeRec.onerror = e => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { wakeOn = false; $('#wake').checked = false; note(t().micBlocked); } };
+    wakeRec.onend = () => { wakeRec = null; setTimeout(wakeStart, 600); };   // Chrome stops after silence: restart
+    try { wakeRec.start(); } catch { wakeRec = null; }
+  }
+  function wakeStop(){ const r = wakeRec; wakeRec = null; if (r) { r.onend = null; try { r.abort(); } catch {} } }
+  $('#wake').addEventListener('change', e => {
+    wakeOn = e.target.checked; store.set('wake', wakeOn);
+    if (wakeOn && !/Chrome\//.test(navigator.userAgent) ) note(t().wakeOff);
+    wakeOn ? wakeStart() : wakeStop();
+  });
+  setInterval(() => { if (wakeOn && !wakeRec && !listening && !busy && !robot.classList.contains('talking')) wakeStart(); }, 3000);
+
+  // ---------- "watch me": eyes follow movement in front of the camera (processed only on this device) ----------
+  let trackStream = null, trackTimer = 0, prevFrame = null;
+  async function trackStart(){
+    try { trackStream = await navigator.mediaDevices.getUserMedia({ video:{ width:160, height:120, facingMode:'user' }, audio:false }); }
+    catch { note(t().noCam); $('#track').checked = false; return; }
+    const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.srcObject = trackStream; await v.play();
+    const c = document.createElement('canvas'); c.width = 80; c.height = 60; const g = c.getContext('2d', { willReadFrequently:true });
+    const fd = ('FaceDetector' in window) ? new window.FaceDetector({ fastMode:true, maxDetectedFaces:1 }) : null;
+    robot.classList.add('camdot'); prevFrame = null;
+    trackTimer = setInterval(async () => {
+      if (document.hidden || asleep || robot.classList.contains('tv') || robot.dataset.emotion === 'thinking') return;
+      let x = null, y = null;
+      if (fd) { try { const f = (await fd.detect(v))[0]; if (f) { const b = f.boundingBox; x = (b.x + b.width / 2) / v.videoWidth; y = (b.y + b.height / 2) / v.videoHeight; } } catch {} }
+      if (x === null) {   // fallback: centre of motion between two frames
+        g.drawImage(v, 0, 0, 80, 60); const d = g.getImageData(0, 0, 80, 60).data;
+        if (prevFrame) { let sx = 0, sy = 0, n = 0;
+          for (let i = 0; i < d.length; i += 8) { if (Math.abs(d[i] - prevFrame[i]) + Math.abs(d[i+1] - prevFrame[i+1]) > 60) { const px = (i / 4) % 80, py = Math.floor(i / 4 / 80); sx += px; sy += py; n++; } }
+          if (n > 25) { x = sx / n / 80; y = sy / n / 60; } }
+        prevFrame = d;
+      }
+      if (x !== null) { pointerAt = Date.now(); setLook(Math.round((.5 - x) * 2 * 12), Math.round((y - .5) * 2 * 8)); }   // mirror: user's left = Bit's right
+    }, 140);
+  }
+  function trackStop(){ clearInterval(trackTimer); if (trackStream) trackStream.getTracks().forEach(tr => tr.stop()); trackStream = null; robot.classList.remove('camdot'); }
+  $('#track').addEventListener('change', e => e.target.checked ? trackStart() : trackStop());
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) $('#trackWrap').hidden = true;
 
   // ---------- eyes for Bit: camera photo and screenshot ----------
   let attached = null, camStream = null, camFacing = 'user';
@@ -849,7 +961,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     text = text.trim(); if (busy) return;
     if (!text && attached) text = t().askImage;
     if (!text) return;
-    const image = attached; clearAttach();
+    const image = attached; clearAttach(); wakeStop();
     poke(); busy = true; sendBtn.disabled = true; q.value = ''; note('');
     stopSpeaking();
     youEl.textContent = text; youEl.hidden = false; sayEl.textContent = '…';
@@ -863,7 +975,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       setEmotion(emo, emo === 'sleepy' ? 0 : 7000); chirp(emo); if (emo === 'excited' || emo === 'proud') pulse('bounce', 1500);
       addLog('bit', out.reply); show(out.reply, lang, text);
       if (out.gesture) playGesture(out.gesture);
-      runActions(out.actions); (out.pending || []).forEach(confirmCard);
+      runActions(out.actions); (out.pending || []).forEach(confirmCard); showQuiz(out.quiz);
       if (emo === 'sleepy') setTimeout(sleep, 4000);
     } catch (e) {
       busy = false; setEmotion('confused', 4000); chirp('confused'); show(errText(e), uiLang(), text);
@@ -875,9 +987,10 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   // ---------- voice input ----------
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let rec = null, listening = false;
-  if (!SR) micBtn.hidden = true;
+  if (!SR) { micBtn.hidden = true; $('#wakeWrap').hidden = true; }
+  else if (store.get('wake', false)) { $('#wake').checked = true; wakeOn = true; setTimeout(wakeStart, 1500); }
   micBtn.addEventListener('click', () => {
-    audio();
+    audio(); wakeStop();
     if (listening) { rec && rec.stop(); return; }
     stopSpeaking();
     rec = new SR(); rec.lang = BCP[uiLang()]; rec.interimResults = true;

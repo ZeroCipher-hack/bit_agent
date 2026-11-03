@@ -19,6 +19,9 @@ class Memory:
             CREATE TABLE IF NOT EXISTS pending(id TEXT PRIMARY KEY, ts REAL, tool TEXT, args TEXT, summary TEXT, status TEXT);
             CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY, kind TEXT, name TEXT, month INT, day INT,
                                               year INT, person TEXT, UNIQUE(name, month, day));
+            CREATE TABLE IF NOT EXISTS reminders(id INTEGER PRIMARY KEY, due REAL, text TEXT, shown INT DEFAULT 0,
+                                                 tg_sent INT DEFAULT 0, cancelled INT DEFAULT 0);
+            CREATE TABLE IF NOT EXISTS kv(key TEXT PRIMARY KEY, value TEXT);
             CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY, ts REAL, tool TEXT, args TEXT, status TEXT, detail TEXT);
             """
         )
@@ -71,6 +74,46 @@ class Memory:
     def delete_events(self, needle: str) -> int:
         return self._exec("DELETE FROM events WHERE name LIKE ? OR person LIKE ?",
                           (f"%{needle.strip()}%", f"%{needle.strip()}%")).rowcount
+
+    # reminders at an exact time
+    def add_reminder(self, due: float, text: str) -> int:
+        return self._exec("INSERT INTO reminders(due, text) VALUES(?,?)", (due, text.strip()[:300])).lastrowid
+
+    def reminders(self, include_past: bool = False) -> list[dict]:
+        sql = "SELECT id, due, text, shown FROM reminders WHERE cancelled=0" + ("" if include_past else " AND shown=0") + " ORDER BY due"
+        return [dict(r) for r in self._exec(sql).fetchall()]
+
+    def cancel_reminders(self, needle: str) -> int:
+        if needle.strip() in ("", "*"):
+            return self._exec("UPDATE reminders SET cancelled=1 WHERE shown=0 AND cancelled=0").rowcount
+        return self._exec("UPDATE reminders SET cancelled=1 WHERE shown=0 AND cancelled=0 AND text LIKE ?",
+                          (f"%{needle.strip()}%",)).rowcount
+
+    def take_due_for_app(self, now: float) -> list[dict]:
+        rows = [dict(r) for r in self._exec(
+            "SELECT id, due, text FROM reminders WHERE cancelled=0 AND shown=0 AND due<=? ORDER BY due", (now,)).fetchall()]
+        for r in rows:
+            self._exec("UPDATE reminders SET shown=1 WHERE id=?", (r["id"],))
+        return rows
+
+    def due_for_telegram(self, now: float) -> list[dict]:
+        return [dict(r) for r in self._exec(
+            "SELECT id, due, text FROM reminders WHERE cancelled=0 AND tg_sent=0 AND due<=? AND due>? ORDER BY due",
+            (now, now - 6 * 3600)).fetchall()]   # skip very old ones after a long downtime
+
+    def mark_tg_sent(self, rid: int):
+        self._exec("UPDATE reminders SET tg_sent=1 WHERE id=?", (rid,))
+
+    # small key-value store (quiz state, ...)
+    def kv_get(self, key: str, default=None):
+        row = self._exec("SELECT value FROM kv WHERE key=?", (key,)).fetchone()
+        return json.loads(row["value"]) if row else default
+
+    def kv_set(self, key: str, value):
+        if value is None:
+            self._exec("DELETE FROM kv WHERE key=?", (key,))
+        else:
+            self._exec("INSERT OR REPLACE INTO kv(key, value) VALUES(?,?)", (key, json.dumps(value, ensure_ascii=False)))
 
     # pending actions awaiting the user's yes/no
     def add_pending(self, tool: str, args: dict, summary: str) -> str:

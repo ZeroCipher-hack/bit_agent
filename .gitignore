@@ -1,6 +1,7 @@
 .env
 data/*
 !data/contacts.example.json
+!data/devices.example.json
 __pycache__/
 *.pyc
 .pytest_cache/

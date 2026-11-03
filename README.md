@@ -139,6 +139,28 @@ Telefonda `open_on_computer` ishlamaydi, bu normal holat. Telegram, YouTube va t
 - Rasmlar serverda saqlanmaydi, faqat oʻsha savol bilan modelga yuboriladi. Bepul Gemini tierida Google ularni koʻrishi mumkin — maxfiy narsani koʻrsatmang.
 - YouTube endi Bitning yuzida (ekranida) oʻynaydi; "Katta ekran" va "Yuzdan olish" tugmalari bor.
 
+### Kundalik yordamchi
+
+| Imkoniyat | Qanday | Izoh |
+|---|---|---|
+| «Hey Bit» | ☑ «Hey Bit» bilan chaqirish → "Hey Bit, ob-havo qanday?" | Faqat Google Chrome. Yoqilganda ovoz doimiy Google nutq xizmatiga yuboriladi — kerak boʻlmaganda oʻchiring |
+| Aniq vaqtga eslatma | "Ertaga soat 8 da darsni eslat" | Ilovada chiqadi + (Telegram ulangan boʻlsa) "Saved Messages"ga keladi |
+| Ob-havo | "Ertaga Samarqandda havo qanday?" | Open-Meteo, bepul, kalitsiz. Standart shahar: `BIT_HOME_CITY` |
+| Viktorina | "Bolalar uchun Linux boʻyicha 5 ta savol ber" | Bit bitta-bitta soʻraydi, ball yuqorida koʻrinadi, oxirida bayram |
+| Pomodoro | "Pomodoro boshla" yoki "50/10 pomodoro" | Diqqat vaqtida Bit jim va jiddiy, tanaffusda raqs tushadi |
+| Meni kuzat | ☑ 👀 Meni kuzat | Kamera kichik oʻlchamda, kadrlar **faqat qurilmada** qayta ishlanadi, hech qayerga yuborilmaydi. Burchakdagi qizil nuqta = kamera yoniq |
+
+### Aqlli uy (Home Assistant)
+
+Bit uydagi qurilmalarni [Home Assistant](https://www.home-assistant.io/) orqali boshqaradi: konditsioner, chiroqlar, rozetkalar, televizor, aqlli muzlatgich va h.k. — HA qoʻllaydigan har qanday qurilma.
+
+1. Home Assistant oʻrnating (Raspberry Pi, mini-PC yoki Docker: `docker run -d --name ha --network host -v ~/ha:/config ghcr.io/home-assistant/home-assistant:stable`) va qurilmalaringizni unga ulang.
+2. HA → Profil → **Security** → **Long-lived access tokens** → token yarating.
+3. `.env`: `HA_URL=http://<ha-ip>:8123`, `HA_TOKEN=...`; qurilma nomlari: `cp data/devices.example.json data/devices.json` va tahrirlang.
+4. "Konditsionerni oʻchir", "Muzlatgichni 3 gradusga tushir", "Zaldagi chiroqni yoq", "Qaysi qurilmalar bor?"
+
+Qulflar, signalizatsiya va garaj/eshiklar har doim **tasdiq** bilan bajariladi.
+
 ## 9. Yangi qobiliyat qoʻshish
 
 `backend/app/tools/` ichiga yangi fayl qoʻshing, server uni oʻzi topadi:

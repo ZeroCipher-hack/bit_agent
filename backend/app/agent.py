@@ -13,7 +13,7 @@ LANG_NAMES = {"uz": "Uzbek (Latin script with oʻ and gʻ)", "ru": "Russian", "e
 
 
 def build_system(facts: list[str], lang_mode: str, tool_names: list[str], today: list[str] | None = None,
-                 soon: list[str] | None = None) -> str:
+                 soon: list[str] | None = None, extra: str = "") -> str:
     if lang_mode in LANG_NAMES:
         lang_rule = f"Always reply in {LANG_NAMES[lang_mode]}, whatever language the user writes in."
     else:
@@ -34,6 +34,7 @@ Your reply is shown and read aloud: 1-3 short sentences, under 60 words, plain t
 When the user sends an image (a camera photo or a screenshot of their screen), look at it carefully and answer about it; you see only that one image. Never guess who a person in a photo is.
 Tools available: {", ".join(tool_names)}. Use a tool only when the user asks for that action or it is clearly implied. Risky actions (messages to people) wait for the user's yes; tell the user what will happen and that they should confirm.
 Current date and time: {datetime.now().strftime("%A, %d %B %Y, %H:%M")}.
+{extra}
 Today's dates: {today_txt}. Coming in the next 7 days: {soon_txt}.
 If today is the user's birthday or a holiday and you have not congratulated them yet in this conversation, congratulate warmly and use the celebrate tool. If it is a friend's birthday, remind the user and offer to send a Telegram congratulation. When the user tells you a birthday or important date, save it with save_event.
 Facts you remember about the user and their work:
@@ -89,12 +90,13 @@ class Agent:
         self.tools = tools
         self.llm = llm or (AnthropicLLM(client) if client is not None else make_llm())
 
-    def needs_confirmation(self, tool) -> bool:
+    def needs_confirmation(self, tool, args: dict | None = None) -> bool:
+        risky = tool.is_risky(args or {})
         level = config.AUTONOMY_LEVEL
         if level <= 0:
-            return tool.side_effect or tool.risky
+            return tool.side_effect or risky
         if level == 1:
-            return tool.risky
+            return risky
         return False
 
     async def _call_tool(self, name: str, args: dict, ctx: ToolContext) -> tuple[dict, bool]:
@@ -103,7 +105,7 @@ class Agent:
             return {"error": f"unknown tool {name}"}, True
         try:
             tool.validate(args)
-            if self.needs_confirmation(tool):
+            if self.needs_confirmation(tool, args):
                 summary = tool.summary(args)
                 pid = self.memory.add_pending(name, args, summary)
                 ctx.pending.append({"id": pid, "tool": name, "summary": summary})
@@ -124,7 +126,19 @@ class Agent:
         from . import events as ev
         today = [ev.describe(e) for e in ev.on_day(self.memory)]
         soon = [f"{e['date']}: {ev.describe(e)}" for e in ev.upcoming(self.memory, days=7)]
-        return build_system(self.memory.facts(), lang_mode, list(self.tools), today, soon)
+        extra = []
+        quiz = self.memory.kv_get("quiz")
+        if quiz:
+            extra.append(f"QUIZ RUNNING: topic '{quiz['topic']}' ({quiz.get('level') or 'any level'}), question "
+                         f"{quiz['asked'] + 1} of {quiz['total']}, score {quiz['correct']}/{quiz['asked']}. Judge the user's "
+                         "answer, call quiz_answer, briefly explain, then ask the next question with options A-D. After the "
+                         "last one call quiz_end, announce the score and celebrate a good result.")
+        extra.append("Smart home: " + ("connected through Home Assistant; use home_devices / home_status / home_control."
+                                       if config.HA_URL and config.HA_TOKEN else "not connected; if asked, say it can be "
+                                       "connected through Home Assistant."))
+        extra.append(f"For an exact time ('tomorrow at 8') use set_reminder; for a countdown use set_timer. "
+                     f"Weather: get_weather (home city: {config.HOME_CITY}).")
+        return build_system(self.memory.facts(), lang_mode, list(self.tools), today, soon, "\n".join(extra))
 
     async def greet_today(self, lang_mode: str = "auto") -> dict:
         """Congratulation for today's birthdays/holidays, shown when the app opens. No LLM call if nothing is on."""
@@ -180,6 +194,7 @@ class Agent:
         self.memory.add_message("assistant", out["reply"] + note)
         out["actions"] = ctx.client_actions
         out["pending"] = ctx.pending
+        out["quiz"] = self.memory.kv_get("quiz")
         return out
 
     async def confirm(self, pid: str, approve: bool) -> dict:
@@ -191,7 +206,7 @@ class Agent:
         p = self.memory.take_pending(pid)
         if not p:
             return {"status": "not_found", "actions": []}
-        ctx = ToolContext(memory=self.memory)
+        ctx = ToolContext(memory=self.memory, confirmed=True)
         tool = self.tools[p["tool"]]
         try:
             result = await tool.run(p["args"], ctx)
