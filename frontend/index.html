@@ -100,6 +100,39 @@ main{max-width:560px;min-height:100%;margin:0 auto;padding:14px 18px 20px;displa
 .robot[data-emotion="confused"]{--eye:#7CF5D6}
 .robot[data-emotion="confused"] .eye.left .glow{transform:scale(.72)}
 .robot[data-emotion="confused"] .eye.right{--lt:.38;--lrr:-12deg}
+
+/* mouth shapes */
+.robot[data-emotion="happy"] .mouth,.robot[data-emotion="proud"] .mouth,.robot[data-emotion="wink"] .mouth{width:10cqw;height:4cqw;border-radius:0 0 6cqw 6cqw}
+.robot[data-emotion="laughing"] .mouth,.robot[data-emotion="excited"] .mouth{width:12cqw;height:6.5cqw;border-radius:1cqw 1cqw 7cqw 7cqw;opacity:.95}
+.robot[data-emotion="sad"] .mouth,.robot[data-emotion="angry"] .mouth{width:9cqw;height:3cqw;border-radius:6cqw 6cqw 0 0;background:transparent;border:1.2cqw solid var(--eye);border-bottom:0}
+.robot[data-emotion="surprised"] .mouth,.robot[data-emotion="scared"] .mouth{width:4.5cqw;height:5cqw;border-radius:50%}
+.robot[data-emotion="bored"] .mouth{width:9cqw;height:1.2cqw;transform:rotate(-6deg)}
+.robot[data-emotion="shy"] .mouth{width:5cqw;height:1.4cqw}
+/* new emotions */
+.robot[data-emotion="laughing"]{--eye:#FFD15C;--lb:.6;--eh:20cqw;--ew:21cqw;--er:8cqw}
+.robot[data-emotion="laughing"] .head{animation:giggle .16s ease-in-out infinite alternate}
+@keyframes giggle{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-6px) rotate(1.5deg)}}
+.robot[data-emotion="shy"]{--eye:#FF9EC7;--ew:15cqw;--eh:18cqw;--lb:.3;--er:8cqw}
+.robot[data-emotion="shy"] .look{transform:translate(0,3cqw)!important}
+.robot[data-emotion="wink"]{--eye:#7CF5D6;--lb:.42;--er:8cqw}
+.robot[data-emotion="wink"] .eye.left{--lt:.62;--lb:.36}
+.robot[data-emotion="proud"]{--eye:#5CF2A8;--lt:.25;--lb:.35;--er:8cqw}
+.robot[data-emotion="proud"] .head{transform:translateY(-4px) rotate(-3deg)}
+.robot[data-emotion="angry"] .head{animation:fume .09s linear infinite alternate}
+@keyframes fume{from{transform:translateX(-2px)}to{transform:translateX(2px)}}
+.robot[data-emotion="angry"] .bulb{background:#FF3B30;box-shadow:0 0 18px #FF3B30;animation:pulse .5s ease-in-out infinite}
+.robot[data-emotion="scared"]{--eye:#CFE6FF;--ew:13cqw;--eh:16cqw;--er:50%}
+.robot[data-emotion="scared"] .look{gap:17cqw}
+.robot[data-emotion="scared"] .head{animation:tremble .07s linear infinite alternate}
+@keyframes tremble{from{transform:translate(-1px,0)}to{transform:translate(1px,1px)}}
+.robot[data-emotion="bored"]{--eye:#8FA3B8;--lt:.5;--eh:22cqw}
+.robot[data-emotion="bored"] .look{transform:translate(4cqw,1cqw)!important}
+/* blush and anger mark */
+.cheek{position:absolute;top:58%;width:9cqw;height:4.5cqw;border-radius:50%;background:#FF7EB6;opacity:0;filter:blur(1.4cqw);transition:opacity .35s}
+.cheek.left{left:17%}.cheek.right{right:17%}
+.robot[data-emotion="shy"] .cheek,.robot[data-emotion="love"] .cheek,.robot[data-emotion="laughing"] .cheek{opacity:.75}
+.steam{position:absolute;top:9%;right:13%;width:9cqw;height:9cqw;opacity:0;transform:scale(.4);transition:opacity .2s,transform .25s}
+.robot[data-emotion="angry"] .steam{opacity:1;transform:scale(1);animation:pulse .6s ease-in-out infinite}
 .robot.listening{--ew:21cqw;--eh:26cqw}
 .robot.listening .bulb{animation:pulse .7s ease-in-out infinite}
 .robot.bounce{animation:bounce .5s ease-in-out 3}
@@ -141,7 +174,7 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
 .notes button{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;margin-left:6px;font-size:14px}
 
 @media (prefers-reduced-motion: reduce){
-  .robot.bounce,.robot.dance,.robot.asleep .zzz,.robot[data-emotion="love"] .heart,.bulb{animation:none!important}
+  .robot.bounce,.robot.dance,.robot.asleep .zzz,.robot[data-emotion="love"] .heart,.bulb,.head,.steam{animation:none!important}
   .look,.eye,.lid,.glow{transition:none}
 }
 
@@ -188,6 +221,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
           <div class="eye right"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
         </div>
         <div class="mouth"></div>
+        <span class="cheek left" aria-hidden="true"></span><span class="cheek right" aria-hidden="true"></span>
+        <svg class="steam" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#FF3B30" stroke-width="2.6" stroke-linecap="round"><path d="M9 3c0 3-1 5-6 6"/><path d="M15 3c0 3 1 5 6 6"/><path d="M9 21c0-3-1-5-6-6"/><path d="M15 21c0-3 1-5 6-6"/></g></svg>
         <div class="zzz" aria-hidden="true">z z Z</div>
       </div>
     </button>
@@ -246,13 +281,13 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   const q = $('#q'), sendBtn = $('#send'), micBtn = $('#mic'), logEl = $('#log'), cards = $('#cards');
   const voiceChk = $('#voice'), smartChk = $('#smart');
 
-  const EMOTIONS = ['neutral','happy','excited','sad','angry','surprised','sleepy','love','thinking','confused'];
+  const EMOTIONS = ['neutral','happy','laughing','excited','love','shy','wink','proud','sad','angry','scared','surprised','confused','bored','sleepy','thinking'];
   const BCP = { uz:'uz-UZ', ru:'ru-RU', en:'en-US' };
   const T = {
     uz:{ name:'Bit', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
       ph:'Bitga yozing yoki gapiring…', send:'Yuborish', mic:'Gapirish', voice:'Ovozli javob', smart:'Chuqur oʻylash', history:'Suhbat tarixi', you:'Siz', pet:'Bitni silash',
       greet:'Salom, hamkasb! Men tayyorman. Telegramga yozish, musiqa qoʻyish yoki kompyuterda biror narsani ochish kerak boʻlsa, ayting.',
-      tickle:['Hihi, qitiq boʻlyapti!','Yana silang!','Voy, yoqimli!'], wake:'Ha? Uygʻondim!', timerDone:'Vaqt tugadi!',
+      tickle:['Hihi, qitiq boʻlyapti!','Yana silang!','Voy, yoqimli!','Ha-ha, bas, kulgim qistayapti!','Mmm, rahmat!','Uyalib ketdim-ku…'], annoyed:['Boʻldi-da, bas qiling!','Hoy! Men oʻyinchoq emasman!','Yana bossangiz, xafa boʻlaman!'], wake:'Ha? Uygʻondim!', timerDone:'Vaqt tugadi!',
       yes:'Ha, bajar', no:'Yoʻq', done:'Bajarildi.', rejected:'Bekor qildim.', expired:'Bu soʻrov eskirgan. Qaytadan ayting.',
       open:'Ochish', ytOpen:'YouTubeʼda ochish', localFail:'Kompyuter agenti javob bermadi. bit_local_agent.py ishga tushganini va token toʻgʻriligini tekshiring.',
       noLocal:'Kompyuter agenti tokeni kiritilmagan. Sozlamalarda kiriting.', notAllowed:'Bu ilova yoki papka roʻyxatda yoʻq:',
@@ -262,7 +297,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     ru:{ name:'Бит', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
       ph:'Напишите или скажите Биту…', send:'Отправить', mic:'Говорить', voice:'Отвечать голосом', smart:'Думать глубже', history:'История', you:'Вы', pet:'Погладить Бита',
       greet:'Привет, коллега! Я готов. Написать в Telegram, включить музыку или открыть что-то на компьютере — просто скажите.',
-      tickle:['Хи-хи, щекотно!','Ещё погладь!','Ой, приятно!'], wake:'А? Я проснулся!', timerDone:'Время вышло!',
+      tickle:['Хи-хи, щекотно!','Ещё погладь!','Ой, приятно!','Ха-ха, хватит, я сейчас лопну!','Ммм, спасибо!','Ой, я смущаюсь…'], annoyed:['Всё, хватит!','Эй! Я не игрушка!','Ещё раз — и я обижусь!'], wake:'А? Я проснулся!', timerDone:'Время вышло!',
       yes:'Да, выполнить', no:'Нет', done:'Готово.', rejected:'Отменил.', expired:'Запрос устарел. Повторите.',
       open:'Открыть', ytOpen:'Открыть в YouTube', localFail:'Агент компьютера не ответил. Проверьте, что bit_local_agent.py запущен и токен верный.',
       noLocal:'Токен агента компьютера не задан. Укажите его в настройках.', notAllowed:'Этого приложения или папки нет в списке:',
@@ -272,7 +307,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     en:{ name:'Bit', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
       ph:'Type or talk to Bit…', send:'Send', mic:'Speak', voice:'Spoken replies', smart:'Think deeper', history:'Chat history', you:'You', pet:'Pet Bit',
       greet:'Hi, colleague! I’m ready. Message someone on Telegram, play music or open something on your computer — just say it.',
-      tickle:['Hehe, that tickles!','Do it again!','Aww, nice!'], wake:'Huh? I’m awake!', timerDone:'Time’s up!',
+      tickle:['Hehe, that tickles!','Do it again!','Aww, nice!','Haha, stop, I can’t breathe!','Mmm, thanks!','Oh, you’re making me blush…'], annoyed:['Okay, that’s enough!','Hey! I’m not a toy!','One more time and I’ll be mad!'], wake:'Huh? I’m awake!', timerDone:'Time’s up!',
       yes:'Yes, do it', no:'No', done:'Done.', rejected:'Cancelled.', expired:'That request expired. Ask again.',
       open:'Open', ytOpen:'Open in YouTube', localFail:'The computer agent didn’t answer. Check that bit_local_agent.py is running and the token is right.',
       noLocal:'No computer agent token set. Add it in settings.', notAllowed:'That app or folder isn’t on the list:',
@@ -383,12 +418,21 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   function wake(){ asleep = false; robot.classList.remove('asleep'); setEmotion('surprised', 900); chirp('surprised'); refreshStatus(); }
   ['keydown','pointerdown'].forEach(ev => addEventListener(ev, poke));
   let taps = [];
+  let pokeLog = [];
   head.addEventListener('click', () => {
     if (busy) return;
     const now = Date.now(); taps = taps.filter(x => now - x < 1300); taps.push(now);
-    const L = t();
-    if (taps.length >= 3) { taps = []; setEmotion('excited', 3500); pulse('dance', 3000); chirp('excited'); show(L.tickle[0], uiLang()); }
-    else { setEmotion(Math.random() < .3 ? 'love' : 'happy', 2500); pulse('bounce', 1500); chirp('happy'); show(L.tickle[1 + Math.floor(Math.random()*2)], uiLang()); }
+    pokeLog = pokeLog.filter(x => now - x < 8000); pokeLog.push(now);
+    const L = t(), pick = a => a[Math.floor(Math.random() * a.length)];
+    if (pokeLog.length >= 9) {          // poked too much -> annoyed
+      pokeLog = []; taps = []; setEmotion('angry', 3500); chirp('angry'); show(pick(L.annoyed), uiLang());
+    } else if (taps.length >= 3) {      // fast taps = tickling -> laughs
+      taps = []; setEmotion('laughing', 3000); pulse('dance', 2400); chirp('laughing'); show(pick([L.tickle[0], L.tickle[3]]), uiLang());
+    } else {
+      const r = Math.random();
+      const [emo, line] = r < .35 ? ['happy', L.tickle[1]] : r < .6 ? ['love', L.tickle[2]] : r < .8 ? ['shy', L.tickle[5]] : ['wink', L.tickle[4]];
+      setEmotion(emo, 2500); pulse('bounce', 1500); chirp(emo); show(line, uiLang());
+    }
   });
 
   // ---------- sounds ----------
@@ -403,8 +447,14 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   }
   const CHIRPS = {
     happy:()=>{tone(660,990,0,.12);tone(880,1320,.13,.14)}, excited:()=>{tone(700,1400,0,.1);tone(900,1600,.1,.1);tone(1100,1900,.2,.14)},
-    love:()=>{tone(600,700,0,.18);tone(800,900,.2,.22)}, sad:()=>tone(520,300,0,.4,'triangle'), angry:()=>tone(190,140,0,.28,'square',.035),
+    love:()=>{tone(600,700,0,.18);tone(800,900,.2,.22)}, sad:()=>tone(520,300,0,.4,'triangle'), angry:()=>{tone(190,140,0,.22,'sawtooth',.04);tone(170,120,.25,.3,'sawtooth',.04)},
     surprised:()=>tone(400,1500,0,.18), confused:()=>{tone(500,720,0,.12);tone(720,450,.13,.16)}, sleepy:()=>tone(420,240,0,.55,'triangle',.05),
+    laughing:()=>{for(let i=0;i<5;i++) tone(880-i*40,1250-i*60,i*.13,.09,'triangle',.06)},
+    shy:()=>{tone(700,820,0,.12,'sine',.05);tone(760,640,.15,.18,'sine',.04)},
+    wink:()=>{tone(900,1500,0,.07);tone(1300,1300,.1,.05)},
+    proud:()=>{tone(523,523,0,.1);tone(659,659,.11,.1);tone(784,784,.22,.2)},
+    scared:()=>{for(let i=0;i<6;i++) tone(1200+(i%2)*150,1200+(i%2)*150,i*.06,.05,'square',.03)},
+    bored:()=>tone(300,260,0,.45,'sine',.04),
     alarm:()=>{for(let i=0;i<4;i++) tone(1046,1046,i*.28,.16,'square',.045)}
   };
   function chirp(k){ if (voiceChk.checked && CHIRPS[k]) CHIRPS[k](); }
@@ -524,7 +574,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       const r = await fetch('http://127.0.0.1:8765/open', { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.local }, body: JSON.stringify({ target }) });
       const j = await r.json().catch(() => ({}));
       if (r.status === 404) note(t().notAllowed + ' ' + target + (j.allowed ? ' (' + j.allowed.join(', ') + ')' : ''));
-      else if (!r.ok) note(t().localFail);
+      else if (r.status === 401) note(t().localFail + ' [token]');
+      else if (!r.ok) note(t().localFail + (j.error ? ' [' + j.error + ']' : ''));
     } catch { note(t().localFail); }
   }
   function runActions(actions){
@@ -567,7 +618,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       const lang = BCP[out.lang] ? out.lang : uiLang();
       if (mode === 'auto') { lastLang = lang; store.set('lastLang', lang); applyUI(); }
       const emo = EMOTIONS.includes(out.emotion) ? out.emotion : 'neutral';
-      setEmotion(emo, emo === 'sleepy' ? 0 : 7000); chirp(emo); if (emo === 'excited') pulse('bounce', 1500);
+      setEmotion(emo, emo === 'sleepy' ? 0 : 7000); chirp(emo); if (emo === 'excited' || emo === 'proud') pulse('bounce', 1500);
       addLog('bit', out.reply); show(out.reply, lang, text);
       runActions(out.actions); (out.pending || []).forEach(confirmCard);
       if (emo === 'sleepy') setTimeout(sleep, 4000);

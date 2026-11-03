@@ -294,3 +294,8 @@ def test_openai_compat_echoes_gemini_thought_signature(mem):
     sent_call = seen[1]["messages"][-2]["tool_calls"][0]
     assert sent_call["extra_content"] == sig and sent_call["id"] == "c1"
     assert sent_call["function"]["name"] == "set_timer"
+
+
+def test_new_emotions_accepted():
+    for e in ("laughing", "shy", "wink", "proud", "scared", "bored"):
+        assert parse_final('{"reply":"x","emotion":"%s"}' % e)["emotion"] == e
