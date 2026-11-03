@@ -54,14 +54,61 @@ main{overflow-x:clip;max-width:560px;min-height:100%;margin:0 auto;padding:14px 
 /* robot */
 .robot{--eye:#7CF5D6;--ew:19cqw;--eh:24cqw;--er:5cqw;--lt:-.4;--lb:-.4;--lrl:0deg;--lrr:0deg;
   display:grid;justify-items:center;margin:14px auto 0;width:min(76vw,330px);transition:transform .3s}
-.antenna{width:4px;height:24px;background:var(--shell-edge);border-radius:2px;position:relative}
-.bulb{position:absolute;top:-11px;left:50%;width:15px;height:15px;border-radius:50%;transform:translateX(-50%);
-  background:var(--eye);box-shadow:0 0 14px var(--eye);transition:background .4s,box-shadow .4s}
-.head{container-type:inline-size;width:100%;aspect-ratio:1.2;border:0;cursor:pointer;padding:7%;
-  background:var(--shell);border-radius:40% 40% 30% 30%/44% 44% 30% 30%;
-  box-shadow:inset 0 -10px 0 rgba(20,10,60,.08),inset 0 6px 10px rgba(255,255,255,.9),0 22px 34px -20px rgba(0,0,0,.55)}
-.screen{position:relative;width:100%;height:100%;background:var(--screen);overflow:hidden;
-  border-radius:34% 34% 26% 26%/40% 40% 28% 28%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5cqw}
+.robot{--neon:#D6FF3D;--base:#17151F;--screen:#05060C}
+.antenna{width:7px;height:28px;background:linear-gradient(90deg,#3a3748,#121019);border-radius:3px;position:relative;cursor:pointer;transform-origin:50% 100%;z-index:2}
+.bulb{position:absolute;top:-20px;left:50%;width:26px;height:26px;border-radius:50%;transform:translateX(-50%);
+  background:radial-gradient(circle at 35% 30%,#fff 0 10%,var(--eye) 46%);box-shadow:0 0 18px var(--eye),0 0 4px var(--eye);transition:background .4s,box-shadow .4s}
+.head{container-type:inline-size;width:100%;aspect-ratio:1.14;border:0;cursor:pointer;padding:9% 9% 10%;position:relative;z-index:1;
+  background:radial-gradient(110% 80% at 28% 12%,rgba(255,255,255,.95),rgba(255,255,255,0) 46%),linear-gradient(180deg,var(--shell) 0 64%,var(--shell-edge) 100%);
+  border-radius:47% 47% 41% 41%/52% 52% 40% 40%;
+  box-shadow:inset 0 -2.4cqw 0 rgba(0,0,0,.12),inset 0 1.6cqw 3cqw rgba(255,255,255,.8),0 26px 40px -22px rgba(0,0,0,.7)}
+.screen{position:relative;width:100%;height:100%;overflow:hidden;
+  background:radial-gradient(120% 100% at 32% 18%,#171b2c,#05060C 62%);
+  box-shadow:inset 0 0 0 1.3cqw #0B0A12,inset 0 -3cqw 6cqw rgba(0,0,0,.6);
+  border-radius:40% 40% 36% 36%/46% 46% 38% 38%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5cqw}
+.screen::before{content:"";position:absolute;left:9%;top:6%;width:44%;height:20%;border-radius:50%;z-index:7;pointer-events:none;
+  background:linear-gradient(rgba(255,255,255,.16),rgba(255,255,255,0));transform:rotate(-10deg)}
+.ear{position:absolute;top:33%;width:17%;aspect-ratio:1;border-radius:50%;z-index:3;cursor:pointer;
+  background:radial-gradient(circle at 40% 35%,#3a3748,var(--base) 62%);box-shadow:0 4px 10px rgba(0,0,0,.45)}
+.ear::after{content:"";position:absolute;inset:16%;border-radius:50%;border:1.7cqw solid var(--neon);
+  box-shadow:0 0 2.6cqw var(--neon),inset 0 0 1.8cqw var(--neon);transition:border-color .4s,box-shadow .4s}
+.ear.l{left:-9%}.ear.r{right:-9%}
+.base{position:relative;display:flex;justify-content:center;gap:5%;width:82%;margin-top:-5%;z-index:0}
+.base::before{content:"";position:absolute;left:26%;right:26%;top:0;height:74%;border-radius:0 0 42% 42%;background:linear-gradient(#24212f,var(--base))}
+.foot{position:relative;flex:1;height:clamp(58px,21vw,82px);border-radius:50% 50% 40% 40%/64% 64% 36% 36%;
+  background:radial-gradient(circle at 40% 22%,#3c3950,var(--base) 58%);box-shadow:0 12px 18px -10px rgba(0,0,0,.7)}
+.foot::after{content:"";position:absolute;left:15%;right:15%;bottom:18%;height:11%;border-radius:999px;
+  background:var(--neon);box-shadow:0 0 10px var(--neon),0 0 22px var(--neon);transition:background .4s,box-shadow .4s}
+.logo{position:absolute;left:50%;top:30%;transform:translateX(-50%);z-index:1;font-weight:700;font-size:clamp(18px,6vw,26px);
+  color:#A48BFF;text-shadow:0 0 8px #7B4DFF;cursor:pointer;user-select:none}
+.floor{width:96%;height:28px;margin-top:-14px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--neon) 45%,transparent),transparent)}
+/* line-art neon face (default style); .robot.classic shows the older block eyes */
+.face{display:none;width:76cqw;height:auto;overflow:visible;color:var(--eye);filter:drop-shadow(0 0 1.3cqw var(--eye));transition:color .4s}
+.face path,.face circle,.face ellipse{fill:none;stroke:currentColor;stroke-width:10;stroke-linecap:round;stroke-linejoin:round}
+.face .thin{stroke-width:6}
+.face .fill{fill:currentColor;stroke:none}
+.face .tear{fill:#7FC8FF}
+.face .fe{opacity:0;transform:scale(.82);transform-origin:100px 65px;transition:opacity .2s,transform .32s cubic-bezier(.34,1.5,.5,1)}
+.face .fe.on{opacity:1;transform:none}
+.face .ey{transform-box:fill-box;transform-origin:center;transition:transform .09s}
+.look.blink .face .fe.on .ey{transform:scaleY(.12)}
+.robot:not(.classic) .look .eye,.robot:not(.classic) .mouth{display:none}
+.robot:not(.classic) .face{display:block}
+.robot:not(.classic) .look{gap:0}
+.robot.classic .screen{background:var(--screen)}
+/* fun bits */
+.robot.talking .ear::after{animation:ring .3s ease-in-out infinite alternate}
+@keyframes ring{to{transform:scale(1.1);box-shadow:0 0 4cqw var(--neon),inset 0 0 3cqw var(--neon)}}
+.robot[data-emotion="excited"] .foot::after,.robot[data-emotion="laughing"] .foot::after,.robot.dance .foot::after,.robot.g-dance .foot::after{animation:strip .4s ease-in-out infinite alternate}
+.robot .foot:last-of-type::after{animation-delay:.2s}
+@keyframes strip{from{opacity:.35}to{opacity:1}}
+.robot.bounce .antenna,.antenna.boing{animation:wob .6s cubic-bezier(.3,1.8,.5,1)}
+@keyframes wob{20%{transform:rotate(-16deg)}45%{transform:rotate(12deg)}70%{transform:rotate(-6deg)}}
+.ear.spin::after{animation:spin .7s linear 2;border-style:dashed}
+@keyframes spin{to{transform:rotate(360deg)}}
+.robot.disco{--neon:hsl(var(--hue,0) 100% 60%)}
+.robot.disco .floor{background:radial-gradient(closest-side,hsl(var(--hue,0) 100% 60% / .6),transparent)}
 .look{display:flex;gap:12cqw;transform:translate(var(--lx,0px),var(--ly,0px));transition:transform .32s cubic-bezier(.25,.8,.35,1);will-change:transform}
 .eye{position:relative;width:var(--ew);height:var(--eh);transition:width .42s cubic-bezier(.34,1.3,.5,1),height .42s cubic-bezier(.34,1.3,.5,1),transform .09s}
 .look.blink .eye{transform:scaleY(.08)}
@@ -79,9 +126,6 @@ main{overflow-x:clip;max-width:560px;min-height:100%;margin:0 auto;padding:14px 
 .zzz{position:absolute;right:12%;top:10%;color:#9AA3C7;font-weight:700;font-size:6cqw;opacity:0;pointer-events:none}
 .robot.asleep .zzz{opacity:1;animation:float 2.4s ease-in-out infinite}
 @keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-3cqw)}100%{transform:translateY(0)}}
-.neck{width:30%;height:16px;background:var(--shell-edge);border-radius:0 0 8px 8px}
-.feet{display:flex;gap:26%;width:58%;justify-content:center;margin-top:4px}
-.feet span{width:28%;height:16px;border-radius:10px 10px 6px 6px;background:var(--shell);box-shadow:inset 0 -4px 0 rgba(20,10,60,.08)}
 
 /* emotions */
 .robot[data-emotion="happy"]{--eye:#FFD15C;--lb:.45;--er:8cqw}
@@ -272,9 +316,9 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
 .notes button{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;margin-left:6px;font-size:14px}
 
 /* calm: system asks for less motion -> stop shaking loops, keep smooth face changes and (gentler) celebrations */
-html.calm .robot.bounce,html.calm .robot.dance,html.calm .head,html.calm .steam,html.calm .stars b,html.calm .robot.tv .bulb{animation:none!important}
+html.calm .robot.bounce,html.calm .robot.dance,html.calm .ear::after,html.calm .foot::after,html.calm .antenna,html.calm .head,html.calm .steam,html.calm .stars b,html.calm .robot.tv .bulb{animation:none!important}
 /* lite: slow computer / no GPU (often a VM) -> drop the expensive blur filters */
-html.lite .hnd,html.lite .heart{filter:none}
+html.lite .hnd,html.lite .heart,html.lite .face{filter:none}
 html.lite .glow{box-shadow:0 0 1.5cqw var(--eye)}
 html.lite .bulb{box-shadow:none}
 
@@ -294,6 +338,9 @@ dialog h2{margin:0 0 12px;font-size:20px}
 dialog label{display:block;font-size:14px;color:var(--muted);margin:12px 0 4px}
 dialog input,dialog select{font:inherit;width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 12px}
 dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+dialog .themes{display:flex;flex-wrap:wrap;gap:6px}
+dialog .themes button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 10px 5px 6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px}
+dialog .themes button::before{content:"";width:16px;height:16px;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 3px var(--n)}
 dialog .colors{display:grid;grid-template-columns:auto 56px 1fr;gap:8px;align-items:center}
 dialog .colors input{width:56px;height:40px;padding:2px;border-radius:10px}
 dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
@@ -317,6 +364,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   <div class="robot" id="robot" data-emotion="neutral">
     <div class="antenna"><span class="bulb"></span></div>
     <div class="head" id="head" role="button" tabindex="0" aria-label="Bitni silash">
+      <span class="ear l" aria-hidden="true"></span><span class="ear r" aria-hidden="true"></span>
       <span class="hat" aria-hidden="true"></span>
       <div class="screen">
         <canvas class="fx" id="fx" aria-hidden="true"></canvas>
@@ -346,6 +394,24 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
         <div class="look" id="look">
           <div class="eye left"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
           <div class="eye right"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
+          <svg class="face" viewBox="0 0 200 130" aria-hidden="true">
+            <g class="fe" data-e="neutral"><g class="ey"><path d="M60 40V72"/><path d="M140 40V72"/></g><g class="mo"><path class="thin" d="M92 104H108"/></g></g>
+            <g class="fe" data-e="happy"><g class="ey"><path d="M38 66Q60 34 82 66"/><path d="M118 66Q140 34 162 66"/></g><g class="mo"><path d="M86 96Q100 110 114 96"/></g></g>
+            <g class="fe" data-e="laughing"><g class="ey"><path d="M40 62Q60 40 80 62"/><path d="M120 62Q140 40 160 62"/></g><g class="mo"><path class="fill" d="M82 90H118Q118 120 100 120Q82 120 82 90Z"/></g></g>
+            <g class="fe" data-e="excited"><g class="ey"><path d="M42 40L74 56L42 72"/><path d="M158 40L126 56L158 72"/></g><g class="mo"><path class="fill" d="M88 94H112Q112 114 100 114Q88 114 88 94Z"/></g></g>
+            <g class="fe" data-e="love"><g class="ey"><path class="fill" d="M60 76C40 63 34 52 40 43C46 35 57 38 60 47C63 38 74 35 80 43C86 52 80 63 60 76Z"/><path class="fill" d="M140 76C120 63 114 52 120 43C126 35 137 38 140 47C143 38 154 35 160 43C166 52 160 63 140 76Z"/></g><g class="mo"><path d="M88 98Q100 108 112 98"/></g></g>
+            <g class="fe" data-e="shy"><g class="ey"><path d="M46 62Q60 48 74 62"/><path d="M126 62Q140 48 154 62"/></g><g class="mo"><path class="thin" d="M90 102q5 -5 10 0q5 5 10 0"/></g></g>
+            <g class="fe" data-e="wink"><g class="ey"><circle class="fill" cx="60" cy="56" r="13"/><path d="M156 42L128 56L156 70"/></g><g class="mo"><path d="M84 96Q102 112 116 92"/></g></g>
+            <g class="fe" data-e="proud"><g class="ey"><path d="M38 62Q60 40 82 62"/><path d="M118 62Q140 40 162 62"/></g><g class="mo"><path d="M86 100Q106 108 116 94"/></g><path class="thin" d="M172 22v14M165 29h14"/></g>
+            <g class="fe" data-e="sad"><g class="ey"><path d="M40 50Q60 70 80 50"/><path d="M120 50Q140 70 160 50"/></g><g class="mo"><path d="M86 110Q100 96 114 110"/></g><path class="fill tear" d="M44 68q-6 10 0 14q6 -4 0 -14Z"/></g>
+            <g class="fe" data-e="angry"><g class="ey"><path class="fill" d="M36 44L84 58L80 74Q58 78 42 68Z"/><path class="fill" d="M164 44L116 58L120 74Q142 78 158 68Z"/></g><g class="mo"><path d="M86 108Q100 98 114 108"/></g></g>
+            <g class="fe" data-e="scared"><g class="ey"><circle cx="60" cy="56" r="11"/><circle cx="140" cy="56" r="11"/></g><g class="mo"><path class="thin" d="M80 106q5 -7 10 0q5 7 10 0q5 -7 10 0q5 7 10 0"/></g></g>
+            <g class="fe" data-e="surprised"><g class="ey"><ellipse class="fill" cx="60" cy="54" rx="12" ry="19"/><ellipse class="fill" cx="140" cy="54" rx="12" ry="19"/></g><g class="mo"><circle class="thin" cx="100" cy="104" r="8"/></g></g>
+            <g class="fe" data-e="confused"><g class="ey"><circle class="fill" cx="60" cy="56" r="11"/><path d="M124 56q8 -12 16 0q8 12 16 0"/></g><g class="mo"><path class="thin" d="M86 104L114 98"/></g></g>
+            <g class="fe" data-e="bored"><g class="ey"><path d="M40 58H80"/><path d="M120 58H160"/></g><g class="mo"><path class="thin" d="M90 104H112"/></g></g>
+            <g class="fe" data-e="sleepy"><g class="ey"><path d="M40 56Q60 70 80 56"/><path d="M120 56Q140 70 160 56"/></g><g class="mo"><circle class="thin" cx="100" cy="104" r="5"/></g></g>
+            <g class="fe" data-e="thinking"><g class="ey"><circle class="fill" cx="54" cy="44" r="10"/><circle class="fill" cx="134" cy="44" r="10"/></g><g class="mo"><path class="thin" d="M88 104Q100 98 112 106"/></g><circle class="fill" cx="168" cy="22" r="4"/><circle class="fill" cx="180" cy="12" r="5"/></g>
+          </svg>
         </div>
         <div class="mouth"></div>
         <span class="cheek left" aria-hidden="true"></span><span class="cheek right" aria-hidden="true"></span>
@@ -353,8 +419,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
         <div class="zzz" aria-hidden="true">z z Z</div>
       </div>
     </div>
-    <div class="neck"></div>
-    <div class="feet"><span></span><span></span></div>
+    <div class="base"><span class="foot"></span><span class="logo" id="logo">B</span><span class="foot"></span></div>
+    <div class="floor" aria-hidden="true"></div>
   </div>
 
   <section class="bubble" aria-live="polite">
@@ -415,7 +481,20 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       <div class="colors">
         <span>Koʻz</span><input type="color" id="sEye" value="#7CF5D6"><button class="btn" type="button" id="sEyeReset">Emotsiyaga qarab</button>
         <span>Korpus</span><input type="color" id="sBody" value="#FFFFFF"><button class="btn" type="button" id="sBodyReset">Oq</button>
+        <span>Neon</span><input type="color" id="sNeon" value="#D6FF3D"><button class="btn" type="button" id="sNeonReset">Standart</button>
       </div>
+      <label>Tayyor rang toʻplami</label>
+      <div class="themes" id="sThemes">
+        <button type="button" data-t="classic" style="--c:#F4F4F8;--n:#D6FF3D">Klassik</button>
+        <button type="button" data-t="purple" style="--c:#7B4DFF;--n:#C89BFF">Binafsha</button>
+        <button type="button" data-t="green" style="--c:#43C24A;--n:#C6FF3D">Yashil</button>
+        <button type="button" data-t="yellow" style="--c:#F5B400;--n:#FFE45C">Sariq</button>
+        <button type="button" data-t="ice" style="--c:#EAF4FF;--n:#5CC8FF">Muz</button>
+        <button type="button" data-t="pink" style="--c:#FF8DC7;--n:#FFD1EA">Pushti</button>
+        <button type="button" data-t="night" style="--c:#2A2833;--n:#7CF5D6">Tun</button>
+      </div>
+      <label for="sStyle">Yuz uslubi</label>
+      <select id="sStyle"><option value="neon">Neon chiziq (yangi)</option><option value="classic">Klassik bloklar</option></select>
       <label for="sAnim">Animatsiya</label>
       <select id="sAnim"><option value="auto">Avto</option><option value="full">Toʻliq (hammasi)</option><option value="calm">Yengil harakat</option><option value="lite">Kuchsiz kompyuter uchun</option></select>
       <p class="hint" id="sDiag"></p>
@@ -558,6 +637,10 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 
   // ---------- look: user-chosen eye and body colours ----------
   let skin = store.get('look', {});
+  const faceGroups = [...document.querySelectorAll('.face .fe')];
+  const THEMES = { classic:{}, purple:{ body:'#7B4DFF', neon:'#C89BFF' }, green:{ body:'#43C24A', neon:'#C6FF3D' },
+                   yellow:{ body:'#F5B400', neon:'#FFE45C' }, ice:{ body:'#EAF4FF', neon:'#5CC8FF' },
+                   pink:{ body:'#FF8DC7', neon:'#FFD1EA' }, night:{ body:'#2A2833', neon:'#7CF5D6' } };
   function shade(hex, k){   // k<0 darker, k>0 lighter
     const n = parseInt(hex.slice(1), 16), f = c => Math.max(0, Math.min(255, Math.round(k < 0 ? c * (1 + k) : c + (255 - c) * k)));
     return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(f).map(c => c.toString(16).padStart(2, '0')).join('');
@@ -566,6 +649,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     skin = l || {}; if (save) store.set('look', skin);
     if (skin.body) { robot.style.setProperty('--shell', skin.body); robot.style.setProperty('--shell-edge', shade(skin.body, -.22)); }
     else { robot.style.removeProperty('--shell'); robot.style.removeProperty('--shell-edge'); }
+    if (skin.neon) robot.style.setProperty('--neon', skin.neon); else robot.style.removeProperty('--neon');
+    robot.classList.toggle('classic', skin.style === 'classic');
     setEmotion(robot.dataset.emotion || 'neutral');
   }
   async function loadLook(){ try { applyLook(await api('/api/appearance')); } catch {} }
@@ -576,6 +661,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   // ---------- emotions & life ----------
   function setEmotion(emo, holdMs){
     robot.dataset.emotion = EMOTIONS.includes(emo) ? emo : 'neutral';
+    faceGroups.forEach(g => g.classList.toggle('on', g.dataset.e === robot.dataset.emotion));
     if (skin && skin.eye && !['angry', 'love'].includes(robot.dataset.emotion)) robot.style.setProperty('--eye', skin.eye);
     else robot.style.removeProperty('--eye');
     statusEl.style.setProperty('--eye', getComputedStyle(robot).getPropertyValue('--eye'));
@@ -623,6 +709,30 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       const [emo, line] = r < .35 ? ['happy', L.tickle[1]] : r < .6 ? ['love', L.tickle[2]] : r < .8 ? ['shy', L.tickle[5]] : ['wink', L.tickle[4]];
       setEmotion(emo, 2500); pulse('bounce', 1500); chirp(emo); show(line, uiLang());
     }
+  });
+
+  // ---------- little toys on the body: ears, antenna, logo ----------
+  document.querySelectorAll('.ear').forEach(ear => ear.addEventListener('click', e => {
+    e.stopPropagation(); audio(); poke();
+    ear.classList.remove('spin'); void ear.offsetWidth; ear.classList.add('spin');
+    [523, 659, 784, 1046].forEach((f, i) => tone(f, f, i * .09, .08, 'triangle', .05));
+    setEmotion('surprised', 1200);
+  }));
+  const ant = document.querySelector('.antenna');
+  ant.addEventListener('click', () => {
+    audio(); poke(); ant.classList.remove('boing'); void ant.offsetWidth; ant.classList.add('boing');
+    tone(300, 900, 0, .18, 'sine', .06); tone(900, 400, .18, .2, 'sine', .04);
+    setEmotion(pick1(['excited', 'laughing', 'wink']), 1800);
+  });
+  function pick1(a){ return a[Math.floor(Math.random() * a.length)]; }
+  let discoTimer = 0;
+  $('#logo').addEventListener('click', () => {
+    audio(); poke(); if (robot.classList.contains('disco')) return;
+    robot.classList.add('disco'); setEmotion('excited'); playGesture('dance', 5000);
+    let hue = 0; const spinHue = setInterval(() => { hue = (hue + 18) % 360; robot.style.setProperty('--hue', hue); }, 80);
+    for (let i = 0; i < 10; i++) tone(440 + (i % 4) * 110, 440 + (i % 4) * 110, i * .25, .1, 'square', .03);
+    clearTimeout(discoTimer);
+    discoTimer = setTimeout(() => { clearInterval(spinHue); robot.classList.remove('disco'); robot.style.removeProperty('--hue'); setEmotion('happy', 2000); }, 5000);
   });
 
   // ---------- sounds ----------
@@ -950,7 +1060,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       else if (a.type === 'youtube') playYoutube(a);
       else if (a.type === 'local' && a.action === 'open') openLocal(a.target);
       else if (a.type === 'game') runGame(a);
-      else if (a.type === 'appearance') { applyLook({ eye:a.eye, body:a.body }); pulse('bounce', 1200); chirp('wink'); }
+      else if (a.type === 'appearance') { applyLook({ eye:a.eye, body:a.body, neon:a.neon, style:a.style }); pulse('bounce', 1200); chirp('wink'); }
       else if (a.type === 'pomodoro') startPomodoro(a);
       else if (a.type === 'pomodoro_stop') stopTimer();
       else if (a.type === 'notify_permission') { try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch {} }
@@ -1177,7 +1287,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   const dlg = $('#settings');
   function openSettings(){
     $('#sUrl').value = cfg.url; $('#sToken').value = cfg.token; $('#sLocal').value = cfg.local; $('#sAnim').value = store.get('anim', 'auto');
-    $('#sEye').value = skin.eye || '#7CF5D6'; $('#sBody').value = skin.body || '#FFFFFF';
+    $('#sEye').value = skin.eye || '#7CF5D6'; $('#sBody').value = skin.body || '#FFFFFF'; $('#sNeon').value = skin.neon || '#D6FF3D';
+    $('#sStyle').value = skin.style || 'neon';
     $('#sDiag').textContent = 'Tizim: ' + (sysCalm ? 'animatsiyalar kamaytirilgan' : 'animatsiyalar yoqilgan') + ' · FPS ≈ ' + (fps || '…') + ' · rejim: ' + animMode();
     if (!dlg.open) dlg.showModal();
   }
@@ -1188,6 +1299,14 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   $('#sBody').addEventListener('change', e => saveLook('body', e.target.value.toUpperCase()));
   $('#sEyeReset').onclick = () => saveLook('eye', 'default');
   $('#sBodyReset').onclick = () => saveLook('body', 'default');
+  $('#sNeon').addEventListener('input', e => applyLook({ ...skin, neon:e.target.value.toUpperCase() }, false));
+  $('#sNeon').addEventListener('change', e => saveLook('neon', e.target.value.toUpperCase()));
+  $('#sNeonReset').onclick = () => saveLook('neon', 'default');
+  $('#sStyle').addEventListener('change', e => saveLook('style', e.target.value));
+  document.querySelectorAll('#sThemes button').forEach(b => b.onclick = async () => {
+    const th = THEMES[b.dataset.t];
+    try { applyLook(await api('/api/appearance', { body: th.body || 'default', neon: th.neon || 'default' })); pulse('bounce', 1200); } catch (e) { note(errText(e)); }
+  });
   dlg.addEventListener('close', () => {
     if (dlg.returnValue !== 'save') return;
     cfg = { url: $('#sUrl').value.trim(), token: $('#sToken').value.trim(), local: $('#sLocal').value.trim() };

@@ -560,3 +560,15 @@ def test_appearance_tool_and_api(mem):
     assert c.post("/api/appearance", json={"eye": "#00FF00"}, headers=h).json()["eye"] == "#00FF00"
     assert c.get("/api/appearance", headers=h).json()["eye"] == "#00FF00"
     assert c.post("/api/appearance", json={"eye": "javascript:x"}, headers=h).status_code == 400
+
+
+def test_themes_and_face_style(mem):
+    fc = FakeClient([use("set_appearance", {"theme": "purple"}), use("set_appearance", {"face_style": "classic", "accent_color": "#00FFAA"}, "t2"),
+                     use("set_appearance", {"theme": "disco"}, "t3"), text('{"reply":"Binafsha boʻldim!","emotion":"happy"}')])
+    run(Agent(mem, load_tools(), fc).chat("binafsha boʻl"))
+    assert mem.kv_get("appearance") == {"body": "#7B4DFF", "neon": "#00FFAA", "style": "classic"}
+    assert fc.calls[3]["messages"][-1]["content"][0]["is_error"] is True
+    run(Agent(mem, load_tools(), FakeClient([use("set_appearance", {"theme": "classic", "face_style": "neon"}), text('{"reply":"ok"}')])).chat("x"))
+    assert mem.kv_get("appearance") == {"style": "neon"}
+    c = TestClient(main.app); h = {"Authorization": "Bearer test-token"}
+    assert c.post("/api/appearance", json={"style": "weird"}, headers=h).status_code == 400

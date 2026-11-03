@@ -139,6 +139,16 @@ Telefonda `open_on_computer` ishlamaydi, bu normal holat. Telegram, YouTube va t
 - Rasmlar serverda saqlanmaydi, faqat oʻsha savol bilan modelga yuboriladi. Bepul Gemini tierida Google ularni koʻrishi mumkin — maxfiy narsani koʻrsatmang.
 - YouTube endi Bitning yuzida (ekranida) oʻynaydi; "Katta ekran" va "Yuzdan olish" tugmalari bor.
 
+### Dizayn va kichik oʻyinchoqlar
+
+Dubulgʻa-bosh, yaltiroq qora vizor, neon halqali “quloqlar”, nur sharli antenna, neon chiziqli oyoqlar va **B** logotip. Yuz — neon chiziqli ifodalar (⚙ → *Yuz uslubi* → *Klassik bloklar* eski koʻzlarni qaytaradi).
+
+- **Quloqni bosing** — halqa aylanadi va ohang chaladi
+- **Antennani bosing** — “boing!” qilib tebranadi
+- **B logotipni bosing** — 5 soniyalik disko: neonlar kamalakdek rang almashadi, Bit raqsga tushadi
+- Gapirayotganda quloq halqalari, hayajonlanganda oyoq chiroqlari “nafas oladi”
+- Tayyor rang toʻplamlari: "binafsha boʻl", "yashil kiyin", "sariq", "muz", "pushti", "tun", "klassik"
+
 ### Rangini oʻzgartirish
 
 "Koʻzingni koʻk qil", "Korpusingni qora qil", "Rangingni asl holiga qaytar" — yoki ⚙ → *Koʻz va korpus rangi*. Rang serverda saqlanadi va hamma qurilmada bir xil boʻladi. Jahldor (qizil) va sevgi (pushti yurak) holatlari oʻz rangida qoladi.

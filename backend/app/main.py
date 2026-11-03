@@ -127,6 +127,8 @@ class GreetIn(BaseModel):
 class AppearanceIn(BaseModel):
     eye: str | None = None
     body: str | None = None
+    neon: str | None = None
+    style: str | None = None
 
 
 class ConfirmIn(BaseModel):
@@ -210,7 +212,7 @@ def set_appearance(body: AppearanceIn):
     from .tools.appearance_tool import clean, merge
     from .tools.base import ToolError
     try:
-        return merge(memory, clean(body.eye), clean(body.body))
+        return merge(memory, clean(body.eye), clean(body.body), clean(body.neon), body.style)
     except ToolError as e:
         raise HTTPException(400, str(e))
 
