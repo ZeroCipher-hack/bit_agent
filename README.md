@@ -2,7 +2,7 @@
 
 ![Bit emotsiyalari](docs/emotsiyalar.png)
 
-![Qoʻllar, imo-ishoralar va bayram](docs/qollar-bayram.png)
+![Qoʻllar va oʻyinlar](docs/qollar-bayram.png)
 
 Bit oʻzbek, rus va ingliz tillarida gaplashadigan, emotsiyali agent. U sizning nomingizdan Telegramga yozadi (faqat siz tasdiqlaganingizdan keyin), YouTubeʼda qoʻshiq qoʻyadi, kompyuterda ilova va papkalarni ochadi, taymer qoʻyadi va ishingiz haqidagi faktlarni eslab qoladi.
 
@@ -138,6 +138,17 @@ Telefonda `open_on_computer` ishlamaydi, bu normal holat. Telegram, YouTube va t
 - 🖥 tugmasi: ekraningiz (yoki bitta oyna) rasmga olinadi va Bitga koʻrsatiladi. Telefonlarda brauzer buni qoʻllamaydi.
 - Rasmlar serverda saqlanmaydi, faqat oʻsha savol bilan modelga yuboriladi. Bepul Gemini tierida Google ularni koʻrishi mumkin — maxfiy narsani koʻrsatmang.
 - YouTube endi Bitning yuzida (ekranida) oʻynaydi; "Katta ekran" va "Yuzdan olish" tugmalari bor.
+
+### Qoʻllar va oʻyinlar
+
+Qoʻllar Bitning **ekranida** (koʻzlari kabi yonib) paydo boʻladi: "qoʻlingni koʻtar", "qarsak chal", "salom ber", "barmogʻingni koʻrsat" va h.k. Oʻyinlar (tasodif serverda tanlanadi, Bit aldamaydi):
+
+| Ayting | Nima boʻladi |
+|---|---|
+| "Paq!", "Seni otdim!" | Oʻq uchib kelib ekranga tegadi, ekran yoriladi, koʻzlari ✕✕, boshi atrofida yulduzchalar, keyin "qayta yuklanib" qaytadi va sizga barmoq bilan "paq" qiladi |
+| "Tosh-qaychi-qogʻoz oʻynaymiz" | Bit soʻraydi, keyin ikkala qoʻl silkinib, tanlovlar ekranda chiqadi |
+| "Zar tashla", "Tanga tashla" | Ekranda zar aylanadi / tanga aylanib tushadi |
+| "Bekinmachoq" | Koʻzlarini qoʻllari bilan yopib, "kukuu!" qilib chiqadi |
 
 ### Kundalik yordamchi
 

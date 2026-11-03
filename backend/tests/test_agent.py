@@ -508,3 +508,29 @@ def test_smart_home_not_configured(mem, monkeypatch):
     run(Agent(mem, load_tools(), fc).chat("chiroqni yoq"))
     res = fc.calls[1]["messages"][-1]["content"][0]
     assert res["is_error"] and "not connected" in res["content"]
+
+
+# ---------- games & on-screen hands ----------
+def test_games(mem, monkeypatch):
+    import secrets as _s
+    from app.tools import game_tools
+    monkeypatch.setattr(game_tools.secrets, "choice", lambda seq: seq[0])     # bit plays "rock" / "heads"
+    monkeypatch.setattr(game_tools.secrets, "randbelow", lambda n: 3)         # dice = 4
+    fc = FakeClient([use("play_game", {"game": "shot"}),
+                     use("play_game", {"game": "rps", "user_choice": "paper"}, "t2"),
+                     use("play_game", {"game": "dice"}, "t3"),
+                     use("play_game", {"game": "coin"}, "t4"),
+                     use("play_game", {"game": "rps"}, "t5"),
+                     text('{"reply":"Voy! ... Tirikman!","emotion":"laughing","gesture":"point"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("paq!"))
+    acts = out["actions"]
+    assert acts[0] == {"type": "game", "game": "shot"}
+    assert acts[1] == {"type": "game", "game": "rps", "user": "paper", "bit": "rock", "winner": "user"}
+    assert acts[2]["value"] == 4 and acts[3]["side"] == "heads"
+    assert fc.calls[5]["messages"][-1]["content"][0]["is_error"] is True      # rps without a choice -> ask first
+    assert out["gesture"] == "point"
+
+
+def test_new_gestures_parse():
+    for g in ("raise_hands", "peekaboo", "point", "peace"):
+        assert parse_final('{"reply":"x","gesture":"%s"}' % g)["gesture"] == g

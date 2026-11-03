@@ -123,7 +123,6 @@ main{overflow-x:clip;max-width:560px;min-height:100%;margin:0 auto;padding:14px 
 .robot[data-emotion="angry"] .bulb{background:#FF3B30;box-shadow:0 0 18px #FF3B30;animation:pulse .5s ease-in-out infinite}
 .robot[data-emotion="scared"]{--eye:#CFE6FF;--ew:13cqw;--eh:16cqw;--er:50%}
 .robot[data-emotion="scared"] .look{gap:17cqw}
-.robot[data-emotion="scared"] .arm{animation:tremble .07s linear infinite alternate}
 .robot[data-emotion="scared"] .head{animation:tremble .07s linear infinite alternate}
 @keyframes tremble{from{transform:translate(-1px,0)}to{transform:translate(1px,1px)}}
 .robot[data-emotion="bored"]{--eye:#8FA3B8;--lt:.5;--eh:22cqw}
@@ -135,56 +134,68 @@ main{overflow-x:clip;max-width:560px;min-height:100%;margin:0 auto;padding:14px 
 .steam{position:absolute;top:9%;right:13%;width:9cqw;height:9cqw;opacity:0;transform:scale(.4);transition:opacity .2s,transform .25s}
 .robot[data-emotion="angry"] .steam{opacity:1;transform:scale(1);animation:pulse .6s ease-in-out infinite}
 
-/* arms: rotate from the shoulder; --al / --ar per emotion, g-* classes for gestures */
+/* hands live ON the face screen (glowing like the eyes) and appear only for gestures and games */
 .head{position:relative}
 .look,.mouth{position:relative;z-index:1}
 .fx{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-.arm{position:absolute;top:54%;width:9%;height:38%;transform-origin:50% 7%;z-index:2;pointer-events:none;
-  transition:transform .45s cubic-bezier(.3,1.4,.5,1);filter:drop-shadow(0 3px 4px rgba(20,10,60,.22))}
-.arm::before{content:"";position:absolute;left:22%;right:22%;top:0;bottom:24%;background:var(--shell);border-radius:999px}
-.arm .hand{position:absolute;left:50%;bottom:0;width:100%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;
-  background:var(--shell);box-shadow:inset 0 -3px 0 rgba(20,10,60,.08)}
-.arm.left{left:-5.5%;transform:rotate(var(--al,14deg))}
-.arm.right{right:-5.5%;transform:rotate(var(--ar,-14deg))}
-.robot[data-emotion="happy"]{--al:38deg;--ar:-38deg}
-.robot[data-emotion="laughing"]{--al:150deg;--ar:-150deg}
-.robot[data-emotion="laughing"] .arm.left{animation:shakeL .18s ease-in-out infinite alternate}
-.robot[data-emotion="laughing"] .arm.right{animation:shakeR .18s ease-in-out infinite alternate}
-.robot[data-emotion="excited"]{--al:160deg;--ar:-160deg}
-.robot[data-emotion="love"]{--al:-55deg;--ar:55deg}
-.robot[data-emotion="shy"],.robot[data-emotion="scared"]{--al:-118deg;--ar:118deg}
-.robot[data-emotion="wink"]{--ar:-125deg}
-.robot[data-emotion="proud"]{--al:-30deg;--ar:-155deg}
-.robot[data-emotion="angry"]{--al:28deg;--ar:-28deg}
-.robot[data-emotion="angry"] .arm.left{animation:fistL .14s linear infinite alternate}
-.robot[data-emotion="angry"] .arm.right{animation:fistR .14s linear infinite alternate}
-.robot[data-emotion="sad"]{--al:3deg;--ar:-3deg}
-.robot[data-emotion="surprised"]{--al:120deg;--ar:-120deg}
-.robot[data-emotion="confused"]{--al:100deg;--ar:-100deg}
-.robot[data-emotion="thinking"]{--ar:122deg}
-.robot[data-emotion="bored"],.robot[data-emotion="sleepy"]{--al:4deg;--ar:-4deg}
-@keyframes shakeL{from{transform:rotate(140deg)}to{transform:rotate(165deg)}}
-@keyframes shakeR{from{transform:rotate(-140deg)}to{transform:rotate(-165deg)}}
-@keyframes fistL{from{transform:rotate(24deg)}to{transform:rotate(34deg)}}
-@keyframes fistR{from{transform:rotate(-24deg)}to{transform:rotate(-34deg)}}
-/* gestures (temporary classes) */
-.robot.g-wave .arm.right{animation:wave .32s ease-in-out infinite alternate}
-@keyframes wave{from{transform:rotate(-125deg)}to{transform:rotate(-170deg)}}
-.robot.g-clap .arm.left{animation:clapL .2s ease-in-out infinite alternate}
-.robot.g-clap .arm.right{animation:clapR .2s ease-in-out infinite alternate}
-@keyframes clapL{from{transform:rotate(130deg)}to{transform:rotate(172deg)}}
-@keyframes clapR{from{transform:rotate(-130deg)}to{transform:rotate(-172deg)}}
-.robot.g-thumbs_up .arm.right{animation:none;--ar:-150deg}
-.robot.g-thumbs_up .arm.right .hand{transform:translateX(-50%) scale(1.25)}
-.robot.g-shrug{--al:105deg;--ar:-105deg}
+.hands{position:absolute;inset:0;z-index:2;pointer-events:none}
+.hnd{position:absolute;bottom:-4%;width:23%;aspect-ratio:100/120;color:var(--eye);filter:drop-shadow(0 0 1.6cqw var(--eye));
+  transform:translate(var(--hx,0%),135%) rotate(var(--hr,0deg));transition:transform .38s cubic-bezier(.3,1.35,.5,1)}
+.hnd.l{left:6%}.hnd.r{right:6%}
+.hnd.l svg{transform:scaleX(-1)}
+.hnd svg{width:100%;height:100%;overflow:visible;display:block}
+.hnd svg>g{display:none}
+.hnd[data-pose="open"] .p-open,.hnd[data-pose="fist"] .p-fist,.hnd[data-pose="peace"] .p-peace,
+.hnd[data-pose="thumb"] .p-thumb,.hnd[data-pose="point"] .p-point{display:inline}
+.hnd .ln{fill:none;stroke:var(--screen);stroke-width:3.2;stroke-linecap:round}
+.hnd.up{transform:translate(var(--hx,0%),var(--hy,0%)) rotate(var(--hr,0deg))}
+@keyframes hwave{from{transform:translate(var(--hx),var(--hy)) rotate(-20deg)}to{transform:translate(var(--hx),var(--hy)) rotate(20deg)}}
+@keyframes hwiggle{from{transform:translate(var(--hx),var(--hy)) rotate(var(--hr))}to{transform:translate(var(--hx),calc(var(--hy) - 8%)) rotate(calc(var(--hr) * -1))}}
+@keyframes hclapL{from{transform:translate(10%,-6%) rotate(12deg)}to{transform:translate(118%,-6%) rotate(0deg)}}
+@keyframes hclapR{from{transform:translate(-10%,-6%) rotate(-12deg)}to{transform:translate(-118%,-6%) rotate(0deg)}}
+@keyframes hbob{from{transform:translate(var(--hx),var(--hy)) rotate(var(--hr))}to{transform:translate(var(--hx),calc(var(--hy) - 14%)) rotate(var(--hr))}}
+@keyframes hdanceA{from{transform:translate(var(--hx),0%) rotate(-15deg)}to{transform:translate(var(--hx),-40%) rotate(15deg)}}
+@keyframes hdanceB{from{transform:translate(var(--hx),-40%) rotate(15deg)}to{transform:translate(var(--hx),0%) rotate(-15deg)}}
+@keyframes hpeekL{0%{transform:translate(0,135%)}18%,72%{transform:translate(78%,-118%)}100%{transform:translate(0,135%)}}
+@keyframes hpeekR{0%{transform:translate(0,135%)}18%,72%{transform:translate(-78%,-118%)}100%{transform:translate(0,135%)}}
+@keyframes hshake{0%,100%{transform:translate(var(--hx),-4%)}50%{transform:translate(var(--hx),-30%)}}
 .robot.g-shrug .head{animation:shrug .5s ease-in-out 2}
 @keyframes shrug{50%{transform:translateY(-6px)}}
-.robot.g-facepalm .arm.right{animation:none;--ar:112deg}
-.robot.g-dance .arm.left{animation:danceL .3s ease-in-out infinite alternate}
-.robot.g-dance .arm.right{animation:danceR .3s ease-in-out infinite alternate}
-@keyframes danceL{from{transform:rotate(20deg)}to{transform:rotate(150deg)}}
-@keyframes danceR{from{transform:rotate(-150deg)}to{transform:rotate(-20deg)}}
-.robot.g-hug{--al:-60deg;--ar:60deg}
+
+/* games: "paq!" (got shot), dice, coin */
+.bullet{position:absolute;left:-14%;top:47%;width:11%;height:3.4%;border-radius:999px;z-index:6;
+  background:linear-gradient(90deg,transparent,#FFB547 45%,#FFF6D8);box-shadow:0 0 2.4cqw #FFB547;animation:shoot .24s linear forwards}
+@keyframes shoot{to{left:43%}}
+.crack{position:absolute;inset:0;width:100%;height:100%;z-index:6;opacity:0;pointer-events:none;transition:opacity .08s}
+.crack path{fill:none;stroke:rgba(255,255,255,.88);stroke-width:.7;stroke-linecap:round}
+.ko{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;gap:14cqw;pointer-events:none}
+.ko i{position:relative;width:15cqw;height:15cqw}
+.ko i::before,.ko i::after{content:"";position:absolute;left:44%;top:-6%;width:12%;height:112%;border-radius:2cqw;background:#FF6B5B;box-shadow:0 0 2cqw #FF6B5B}
+.ko i::before{transform:rotate(45deg)}.ko i::after{transform:rotate(-45deg)}
+.stars{position:absolute;left:50%;top:14%;width:34cqw;height:9cqw;transform:translateX(-50%);z-index:6;display:none;pointer-events:none}
+.stars b{position:absolute;top:0;color:#FFD15C;font-size:6cqw;text-shadow:0 0 2cqw #FFD15C;animation:orbit 1.1s linear infinite}
+.stars b:nth-child(2){animation-delay:-.37s}.stars b:nth-child(3){animation-delay:-.74s}
+@keyframes orbit{0%{left:0;transform:scale(.7)}25%{transform:scale(1.15)}50%{left:85%;transform:scale(.7)}75%{transform:scale(.5)}100%{left:0;transform:scale(.7)}}
+.robot.ko-on .look,.robot.ko-on .mouth,.robot.ko-on .cheek,.robot.ko-on .steam{visibility:hidden}
+.robot.ko-on .ko{display:flex}.robot.ko-on .stars{display:block}.robot.ko-on .crack{opacity:1}
+.robot.ko-on .head{animation:none!important;transform:rotate(-13deg) translateY(10px);transition:transform .45s cubic-bezier(.5,-.6,.5,1.6)}
+.robot.ko-on .bulb{background:#555;box-shadow:none;animation:none}
+.robot.hit .head{animation:hit .32s linear}
+@keyframes hit{20%{transform:translate(-9px,3px) rotate(-4deg)}45%{transform:translate(7px,-2px) rotate(3deg)}70%{transform:translate(-4px,1px)}}
+.boot{position:absolute;left:30%;right:30%;top:48%;height:3.5%;border-radius:999px;border:.6cqw solid var(--eye);z-index:6;display:none;overflow:hidden}
+.boot::after{content:"";position:absolute;inset:0;background:var(--eye);transform-origin:left;animation:boot 1.3s ease-in-out forwards}
+@keyframes boot{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.robot.reboot .look,.robot.reboot .mouth{visibility:hidden}.robot.reboot .boot{display:block}
+.toy{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;pointer-events:none}
+.robot.toy-on .toy{display:flex}.robot.toy-on .look,.robot.toy-on .mouth{visibility:hidden}
+.dice{width:30cqw;height:30cqw;border-radius:6cqw;background:var(--eye);box-shadow:0 0 4cqw var(--eye);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:4cqw;gap:1cqw}
+.dice i{border-radius:50%;background:var(--screen);visibility:hidden;width:72%;height:72%;margin:auto}
+.dice.roll{animation:roll .12s linear infinite}
+@keyframes roll{to{transform:rotate(360deg) scale(.92)}}
+.coin{width:30cqw;height:30cqw;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF1B8,#FFD15C 45%,#C9962B);box-shadow:0 0 4cqw #FFD15C;
+  display:grid;place-items:center;color:#5A3D00;font-weight:700;font-size:5cqw;text-align:center}
+.coin.flip{animation:flip .18s linear infinite}
+@keyframes flip{50%{transform:scaleX(.05)}}
 /* party hat */
 .hat{position:absolute;left:50%;top:-17%;width:20%;aspect-ratio:.8;transform:translate(-50%,30%) scale(.2);opacity:0;z-index:3;
   clip-path:polygon(50% 0,100% 100%,0 100%);
@@ -261,7 +272,7 @@ summary{cursor:pointer;color:var(--muted);font-size:14px}
 .notes button{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;margin-left:6px;font-size:14px}
 
 @media (prefers-reduced-motion: reduce){
-  .robot.bounce,.robot.dance,.robot.asleep .zzz,.robot[data-emotion="love"] .heart,.bulb,.head,.steam,.arm{animation:none!important}
+  .robot.bounce,.robot.dance,.robot.asleep .zzz,.robot[data-emotion="love"] .heart,.bulb,.head,.steam,.hnd,.stars b,.dice,.coin{animation:none!important}
   .look,.eye,.lid,.glow{transition:none}
 }
 
@@ -302,12 +313,31 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   <div class="robot" id="robot" data-emotion="neutral">
     <div class="antenna"><span class="bulb"></span></div>
     <div class="head" id="head" role="button" tabindex="0" aria-label="Bitni silash">
-      <span class="arm left" aria-hidden="true"><span class="hand"></span></span>
-      <span class="arm right" aria-hidden="true"><span class="hand"></span></span>
       <span class="hat" aria-hidden="true"></span>
       <div class="screen">
         <canvas class="fx" id="fx" aria-hidden="true"></canvas>
         <div class="tvscreen" id="tv"></div>
+        <div class="hands" aria-hidden="true">
+          <span class="hnd l" id="handL"><svg viewBox="0 0 100 120" aria-hidden="true">
+            <g class="p-open" fill="currentColor"><rect x="18" y="54" width="64" height="58" rx="26"/><rect x="20" y="20" width="13" height="46" rx="6.5"/><rect x="35" y="12" width="13" height="52" rx="6.5"/><rect x="50" y="14" width="13" height="50" rx="6.5"/><rect x="65" y="24" width="13" height="42" rx="6.5"/><rect x="2" y="54" width="14" height="38" rx="7" transform="rotate(-35 9 73)"/></g>
+            <g class="p-fist" fill="currentColor"><rect x="16" y="40" width="68" height="68" rx="28"/><circle cx="28" cy="44" r="10"/><circle cx="43" cy="40" r="10"/><circle cx="58" cy="40" r="10"/><circle cx="72" cy="44" r="10"/><path class="ln" d="M36 44v16M51 42v18M65 44v16M24 74h34"/></g>
+            <g class="p-peace" fill="currentColor"><rect x="20" y="50" width="62" height="58" rx="24"/><rect x="26" y="6" width="14" height="58" rx="7" transform="rotate(-12 33 60)"/><rect x="50" y="6" width="14" height="58" rx="7" transform="rotate(10 57 60)"/><circle cx="70" cy="54" r="9"/><path class="ln" d="M64 56v12M26 76h34"/></g>
+            <g class="p-thumb" fill="currentColor"><rect x="26" y="50" width="58" height="58" rx="22"/><rect x="18" y="8" width="17" height="56" rx="8.5" transform="rotate(-8 26 60)"/><path class="ln" d="M44 64h36M44 78h36M44 92h34"/></g>
+            <g class="p-point" fill="currentColor"><rect x="18" y="50" width="64" height="58" rx="24"/><rect x="28" y="4" width="14" height="60" rx="7"/><circle cx="57" cy="52" r="9"/><circle cx="72" cy="56" r="8"/><path class="ln" d="M50 56v12M65 58v10M24 78h30"/></g>
+          </svg></span>
+          <span class="hnd r" id="handR"><svg viewBox="0 0 100 120" aria-hidden="true">
+            <g class="p-open" fill="currentColor"><rect x="18" y="54" width="64" height="58" rx="26"/><rect x="20" y="20" width="13" height="46" rx="6.5"/><rect x="35" y="12" width="13" height="52" rx="6.5"/><rect x="50" y="14" width="13" height="50" rx="6.5"/><rect x="65" y="24" width="13" height="42" rx="6.5"/><rect x="2" y="54" width="14" height="38" rx="7" transform="rotate(-35 9 73)"/></g>
+            <g class="p-fist" fill="currentColor"><rect x="16" y="40" width="68" height="68" rx="28"/><circle cx="28" cy="44" r="10"/><circle cx="43" cy="40" r="10"/><circle cx="58" cy="40" r="10"/><circle cx="72" cy="44" r="10"/><path class="ln" d="M36 44v16M51 42v18M65 44v16M24 74h34"/></g>
+            <g class="p-peace" fill="currentColor"><rect x="20" y="50" width="62" height="58" rx="24"/><rect x="26" y="6" width="14" height="58" rx="7" transform="rotate(-12 33 60)"/><rect x="50" y="6" width="14" height="58" rx="7" transform="rotate(10 57 60)"/><circle cx="70" cy="54" r="9"/><path class="ln" d="M64 56v12M26 76h34"/></g>
+            <g class="p-thumb" fill="currentColor"><rect x="26" y="50" width="58" height="58" rx="22"/><rect x="18" y="8" width="17" height="56" rx="8.5" transform="rotate(-8 26 60)"/><path class="ln" d="M44 64h36M44 78h36M44 92h34"/></g>
+            <g class="p-point" fill="currentColor"><rect x="18" y="50" width="64" height="58" rx="24"/><rect x="28" y="4" width="14" height="60" rx="7"/><circle cx="57" cy="52" r="9"/><circle cx="72" cy="56" r="8"/><path class="ln" d="M50 56v12M65 58v10M24 78h30"/></g>
+          </svg></span>
+        </div>
+        <svg class="crack" id="crack" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="ko" aria-hidden="true"><i></i><i></i></div>
+        <div class="stars" aria-hidden="true"><b>★</b><b>★</b><b>★</b></div>
+        <div class="boot" aria-hidden="true"></div>
+        <div class="toy" id="toy" aria-hidden="true"></div>
         <div class="flash" aria-hidden="true"></div>
         <div class="look" id="look">
           <div class="eye left"><span class="glow"></span><svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="lid top"></span><span class="lid bottom"></span></div>
@@ -392,7 +422,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   const EMOTIONS = ['neutral','happy','laughing','excited','love','shy','wink','proud','sad','angry','scared','surprised','confused','bored','sleepy','thinking'];
   const BCP = { uz:'uz-UZ', ru:'ru-RU', en:'en-US' };
   const T = {
-    uz:{ name:'Bit', wake:'«Hey Bit» bilan chaqirish', track:'👀 Meni kuzat', wakeHeard:'Ha, eshitaman!', wakeOff:'«Hey Bit» faqat Google Chromeʼda ishlaydi.', remind:'Eslatma', pomoWork:'Diqqat vaqti', pomoBreak:'Tanaffus', pomoStartWork:'Ishga qaytamiz! Diqqat bilan.', pomoStartBreak:'Tanaffus! Choy iching, choʻzilib oling.', pomoDone:'Pomodoro tugadi, zoʻr ishladingiz!', quiz:'Viktorina', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
+    uz:{ name:'Bit', heads:'GERB', tails:'SON', wake:'«Hey Bit» bilan chaqirish', track:'👀 Meni kuzat', wakeHeard:'Ha, eshitaman!', wakeOff:'«Hey Bit» faqat Google Chromeʼda ishlaydi.', remind:'Eslatma', pomoWork:'Diqqat vaqti', pomoBreak:'Tanaffus', pomoStartWork:'Ishga qaytamiz! Diqqat bilan.', pomoStartBreak:'Tanaffus! Choy iching, choʻzilib oling.', pomoDone:'Pomodoro tugadi, zoʻr ishladingiz!', quiz:'Viktorina', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
       ph:'Bitga yozing yoki gapiring…', send:'Yuborish', mic:'Gapirish', voice:'Ovozli javob', smart:'Chuqur oʻylash', history:'Suhbat tarixi', you:'Siz', pet:'Bitni silash',
       greet:'Salom, hamkasb! Men tayyorman. Telegramga yozish, musiqa qoʻyish yoki kompyuterda biror narsani ochish kerak boʻlsa, ayting.',
       tickle:['Hihi, qitiq boʻlyapti!','Yana silang!','Voy, yoqimli!','Ha-ha, bas, kulgim qistayapti!','Mmm, rahmat!','Uyalib ketdim-ku…'], annoyed:['Boʻldi-da, bas qiling!','Hoy! Men oʻyinchoq emasman!','Yana bossangiz, xafa boʻlaman!'], wake:'Ha? Uygʻondim!', timerDone:'Vaqt tugadi!',
@@ -402,7 +432,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Avval sozlamalarda kirish tokenini kiriting.', bad:'Token notoʻgʻri. Sozlamalarni tekshiring.', rate:'Soʻrovlar juda koʻp. Bir oz kuting.',
       fail:'Server javob bermadi. Internet va serverni tekshiring.', settings:'Sozlamalar', micBlocked:'Mikrofonga ruxsat yoʻq. Yozib yuboring.',
       micLang:'Brauzer bu tilda nutqni tanimaydi. Yozib yuboring.', noVoice:'Bu qurilmada shu til uchun ovoz yoʻq, javob matnda koʻrinadi.', notes:'Eslab qolganlarim:', clear:'Tozalash' },
-    ru:{ name:'Бит', wake:'Вызов «Hey Bit»', track:'👀 Следи за мной', wakeHeard:'Да, слушаю!', wakeOff:'«Hey Bit» работает только в Google Chrome.', remind:'Напоминание', pomoWork:'Фокус', pomoBreak:'Перерыв', pomoStartWork:'Возвращаемся к работе! Сосредоточимся.', pomoStartBreak:'Перерыв! Выпейте чаю, потянитесь.', pomoDone:'Помодоро закончено, отличная работа!', quiz:'Викторина', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
+    ru:{ name:'Бит', heads:'ОРЁЛ', tails:'РЕШКА', wake:'Вызов «Hey Bit»', track:'👀 Следи за мной', wakeHeard:'Да, слушаю!', wakeOff:'«Hey Bit» работает только в Google Chrome.', remind:'Напоминание', pomoWork:'Фокус', pomoBreak:'Перерыв', pomoStartWork:'Возвращаемся к работе! Сосредоточимся.', pomoStartBreak:'Перерыв! Выпейте чаю, потянитесь.', pomoDone:'Помодоро закончено, отличная работа!', quiz:'Викторина', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
       ph:'Напишите или скажите Биту…', send:'Отправить', mic:'Говорить', voice:'Отвечать голосом', smart:'Думать глубже', history:'История', you:'Вы', pet:'Погладить Бита',
       greet:'Привет, коллега! Я готов. Написать в Telegram, включить музыку или открыть что-то на компьютере — просто скажите.',
       tickle:['Хи-хи, щекотно!','Ещё погладь!','Ой, приятно!','Ха-ха, хватит, я сейчас лопну!','Ммм, спасибо!','Ой, я смущаюсь…'], annoyed:['Всё, хватит!','Эй! Я не игрушка!','Ещё раз — и я обижусь!'], wake:'А? Я проснулся!', timerDone:'Время вышло!',
@@ -412,7 +442,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Сначала укажите токен доступа в настройках.', bad:'Неверный токен. Проверьте настройки.', rate:'Слишком много запросов. Подождите.',
       fail:'Сервер не ответил. Проверьте интернет и сервер.', settings:'Настройки', micBlocked:'Нет доступа к микрофону. Напишите.',
       micLang:'Браузер не распознаёт речь на этом языке. Напишите.', noVoice:'Нет голоса для этого языка, ответ показан текстом.', notes:'Я запомнил:', clear:'Очистить' },
-    en:{ name:'Bit', wake:'Wake with “Hey Bit”', track:'👀 Watch me', wakeHeard:'Yes, I’m listening!', wakeOff:'“Hey Bit” only works in Google Chrome.', remind:'Reminder', pomoWork:'Focus', pomoBreak:'Break', pomoStartWork:'Back to work! Let’s focus.', pomoStartBreak:'Break time! Grab some tea and stretch.', pomoDone:'Pomodoro done, great work!', quiz:'Quiz', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
+    en:{ name:'Bit', heads:'HEADS', tails:'TAILS', wake:'Wake with “Hey Bit”', track:'👀 Watch me', wakeHeard:'Yes, I’m listening!', wakeOff:'“Hey Bit” only works in Google Chrome.', remind:'Reminder', pomoWork:'Focus', pomoBreak:'Break', pomoStartWork:'Back to work! Let’s focus.', pomoStartBreak:'Break time! Grab some tea and stretch.', pomoDone:'Pomodoro done, great work!', quiz:'Quiz', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
       ph:'Type or talk to Bit…', send:'Send', mic:'Speak', voice:'Spoken replies', smart:'Think deeper', history:'Chat history', you:'You', pet:'Pet Bit',
       greet:'Hi, colleague! I’m ready. Message someone on Telegram, play music or open something on your computer — just say it.',
       tickle:['Hehe, that tickles!','Do it again!','Aww, nice!','Haha, stop, I can’t breathe!','Mmm, thanks!','Oh, you’re making me blush…'], annoyed:['Okay, that’s enough!','Hey! I’m not a toy!','One more time and I’ll be mad!'], wake:'Huh? I’m awake!', timerDone:'Time’s up!',
@@ -530,7 +560,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   let pokeLog = [];
   head.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); head.click(); } });
   head.addEventListener('click', () => {
-    if (busy || robot.classList.contains('tv')) return;
+    if (busy || gameBusy || robot.classList.contains('tv')) return;
     const now = Date.now(); taps = taps.filter(x => now - x < 1300); taps.push(now);
     pokeLog = pokeLog.filter(x => now - x < 8000); pokeLog.push(now);
     const L = t(), pick = a => a[Math.floor(Math.random() * a.length)];
@@ -566,6 +596,10 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     scared:()=>{for(let i=0;i<6;i++) tone(1200+(i%2)*150,1200+(i%2)*150,i*.06,.05,'square',.03)},
     bored:()=>tone(300,260,0,.45,'sine',.04),
     clap:()=>{for(let i=0;i<4;i++) tone(2400,900,i*.2,.04,'square',.03)},
+    shot:()=>{tone(1600,200,0,.12,'sawtooth',.05)},
+    hit:()=>{tone(220,40,0,.4,'square',.07);for(let i=0;i<8;i++) tone(3000+Math.random()*3000,1500,.02+i*.03,.03,'square',.02)},
+    boot:()=>{tone(300,900,0,.5,'sine',.05);tone(600,1200,.55,.25,'sine',.05)},
+    tick:()=>tone(1400,1400,0,.025,'square',.02),
     boom:()=>{tone(180,50,0,.35,'triangle',.06);for(let i=0;i<5;i++) tone(2600+Math.random()*1500,1800,.12+i*.05,.03,'square',.012)},
     alarm:()=>{for(let i=0;i<4;i++) tone(1046,1046,i*.28,.16,'square',.045)}
   };
@@ -649,16 +683,97 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   }
 
   // ---------- gestures & celebrations ----------
-  const GESTURES = ['wave','clap','thumbs_up','shrug','facepalm','dance','hug'];
+  const GESTURES = ['wave','clap','thumbs_up','shrug','facepalm','dance','hug','raise_hands','peekaboo','point','peace'];
+  const HL = $('#handL'), HR = $('#handR');
   let gestureTimer = 0;
-  function playGesture(g, ms = 2600){
-    if (!GESTURES.includes(g)) return;
-    GESTURES.forEach(x => robot.classList.remove('g-' + x));
-    clearTimeout(gestureTimer); void robot.offsetWidth;
-    robot.classList.add('g-' + g);
-    if (g === 'clap') chirp('clap');
-    gestureTimer = setTimeout(() => robot.classList.remove('g-' + g), ms);
+  // pose: open | fist | peace | thumb | point ; o: {x, y, r, anim}
+  function hand(el, pose, o = {}){
+    if (!pose) { el.classList.remove('up'); el.style.animation = ''; return; }
+    el.dataset.pose = pose;
+    el.style.setProperty('--hx', o.x || '0%'); el.style.setProperty('--hy', o.y || '0%'); el.style.setProperty('--hr', o.r || '0deg');
+    el.style.animation = o.anim || ''; el.classList.add('up');
   }
+  function handsDown(){ hand(HL); hand(HR); }
+  const GEST = {
+    raise_hands: () => { hand(HL, 'open', { y:'-14%', r:'-8deg', anim:'hwiggle .35s ease-in-out infinite alternate' }); hand(HR, 'open', { y:'-14%', r:'8deg', anim:'hwiggle .35s ease-in-out infinite alternate' }); },
+    wave:        () => hand(HR, 'open', { y:'-8%', anim:'hwave .3s ease-in-out infinite alternate' }),
+    clap:        () => { hand(HL, 'open', { anim:'hclapL .2s ease-in-out infinite alternate' }); hand(HR, 'open', { anim:'hclapR .2s ease-in-out infinite alternate' }); chirp('clap'); },
+    thumbs_up:   () => hand(HR, 'thumb', { y:'-10%', r:'-6deg' }),
+    point:       () => hand(HR, 'point', { y:'-8%', r:'-10deg' }),
+    peace:       () => hand(HR, 'peace', { y:'-8%', r:'-6deg', anim:'hwiggle .5s ease-in-out infinite alternate' }),
+    shrug:       () => { hand(HL, 'open', { y:'-6%', r:'-28deg', anim:'hbob .45s ease-in-out infinite alternate' }); hand(HR, 'open', { y:'-6%', r:'28deg', anim:'hbob .45s ease-in-out infinite alternate' }); },
+    facepalm:    () => hand(HR, 'open', { x:'-62%', y:'-112%', r:'-12deg' }),
+    dance:       () => { hand(HL, 'fist', { anim:'hdanceA .3s ease-in-out infinite alternate' }); hand(HR, 'fist', { anim:'hdanceB .3s ease-in-out infinite alternate' }); },
+    hug:         () => { hand(HL, 'open', { x:'70%', y:'-30%', r:'28deg' }); hand(HR, 'open', { x:'-70%', y:'-30%', r:'-28deg' }); },
+    peekaboo:    () => { hand(HL, 'open', { anim:'hpeekL 2.4s ease-in-out forwards' }); hand(HR, 'open', { anim:'hpeekR 2.4s ease-in-out forwards' }); }
+  };
+  function playGesture(g, ms = 2600){
+    if (!GESTURES.includes(g) || robot.classList.contains('tv')) return;
+    GESTURES.forEach(x => robot.classList.remove('g-' + x));
+    clearTimeout(gestureTimer); handsDown(); void robot.offsetWidth;
+    robot.classList.add('g-' + g); GEST[g]();
+    gestureTimer = setTimeout(() => { robot.classList.remove('g-' + g); handsDown(); }, g === 'peekaboo' ? 2500 : ms);
+  }
+
+  // ---------- games ----------
+  const toyEl = $('#toy');
+  function crackAt(cx, cy){
+    let d = '';
+    for (let i = 0; i < 9; i++) {           // jagged rays from the impact point
+      const a = (Math.PI * 2 * i) / 9 + Math.random() * .4; let x = cx, y = cy; d += `M${cx} ${cy}`;
+      for (let k = 0; k < 4; k++) { const len = 6 + Math.random() * 9; x += Math.cos(a + (Math.random() - .5) * .7) * len; y += Math.sin(a + (Math.random() - .5) * .7) * len * 1.2; d += ` L${x.toFixed(1)} ${y.toFixed(1)}`; }
+    }
+    for (const r of [4, 9]) {               // rings
+      d += ` M${cx + r} ${cy}`; for (let k = 1; k <= 8; k++) { const a = Math.PI * 2 * k / 8; d += ` L${(cx + Math.cos(a) * r * (1 + Math.random() * .3)).toFixed(1)} ${(cy + Math.sin(a) * r * 1.2 * (1 + Math.random() * .3)).toFixed(1)}`; }
+    }
+    $('#crack').innerHTML = `<path d="${d}"/>`;
+  }
+  let gameBusy = false;
+  function gotShot(){
+    if (gameBusy) return; gameBusy = true;
+    stopTv(); handsDown(); stopSpeaking();
+    const b = document.createElement('div'); b.className = 'bullet'; $('.screen').append(b); chirp('shot');
+    setTimeout(() => {
+      b.remove(); crackAt(46 + Math.random() * 8, 44 + Math.random() * 8); chirp('hit');
+      pulse('hit', 400); robot.classList.add('ko-on');
+    }, 240);
+    setTimeout(() => { robot.classList.remove('ko-on'); robot.classList.add('reboot'); $('#crack').innerHTML = ''; chirp('boot'); }, 3400);
+    setTimeout(() => { robot.classList.remove('reboot'); setEmotion('wink', 3000); playGesture('point', 2500); chirp('wink'); gameBusy = false; }, 4900);
+  }
+  const PIPS = { 1:[4], 2:[0,8], 3:[0,4,8], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8] };
+  function diceFace(el, v){ [...el.children].forEach((p, i) => p.style.visibility = PIPS[v].includes(i) ? 'visible' : 'hidden'); }
+  function rollDice(value){
+    handsDown(); toyEl.innerHTML = '<div class="dice roll">' + '<i></i>'.repeat(9) + '</div>'; robot.classList.add('toy-on');
+    const d = toyEl.firstChild; const spin = setInterval(() => { diceFace(d, 1 + Math.floor(Math.random() * 6)); chirp('tick'); }, 90);
+    setTimeout(() => { clearInterval(spin); d.classList.remove('roll'); diceFace(d, value); chirp('proud'); }, 1300);
+    setTimeout(() => { robot.classList.remove('toy-on'); toyEl.textContent = ''; }, 5500);
+  }
+  function flipCoin(side){
+    handsDown(); const L = t();
+    toyEl.innerHTML = '<div class="coin flip">?</div>'; robot.classList.add('toy-on'); const c = toyEl.firstChild;
+    const spin = setInterval(() => chirp('tick'), 180);
+    setTimeout(() => { clearInterval(spin); c.classList.remove('flip'); c.textContent = side === 'heads' ? L.heads : L.tails; chirp('proud'); }, 1400);
+    setTimeout(() => { robot.classList.remove('toy-on'); toyEl.textContent = ''; }, 5500);
+  }
+  const RPS_POSE = { rock:'fist', paper:'open', scissors:'peace' };
+  function playRps(a){
+    clearTimeout(gestureTimer); handsDown();
+    hand(HL, 'fist', { anim:'hshake .32s ease-in-out 3' }); hand(HR, 'fist', { anim:'hshake .32s ease-in-out 3' }); chirp('tick');
+    setTimeout(() => {
+      hand(HL, a.user ? RPS_POSE[a.user] : null, { y:'-10%' }); hand(HR, RPS_POSE[a.bit], { y:'-10%', r:'-6deg' });
+      setEmotion(a.winner === 'bit' ? 'laughing' : a.winner === 'user' ? 'sad' : 'surprised', 3500);
+      chirp(a.winner === 'bit' ? 'laughing' : a.winner === 'user' ? 'sad' : 'surprised');
+    }, 1000);
+    gestureTimer = setTimeout(handsDown, 4200);
+  }
+  function runGame(a){
+    if (a.game === 'shot') gotShot();
+    else if (a.game === 'dice') rollDice(a.value);
+    else if (a.game === 'coin') flipCoin(a.side);
+    else if (a.game === 'rps') playRps(a);
+    else if (a.game === 'peekaboo') { setEmotion('laughing', 3000); playGesture('peekaboo'); }
+  }
+
   const fx = $('#fx'); let fxRun = 0, partyTimer = 0;
   const FX_COLORS = ['#FFD15C','#FF7EB6','#7CF5D6','#A99DFF','#FF9F45','#5CF2A8','#FFFFFF','#6FA8FF'];
   function celebrate(style = 'fireworks', ms = 5000){
@@ -711,7 +826,8 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     }
     requestAnimationFrame(frame);
   }
-  window.__celebrate = s => celebrate(s, 4000);
+  // test/debug hook (used by the screenshot tests): window.__bit.gesture('wave'), window.__bit.game({game:'dice', value:4})
+  window.__bit = { gesture: (g, ms) => playGesture(g, ms), game: a => runGame(a), celebrate: s => celebrate(s, 4000) };
   window.__fxStop = () => { fxRun++; fx.getContext('2d').clearRect(0, 0, fx.width, fx.height); robot.classList.remove('party'); };
   async function greetToday(){
     if (!cfg.token) return;
@@ -783,6 +899,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       else if (a.type === 'open_url') openLink(a.url);
       else if (a.type === 'youtube') playYoutube(a);
       else if (a.type === 'local' && a.action === 'open') openLocal(a.target);
+      else if (a.type === 'game') runGame(a);
       else if (a.type === 'pomodoro') startPomodoro(a);
       else if (a.type === 'pomodoro_stop') stopTimer();
       else if (a.type === 'notify_permission') { try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch {} }
@@ -974,7 +1091,9 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       const emo = EMOTIONS.includes(out.emotion) ? out.emotion : 'neutral';
       setEmotion(emo, emo === 'sleepy' ? 0 : 7000); chirp(emo); if (emo === 'excited' || emo === 'proud') pulse('bounce', 1500);
       addLog('bit', out.reply); show(out.reply, lang, text);
-      if (out.gesture) playGesture(out.gesture);
+      const isGame = (out.actions || []).some(a => a.type === 'game');
+      if (out.gesture && !isGame) playGesture(out.gesture);
+      else if (!isGame && (emo === 'shy' || emo === 'scared')) playGesture('peekaboo');
       runActions(out.actions); (out.pending || []).forEach(confirmCard); showQuiz(out.quiz);
       if (emo === 'sleepy') setTimeout(sleep, 4000);
     } catch (e) {
