@@ -25,8 +25,9 @@ _agent: Agent | None = None
 def get_agent() -> Agent:
     global _agent
     if _agent is None:
-        if not config.ANTHROPIC_API_KEY:
-            raise HTTPException(503, "ANTHROPIC_API_KEY is not set on the server")
+        if not config.llm_configured():
+            key = "ANTHROPIC_API_KEY" if config.LLM_PROVIDER == "anthropic" else "OPENAI_API_KEY / OPENAI_BASE_URL"
+            raise HTTPException(503, f"{key} is not set on the server")
         _agent = Agent(memory, tools)
     return _agent
 
@@ -63,7 +64,7 @@ class ConfirmIn(BaseModel):
 @app.get("/api/health")
 def health():
     return {"ok": True, "tools": sorted(tools), "autonomy": config.AUTONOMY_LEVEL,
-            "telegram": bool(config.TELEGRAM_SESSION), "llm": bool(config.ANTHROPIC_API_KEY)}
+            "telegram": bool(config.TELEGRAM_SESSION), "llm": config.llm_configured(), "provider": config.LLM_PROVIDER}
 
 
 @app.post("/api/chat", dependencies=[Depends(auth)])
@@ -78,7 +79,7 @@ async def chat(body: ChatIn):
         status = getattr(e, "status_code", None)
         if status == 429:
             raise HTTPException(429, "LLM rate limit")
-        msg = str(getattr(e, "message", "") or e).replace(config.ANTHROPIC_API_KEY or "\0", "***")[:300]
+        msg = str(getattr(e, "message", "") or e).replace(config.ANTHROPIC_API_KEY or "\0", "***").replace(config.OPENAI_API_KEY or "\0", "***")[:300]
         raise HTTPException(502, f"LLM error: {type(e).__name__}: {msg}")
 
 

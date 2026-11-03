@@ -180,3 +180,47 @@ def test_llm_error_detail_is_returned_and_key_masked(monkeypatch):
     r = c.post("/api/chat", json={"text": "hi"}, headers={"Authorization": "Bearer test-token"})
     assert r.status_code == 502
     assert "credit balance" in r.json()["detail"] and "sk-test" not in r.json()["detail"]
+
+
+# ---------- OpenAI-compatible provider (Gemini / Groq / Ollama) ----------
+import httpx as _httpx
+
+from app.llm import LLMError, OpenAICompatLLM
+
+
+def _oa_transport(responses, seen):
+    def handler(request):
+        seen.append(json.loads(request.content))
+        status, body = responses.pop(0)
+        return _httpx.Response(status, json=body)
+    return _httpx.MockTransport(handler)
+
+
+def test_openai_compat_tool_loop(mem):
+    seen = []
+    responses = [
+        (200, {"choices": [{"message": {"content": None, "tool_calls": [
+            {"id": "c1", "type": "function", "function": {"name": "set_timer", "arguments": '{"seconds": 60, "label": "test"}'}}]}}]}),
+        (200, {"choices": [{"message": {"content": '```json\n{"reply":"Taymer qoʻyildi","emotion":"happy","lang":"uz"}\n```'}}]}),
+    ]
+    llm = OpenAICompatLLM("https://example.test/v1", "k", "m-fast", transport=_oa_transport(responses, seen))
+    out = run(Agent(mem, load_tools(), llm=llm).chat("1 daqiqaga taymer"))
+    assert out["reply"] == "Taymer qoʻyildi" and out["actions"][0]["seconds"] == 60
+    first, second = seen
+    assert first["model"] == "m-fast" and first["messages"][0]["role"] == "system"
+    assert {t["function"]["name"] for t in first["tools"]} >= {"set_timer", "send_telegram"}
+    assert second["messages"][-2]["tool_calls"][0]["function"]["name"] == "set_timer"
+    assert second["messages"][-1] == {"role": "tool", "tool_call_id": "c1", "content": '{"ok": true, "seconds": 60}'}
+
+
+def test_openai_compat_error_and_missing_ids(mem):
+    seen = []
+    llm = OpenAICompatLLM("https://example.test/v1", "k", "m", transport=_oa_transport(
+        [(429, [{"error": {"code": 429, "message": "Resource has been exhausted"}}])], seen))
+    with pytest.raises(LLMError) as e:
+        run(llm.complete("s", [{"role": "user", "content": "hi"}], []))
+    assert e.value.status_code == 429 and "exhausted" in e.value.message
+    llm2 = OpenAICompatLLM("https://example.test/v1", "", "m", transport=_oa_transport(
+        [(200, {"choices": [{"message": {"tool_calls": [{"function": {"name": "dance", "arguments": "not json"}}]}}]})], seen))
+    step = run(llm2.complete("s", [{"role": "user", "content": "hi"}], []))
+    assert step["tool_calls"][0]["id"].startswith("call_") and step["tool_calls"][0]["input"] == {}

@@ -10,7 +10,20 @@ load_dotenv()
 DATA_DIR = Path(os.getenv("BIT_DATA_DIR", "/data"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+# Which brain: "anthropic" (Claude, paid) or "openai" (any OpenAI-compatible API: Gemini, Groq, OpenRouter, Ollama)
+LLM_PROVIDER = os.getenv("BIT_LLM_PROVIDER", "anthropic").strip().lower()
+
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL_FAST = os.getenv("OPENAI_MODEL_FAST", "gemini-2.5-flash")
+OPENAI_MODEL_SMART = os.getenv("OPENAI_MODEL_SMART", "")
+
+
+def llm_configured() -> bool:
+    if LLM_PROVIDER == "anthropic":
+        return bool(ANTHROPIC_API_KEY)
+    return bool(OPENAI_BASE_URL and (OPENAI_API_KEY or "localhost" in OPENAI_BASE_URL or "127.0.0.1" in OPENAI_BASE_URL))
 MODEL_FAST = os.getenv("BIT_MODEL_FAST", "claude-haiku-5-5")
 MODEL_SMART = os.getenv("BIT_MODEL_SMART", "claude-sonnet-5-5")
 MAX_TOOL_ROUNDS = int(os.getenv("BIT_MAX_TOOL_ROUNDS", "6"))

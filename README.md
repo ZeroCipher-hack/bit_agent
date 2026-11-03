@@ -50,6 +50,18 @@ nano .env
 2. `BIT_API_TOKEN`: ilova paroli. Yaratish: `python -c "import secrets;print(secrets.token_urlsafe(32))"`
 3. Telegram (ixtiyoriy): my.telegram.org → *API development tools* → `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`.
 
+### Bepul "miya" (Claude oʻrniga)
+
+`.env` da `BIT_LLM_PROVIDER=openai` qilib, quyidagilardan birini tanlang:
+
+| Variant | Narx | Sifat | Sozlash |
+|---|---|---|---|
+| **Google Gemini** | Bepul tier (daqiqasiga bir necha soʻrov) | Yaxshi, oʻzbekchani biladi | aistudio.google.com → *Get API key* → `OPENAI_API_KEY` |
+| **Groq** | Bepul tier | Oʻrtacha, juda tez | console.groq.com → kalit, `OPENAI_BASE_URL` va modelni almashtiring |
+| **Ollama** | Butunlay bepul, internetsiz | Kuchsizroq, 8 GB+ RAM | `ollama pull qwen2.5:7b`, `OPENAI_BASE_URL=http://localhost:11434/v1` |
+
+Bepul tierlarda yuborilgan matnlar provayder tomonidan modelni yaxshilash uchun ishlatilishi mumkin — maxfiy maʼlumot yubormang. Model nomlari vaqt oʻtishi bilan oʻzgaradi: amaldagi nomni provayder saytidan tekshiring.
+
 ## 3. Ishga tushirish
 
 Docker Desktop (Windows) yoki Docker (Linux) kerak.

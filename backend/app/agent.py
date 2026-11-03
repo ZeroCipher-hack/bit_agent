@@ -56,13 +56,12 @@ def parse_final(text: str) -> dict:
 
 
 class Agent:
-    def __init__(self, memory, tools: dict, client=None):
+    def __init__(self, memory, tools: dict, client=None, llm=None):
+        """client: an Anthropic-style client (used by tests); llm: any provider from app.llm."""
+        from .llm import AnthropicLLM, make_llm
         self.memory = memory
         self.tools = tools
-        if client is None:
-            from anthropic import AsyncAnthropic
-            client = AsyncAnthropic(api_key=config.ANTHROPIC_API_KEY)
-        self.client = client
+        self.llm = llm or (AnthropicLLM(client) if client is not None else make_llm())
 
     def needs_confirmation(self, tool) -> bool:
         level = config.AUTONOMY_LEVEL
@@ -102,28 +101,20 @@ class Agent:
         if len(messages) > 1 and messages[-2]["role"] == "user":  # previous reply failed: merge
             last = messages.pop()
             messages[-1] = {"role": "user", "content": messages[-1]["content"] + "\n" + last["content"]}
-        schemas = [t.schema() for t in self.tools.values()]
-        model = config.MODEL_SMART if smart else config.MODEL_FAST
-        final_text = ""
+        transcript = list(messages)
+        tool_list = list(self.tools.values())
+        final_text = '{"reply": "…", "emotion": "confused"}'
         for _ in range(config.MAX_TOOL_ROUNDS):
-            resp = await self.client.messages.create(model=model, max_tokens=1024, system=system,
-                                                     tools=schemas, messages=messages)
-            texts = [b.text for b in resp.content if b.type == "text"]
-            uses = [b for b in resp.content if b.type == "tool_use"]
-            if resp.stop_reason != "tool_use" or not uses:
-                final_text = "\n".join(texts)
+            step = await self.llm.complete(system, transcript, tool_list, smart)
+            if not step["tool_calls"]:
+                final_text = step["text"]
                 break
-            assistant_content = [{"type": "text", "text": t} for t in texts if t.strip()]
-            assistant_content += [{"type": "tool_use", "id": u.id, "name": u.name, "input": u.input} for u in uses]
-            messages.append({"role": "assistant", "content": assistant_content})
+            transcript.append({"role": "assistant", "content": step["text"], "tool_calls": step["tool_calls"]})
             results = []
-            for u in uses:
-                result, is_error = await self._call_tool(u.name, dict(u.input or {}), ctx)
-                results.append({"type": "tool_result", "tool_use_id": u.id,
-                                "content": json.dumps(result, ensure_ascii=False), "is_error": is_error})
-            messages.append({"role": "user", "content": results})
-        else:
-            final_text = '{"reply": "…", "emotion": "confused"}'
+            for call in step["tool_calls"]:
+                result, is_error = await self._call_tool(call["name"], dict(call["input"] or {}), ctx)
+                results.append({"id": call["id"], "content": json.dumps(result, ensure_ascii=False), "is_error": is_error})
+            transcript.append({"role": "tool_results", "results": results})
 
         out = parse_final(final_text)
         self.memory.add_message("user", text)
