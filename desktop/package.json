@@ -1,0 +1,69 @@
+{
+  "name": "bit-desktop",
+  "productName": "Bit",
+  "version": "1.0.0",
+  "description": "Bit — ekran burchagidagi AI hamkasb",
+  "main": "main.js",
+  "author": {
+    "name": "ZeroCipher-hack",
+    "email": "ZeroCipher-hack@users.noreply.github.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never",
+    "dist:linux": "electron-builder --linux --publish never",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "uz.zerocipher.bit",
+    "productName": "Bit",
+    "files": [
+      "main.js",
+      "preload.js",
+      "setup.html",
+      "build/icon.png"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.education",
+      "icon": "build/icon.png",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Bit sizni eshitishi uchun",
+        "NSCameraUsageDescription": "Bit rasmga olishi uchun"
+      }
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Education",
+      "icon": "build/icon.png",
+      "maintainer": "ZeroCipher-hack <ZeroCipher-hack@users.noreply.github.com>"
+    }
+  },
+  "homepage": "https://github.com/ZeroCipher-hack/bit_agent"
+}

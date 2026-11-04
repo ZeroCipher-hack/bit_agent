@@ -198,7 +198,32 @@ Bit uydagi qurilmalarni [Home Assistant](https://www.home-assistant.io/) orqali 
 
 Qulflar, signalizatsiya va garaj/eshiklar har doim **tasdiq** bilan bajariladi.
 
-## 9. Yangi qobiliyat qoʻshish
+## 9. Kompyuter ilovasi (Windows, macOS, Linux)
+
+`desktop/` — Bit ekran burchagida kichik robot boʻlib turadi (hamma oynalar ustida). Ustiga bosing — panel ochiladi.
+
+| Qanday | Nima qiladi |
+|---|---|
+| Robotni sudrab olib boring | xohlagan joyga koʻchadi, joyini eslab qoladi |
+| **Ctrl+Shift+Space** | kursor turgan joyni rasmga olib, oʻsha soʻz/matnni tushuntiradi (kitob, PDF, sayt, terminal…). Linuxda belgilangan matnni ham oʻqiydi |
+| 🎯 Kursor ostidagini tushuntir | 3 soniya ichida kursorni soʻz ustiga olib borasiz |
+| 🖥 Ekranni tushuntir | butun ekran rasmini koʻrsatadi |
+| 📋 Nusxalangan matn | Ctrl+C qilingan matnni tushuntiradi |
+| Tray belgisi | koʻrsatish, kichraytirish, server manzili, kompyuter yonganda ochilish, chiqish |
+
+**Oʻrnatish fayllarini olish:** GitHub → **Actions** → *Desktop app* → **Run workflow**. Tayyor boʻlgach, artefaktlardan yuklab oling: Windows `.exe`, macOS `.dmg`, Linux `.AppImage` / `.deb`. `v1.0.0` kabi teg qoʻysangiz, avtomatik **Release** ham yaratiladi.
+
+Oʻzingiz yigʻish: `cd desktop && npm install && npm run dist` (har bir OS oʻz oʻrnatuvchisini yigʻadi).
+
+Birinchi ishga tushirishda server manzili soʻraladi (standart `http://127.0.0.1:8001`), keyin ⚙ da tokenni kiriting.
+
+> Ilovalar imzolanmagan: Windows "SmartScreen" ogohlantirsa — *Batafsil → Baribir ishga tushirish*; macOS'da — ilovani oʻng tugma → *Open*, va *Settings → Privacy → Screen Recording* da Bitga ruxsat bering.
+
+### Telefonda: "Ulashish → Bit"
+
+Bitni telefonga ilova qilib oʻrnating (brauzer → *Bosh ekranga qoʻshish*). Keyin istalgan ilovada (kitob, brauzer, Telegram) soʻzni belgilab → **Ulashish → Bit** — Bit oʻsha soʻzni tushuntiradi (Android Chrome). Telefonda boshqa ilovalar ustida suzib yuruvchi robot uchun alohida Android ilova kerak — keyingi bosqich.
+
+## 10. Yangi qobiliyat qoʻshish
 
 `backend/app/tools/` ichiga yangi fayl qoʻshing, server uni oʻzi topadi:
 ```python
@@ -216,7 +241,7 @@ class Weather(Tool):
         return {"temp_c": 12, "text": "bulutli"}
 ```
 
-## 10. Xavfsizlik
+## 11. Xavfsizlik
 
 - Har bir amal `audit` jadvaliga yoziladi. Koʻrish: `GET /api/audit` (token bilan).
 - Mustaqillik darajasi `BIT_AUTONOMY` bilan sozlanadi: 0 — hamma amal tasdiq bilan, 1 — faqat xavfli amallar tasdiq bilan (standart), 2 — tasdiqsiz.
@@ -224,7 +249,7 @@ class Weather(Tool):
 - Backend porti faqat `127.0.0.1`da ochiq. Tashqaridan kirish faqat HTTPS orqali.
 - Kompyuter agenti faqat `127.0.0.1`da, token bilan ishlaydi va faqat roʻyxatdagi ilova va papkalarni ochadi. Unga ixtiyoriy yoʻl yoki buyruq berib boʻlmaydi.
 
-## 11. Testlar
+## 12. Testlar
 
 ```bash
 cd backend && pip install -r requirements.txt && python -m pytest -q
