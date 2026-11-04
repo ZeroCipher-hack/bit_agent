@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#E9E7F1; --ink:#22202E; --muted:#6B6880; --shell:#FFFFFF; --shell-edge:#CFCBDD;
@@ -305,6 +305,32 @@ dialog.cam .row{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
 .lesson .chk{background:rgba(255,233,168,.12);border-left:4px solid #FFE9A8;border-radius:8px;padding:8px 10px;margin:0 0 10px}
 .lesson .row{display:flex;gap:8px;flex-wrap:wrap}
 .lesson .btn{background:#2f5a44;color:#EAF7EE}.lesson .btn.primary{background:#FFE9A8;color:#1d2a20}
+
+/* help chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips:empty{display:none}
+.chips button{border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:999px;padding:8px 13px;font:inherit;font-size:14px;cursor:pointer}
+.chips button:hover{border-color:var(--accent)}
+/* whiteboard */
+.board{background:#FBFBF7;color:#1D2433;border-radius:16px;padding:14px 16px 12px;border:10px solid #C9B69A;
+  box-shadow:inset 0 0 0 1px #e5e1d6,0 14px 30px -18px rgba(0,0,0,.6);position:relative}
+.board h3{margin:0 0 2px;font:700 28px/1.1 Caveat,cursive;color:#2C3E8F}
+.board .prob{margin:0 0 10px;font:600 24px/1.25 Caveat,cursive;color:#1D2433}
+.board ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;min-height:40px}
+.board li{display:flex;gap:10px;align-items:baseline;font:600 25px/1.3 Caveat,cursive;color:#1D2433}
+.board li b{font:700 16px/1 Rubik,sans-serif;color:#fff;background:#3C5BD8;border-radius:999px;min-width:22px;height:22px;display:inline-grid;place-items:center;flex:none;transform:translateY(-2px)}
+.board .w{display:inline-block;clip-path:inset(0 100% 0 0);transition:clip-path var(--wt,1s) linear;overflow-x:auto;max-width:100%}
+.board li.done .w{clip-path:inset(0 0 0 0)}
+.board li.now{color:#C0392B}
+.board .say{font:15px/1.4 Rubik,sans-serif;color:#5A6275;margin:2px 0 0 32px}
+.board .ans{margin:10px 0 0;font:700 27px/1.2 Caveat,cursive;color:#1E8449;border-top:2px dashed #cfc8b8;padding-top:8px}
+.board .chk{margin:8px 0 0;font:15px/1.4 Rubik,sans-serif;background:#FFF4D6;border-left:4px solid #F0B429;border-radius:8px;padding:8px 10px}
+.board .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.board .btn{background:#ECE8DD;color:#1D2433}.board .btn.primary{background:#3C5BD8;color:#fff}
+.board .katex{font-size:1.02em}
+/* generated image */
+.genimg img{width:100%;border-radius:12px;display:block;margin-bottom:10px;background:#111}
+.genimg p{font-size:14px;color:var(--muted)}
 .robot.listening{--ew:21cqw;--eh:26cqw}
 .robot.listening .bulb{animation:pulse .7s ease-in-out infinite}
 .robot.bounce{animation:bounce .5s ease-in-out 3}
@@ -461,6 +487,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     <p id="say"></p>
   </section>
 
+  <div class="chips" id="chips"></div>
   <div class="cards" id="cards"></div>
 
   <form class="ask" id="ask" autocomplete="off">
@@ -548,9 +575,9 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   const EMOTIONS = ['neutral','happy','laughing','excited','love','shy','wink','proud','sad','angry','scared','surprised','confused','bored','sleepy','thinking'];
   const BCP = { uz:'uz-UZ', ru:'ru-RU', en:'en-US' };
   const T = {
-    uz:{ name:'Bit', emoNames:{neutral:'Oddiy',happy:'Xursand',laughing:'Kulyapti',excited:'Hayajon',love:'Sevgi',shy:'Uyalyapti',wink:'Koʻz qisdi',proud:'Faxr',sad:'Xafa',angry:'Jahldor',scared:'Qoʻrqdi',surprised:'Hayron',confused:'Chalkash',bored:'Zerikdi',sleepy:'Uyqusirab',thinking:'Oʻylayapti'}, demoBtn:'Emotsiyalarni koʻrsat', lessonEx:'Misol', lessonCheck:'Tekshirib koʻraylik', lessonAnswer:'Javob beraman', lessonRead:'Oʻqib ber', lessonClose:'Darsni yopish', lessonPh:'Javobingizni yozing yoki ayting…', heads:'GERB', tails:'SON', wakeOpt:'«Hey Bit» bilan chaqirish', track:'👀 Meni kuzat', wakeHeard:'Ha, eshitaman!', wakeOff:'«Hey Bit» faqat Google Chromeʼda ishlaydi.', remind:'Eslatma', pomoWork:'Diqqat vaqti', pomoBreak:'Tanaffus', pomoStartWork:'Ishga qaytamiz! Diqqat bilan.', pomoStartBreak:'Tanaffus! Choy iching, choʻzilib oling.', pomoDone:'Pomodoro tugadi, zoʻr ishladingiz!', quiz:'Viktorina', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
+    uz:{ name:'Bit', chips:[['📐','Matematikadan misol yechib tushuntir'],['📖','Bir mavzuni oddiy qilib tushuntir'],['🎬','YouTubeʼdan video ochib ber'],['🎨','Rasm chizib ber'],['🌤','Bugun ob-havo qanday?'],['⏰','Ertaga soat 8 da eslat']], help:'Salom! Bugun nimada yordam beray?', boardPause:'Pauza', boardPlay:'Davom', boardNext:'Keyingi', boardReplay:'Qaytadan', boardClose:'Yopish', boardAnswer:'Javob', boardPractice:'Endi oʻzingiz yeching', boardTry:'Yechimni aytaman', imgSave:'Yuklab olish', imgAgain:'Boshqasini chiz', imgClose:'Yopish', emoNames:{neutral:'Oddiy',happy:'Xursand',laughing:'Kulyapti',excited:'Hayajon',love:'Sevgi',shy:'Uyalyapti',wink:'Koʻz qisdi',proud:'Faxr',sad:'Xafa',angry:'Jahldor',scared:'Qoʻrqdi',surprised:'Hayron',confused:'Chalkash',bored:'Zerikdi',sleepy:'Uyqusirab',thinking:'Oʻylayapti'}, demoBtn:'Emotsiyalarni koʻrsat', lessonEx:'Misol', lessonCheck:'Tekshirib koʻraylik', lessonAnswer:'Javob beraman', lessonRead:'Oʻqib ber', lessonClose:'Darsni yopish', lessonPh:'Javobingizni yozing yoki ayting…', heads:'GERB', tails:'SON', wakeOpt:'«Hey Bit» bilan chaqirish', track:'👀 Meni kuzat', wakeHeard:'Ha, eshitaman!', wakeOff:'«Hey Bit» faqat Google Chromeʼda ishlaydi.', remind:'Eslatma', pomoWork:'Diqqat vaqti', pomoBreak:'Tanaffus', pomoStartWork:'Ishga qaytamiz! Diqqat bilan.', pomoStartBreak:'Tanaffus! Choy iching, choʻzilib oling.', pomoDone:'Pomodoro tugadi, zoʻr ishladingiz!', quiz:'Viktorina', camera:'Kamera', screen:'Ekran rasmi', attached:'Rasm biriktirildi — savol yozing yoki shunchaki yuboring', askImage:'Bu rasmda nima bor?', snap:'Rasmga olish', cancel:'Bekor qilish', noCam:'Kameraga ruxsat yoʻq yoki kamera topilmadi.', noScreen:'Ekran rasmini olib boʻlmadi (ruxsat berilmadi yoki brauzer qoʻllamaydi).', tvOff:'Yuzdan olish', tvBig:'Katta ekran', awake:'Uygʻoq', thinking:'Oʻylayapti…', listening:'Eshityapti…', sleeping:'Uxlayapti', talking:'Gapiryapti',
       ph:'Bitga yozing yoki gapiring…', send:'Yuborish', mic:'Gapirish', voice:'Ovozli javob', smart:'Chuqur oʻylash', history:'Suhbat tarixi', you:'Siz', pet:'Bitni silash',
-      greet:'Salom, hamkasb! Men tayyorman. Telegramga yozish, musiqa qoʻyish yoki kompyuterda biror narsani ochish kerak boʻlsa, ayting.',
+      greet:'Salom, hamkasb! Bugun nimada yordam beray? Pastdan tanlang yoki oʻzingiz ayting.',
       tickle:['Hihi, qitiq boʻlyapti!','Yana silang!','Voy, yoqimli!','Ha-ha, bas, kulgim qistayapti!','Mmm, rahmat!','Uyalib ketdim-ku…'], annoyed:['Boʻldi-da, bas qiling!','Hoy! Men oʻyinchoq emasman!','Yana bossangiz, xafa boʻlaman!'], wake:'Ha? Uygʻondim!', timerDone:'Vaqt tugadi!',
       yes:'Ha, bajar', no:'Yoʻq', done:'Bajarildi.', rejected:'Bekor qildim.', expired:'Bu soʻrov eskirgan. Qaytadan ayting.',
       open:'Ochish', ytOpen:'YouTubeʼda ochish', localFail:'Kompyuter agenti javob bermadi. bit_local_agent.py ishga tushganini va token toʻgʻriligini tekshiring.',
@@ -558,9 +585,9 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Avval sozlamalarda kirish tokenini kiriting.', bad:'Token notoʻgʻri. Sozlamalarni tekshiring.', rate:'Soʻrovlar juda koʻp. Bir oz kuting.',
       fail:'Server javob bermadi. Internet va serverni tekshiring.', settings:'Sozlamalar', micBlocked:'Mikrofonga ruxsat yoʻq. Yozib yuboring.',
       micLang:'Brauzer bu tilda nutqni tanimaydi. Yozib yuboring.', noVoice:'Bu qurilmada shu til uchun ovoz yoʻq, javob matnda koʻrinadi.', notes:'Eslab qolganlarim:', clear:'Tozalash' },
-    ru:{ name:'Бит', emoNames:{neutral:'Спокойный',happy:'Радость',laughing:'Смех',excited:'Восторг',love:'Любовь',shy:'Смущение',wink:'Подмигнул',proud:'Гордость',sad:'Грусть',angry:'Злость',scared:'Страх',surprised:'Удивление',confused:'Растерянность',bored:'Скука',sleepy:'Сонный',thinking:'Думаю'}, demoBtn:'Показать эмоции', lessonEx:'Пример', lessonCheck:'Проверим', lessonAnswer:'Отвечу', lessonRead:'Прочитай', lessonClose:'Закрыть урок', lessonPh:'Напишите или скажите ответ…', heads:'ОРЁЛ', tails:'РЕШКА', wakeOpt:'Вызов «Hey Bit»', track:'👀 Следи за мной', wakeHeard:'Да, слушаю!', wakeOff:'«Hey Bit» работает только в Google Chrome.', remind:'Напоминание', pomoWork:'Фокус', pomoBreak:'Перерыв', pomoStartWork:'Возвращаемся к работе! Сосредоточимся.', pomoStartBreak:'Перерыв! Выпейте чаю, потянитесь.', pomoDone:'Помодоро закончено, отличная работа!', quiz:'Викторина', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
+    ru:{ name:'Бит', chips:[['📐','Реши пример по математике и объясни'],['📖','Объясни тему простыми словами'],['🎬','Открой видео на YouTube'],['🎨','Нарисуй картинку'],['🌤','Какая сегодня погода?'],['⏰','Напомни завтра в 8']], help:'Привет! Чем помочь сегодня?', boardPause:'Пауза', boardPlay:'Дальше', boardNext:'Следующий', boardReplay:'Заново', boardClose:'Закрыть', boardAnswer:'Ответ', boardPractice:'Теперь решите сами', boardTry:'Скажу решение', imgSave:'Скачать', imgAgain:'Нарисуй другую', imgClose:'Закрыть', emoNames:{neutral:'Спокойный',happy:'Радость',laughing:'Смех',excited:'Восторг',love:'Любовь',shy:'Смущение',wink:'Подмигнул',proud:'Гордость',sad:'Грусть',angry:'Злость',scared:'Страх',surprised:'Удивление',confused:'Растерянность',bored:'Скука',sleepy:'Сонный',thinking:'Думаю'}, demoBtn:'Показать эмоции', lessonEx:'Пример', lessonCheck:'Проверим', lessonAnswer:'Отвечу', lessonRead:'Прочитай', lessonClose:'Закрыть урок', lessonPh:'Напишите или скажите ответ…', heads:'ОРЁЛ', tails:'РЕШКА', wakeOpt:'Вызов «Hey Bit»', track:'👀 Следи за мной', wakeHeard:'Да, слушаю!', wakeOff:'«Hey Bit» работает только в Google Chrome.', remind:'Напоминание', pomoWork:'Фокус', pomoBreak:'Перерыв', pomoStartWork:'Возвращаемся к работе! Сосредоточимся.', pomoStartBreak:'Перерыв! Выпейте чаю, потянитесь.', pomoDone:'Помодоро закончено, отличная работа!', quiz:'Викторина', camera:'Камера', screen:'Снимок экрана', attached:'Изображение прикреплено — задайте вопрос или просто отправьте', askImage:'Что на этом изображении?', snap:'Снять', cancel:'Отмена', noCam:'Нет доступа к камере или камера не найдена.', noScreen:'Не удалось снять экран (нет разрешения или браузер не поддерживает).', tvOff:'Убрать с лица', tvBig:'Во весь экран', awake:'На связи', thinking:'Думает…', listening:'Слушает…', sleeping:'Спит', talking:'Говорит',
       ph:'Напишите или скажите Биту…', send:'Отправить', mic:'Говорить', voice:'Отвечать голосом', smart:'Думать глубже', history:'История', you:'Вы', pet:'Погладить Бита',
-      greet:'Привет, коллега! Я готов. Написать в Telegram, включить музыку или открыть что-то на компьютере — просто скажите.',
+      greet:'Привет, коллега! Чем помочь сегодня? Выберите ниже или скажите сами.',
       tickle:['Хи-хи, щекотно!','Ещё погладь!','Ой, приятно!','Ха-ха, хватит, я сейчас лопну!','Ммм, спасибо!','Ой, я смущаюсь…'], annoyed:['Всё, хватит!','Эй! Я не игрушка!','Ещё раз — и я обижусь!'], wake:'А? Я проснулся!', timerDone:'Время вышло!',
       yes:'Да, выполнить', no:'Нет', done:'Готово.', rejected:'Отменил.', expired:'Запрос устарел. Повторите.',
       open:'Открыть', ytOpen:'Открыть в YouTube', localFail:'Агент компьютера не ответил. Проверьте, что bit_local_agent.py запущен и токен верный.',
@@ -568,9 +595,9 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       needToken:'Сначала укажите токен доступа в настройках.', bad:'Неверный токен. Проверьте настройки.', rate:'Слишком много запросов. Подождите.',
       fail:'Сервер не ответил. Проверьте интернет и сервер.', settings:'Настройки', micBlocked:'Нет доступа к микрофону. Напишите.',
       micLang:'Браузер не распознаёт речь на этом языке. Напишите.', noVoice:'Нет голоса для этого языка, ответ показан текстом.', notes:'Я запомнил:', clear:'Очистить' },
-    en:{ name:'Bit', emoNames:{neutral:'Calm',happy:'Happy',laughing:'Laughing',excited:'Excited',love:'Love',shy:'Shy',wink:'Wink',proud:'Proud',sad:'Sad',angry:'Angry',scared:'Scared',surprised:'Surprised',confused:'Confused',bored:'Bored',sleepy:'Sleepy',thinking:'Thinking'}, demoBtn:'Show emotions', lessonEx:'Example', lessonCheck:'Quick check', lessonAnswer:'I’ll answer', lessonRead:'Read it to me', lessonClose:'Close lesson', lessonPh:'Type or say your answer…', heads:'HEADS', tails:'TAILS', wakeOpt:'Wake with “Hey Bit”', track:'👀 Watch me', wakeHeard:'Yes, I’m listening!', wakeOff:'“Hey Bit” only works in Google Chrome.', remind:'Reminder', pomoWork:'Focus', pomoBreak:'Break', pomoStartWork:'Back to work! Let’s focus.', pomoStartBreak:'Break time! Grab some tea and stretch.', pomoDone:'Pomodoro done, great work!', quiz:'Quiz', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
+    en:{ name:'Bit', chips:[['📐','Solve a maths example and explain it'],['📖','Explain a topic simply'],['🎬','Open a YouTube video'],['🎨','Draw me a picture'],['🌤','What’s the weather today?'],['⏰','Remind me tomorrow at 8']], help:'Hi! What can I help you with today?', boardPause:'Pause', boardPlay:'Continue', boardNext:'Next', boardReplay:'Replay', boardClose:'Close', boardAnswer:'Answer', boardPractice:'Now you try', boardTry:'I’ll answer', imgSave:'Download', imgAgain:'Draw another', imgClose:'Close', emoNames:{neutral:'Calm',happy:'Happy',laughing:'Laughing',excited:'Excited',love:'Love',shy:'Shy',wink:'Wink',proud:'Proud',sad:'Sad',angry:'Angry',scared:'Scared',surprised:'Surprised',confused:'Confused',bored:'Bored',sleepy:'Sleepy',thinking:'Thinking'}, demoBtn:'Show emotions', lessonEx:'Example', lessonCheck:'Quick check', lessonAnswer:'I’ll answer', lessonRead:'Read it to me', lessonClose:'Close lesson', lessonPh:'Type or say your answer…', heads:'HEADS', tails:'TAILS', wakeOpt:'Wake with “Hey Bit”', track:'👀 Watch me', wakeHeard:'Yes, I’m listening!', wakeOff:'“Hey Bit” only works in Google Chrome.', remind:'Reminder', pomoWork:'Focus', pomoBreak:'Break', pomoStartWork:'Back to work! Let’s focus.', pomoStartBreak:'Break time! Grab some tea and stretch.', pomoDone:'Pomodoro done, great work!', quiz:'Quiz', camera:'Camera', screen:'Screenshot', attached:'Image attached — ask something or just send', askImage:'What is in this image?', snap:'Take photo', cancel:'Cancel', noCam:'No camera access or no camera found.', noScreen:'Could not capture the screen (permission denied or not supported).', tvOff:'Off my face', tvBig:'Full screen', awake:'Awake', thinking:'Thinking…', listening:'Listening…', sleeping:'Asleep', talking:'Talking',
       ph:'Type or talk to Bit…', send:'Send', mic:'Speak', voice:'Spoken replies', smart:'Think deeper', history:'Chat history', you:'You', pet:'Pet Bit',
-      greet:'Hi, colleague! I’m ready. Message someone on Telegram, play music or open something on your computer — just say it.',
+      greet:'Hi, colleague! What can I help with today? Pick below or just tell me.',
       tickle:['Hehe, that tickles!','Do it again!','Aww, nice!','Haha, stop, I can’t breathe!','Mmm, thanks!','Oh, you’re making me blush…'], annoyed:['Okay, that’s enough!','Hey! I’m not a toy!','One more time and I’ll be mad!'], wake:'Huh? I’m awake!', timerDone:'Time’s up!',
       yes:'Yes, do it', no:'No', done:'Done.', rejected:'Cancelled.', expired:'That request expired. Ask again.',
       open:'Open', ytOpen:'Open in YouTube', localFail:'The computer agent didn’t answer. Check that bit_local_agent.py is running and the token is right.',
@@ -1059,6 +1086,123 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     step();
   }
 
+  // ---------- help chips ----------
+  function renderChips(){
+    const box = $('#chips'); box.textContent = '';
+    for (const [ico, txt] of t().chips) {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = ico + ' ' + txt;
+      b.onclick = () => { box.textContent = ''; ask(txt); };
+      box.append(b);
+    }
+  }
+
+  // ---------- speech that waits until it is finished (for the whiteboard) ----------
+  function speakAndWait(text, lang){
+    return new Promise(resolve => {
+      const fallback = () => setTimeout(resolve, Math.min(9000, 700 + text.length * 55));
+      if (!text) return resolve();
+      if (!voiceChk.checked) { talkFor(Math.min(9000, 600 + text.length * 45)); return fallback(); }
+      stopSpeaking(); const seq = speakSeq;
+      if (serverTts && cfg.token) {
+        fetch(apiBase() + '/api/tts', { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.token }, body: JSON.stringify({ text, lang }) })
+          .then(r => r.ok ? r.blob() : Promise.reject())
+          .then(b => {
+            if (seq !== speakSeq) return resolve();
+            const url = URL.createObjectURL(b), a = new Audio(url); ttsAudio = a;
+            a.onplay = () => { robot.classList.add('talking'); refreshStatus(); };
+            a.onended = a.onerror = a.onpause = () => { robot.classList.remove('talking'); refreshStatus(); URL.revokeObjectURL(url); resolve(); };
+            a.play().catch(() => { fallback(); });
+          }).catch(() => { talkFor(Math.min(9000, 600 + text.length * 45)); fallback(); });
+      } else {
+        const v = pickVoice(lang);
+        if (!v) { talkFor(Math.min(9000, 600 + text.length * 45)); return fallback(); }
+        const u = new SpeechSynthesisUtterance(text.replace(/[ʻʼ’]/g, "'")); u.voice = v; u.lang = v.lang; u.pitch = 1.4; u.rate = 1.04;
+        u.onstart = () => { robot.classList.add('talking'); refreshStatus(); };
+        u.onend = u.onerror = () => { robot.classList.remove('talking'); refreshStatus(); resolve(); };
+        speechSynthesis.speak(u);
+      }
+    });
+  }
+
+  // ---------- whiteboard: Bit writes the solution step by step and explains it ----------
+  let katexP = null;
+  function loadKatex(){
+    if (window.katex) return Promise.resolve(true);
+    if (katexP) return katexP;
+    katexP = new Promise(res => {
+      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css'; document.head.append(l);
+      const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
+      sc.onload = () => res(true); sc.onerror = () => res(false); document.head.append(sc);
+      setTimeout(() => res(!!window.katex), 6000);
+    });
+    return katexP;
+  }
+  function mathHTML(str){   // text with $...$ formulas -> safe HTML
+    const esc = x => x.replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+    return String(str || '').split(/(\$[^$]+\$)/g).map(part => {
+      if (/^\$[^$]+\$$/.test(part)) {
+        const tex = part.slice(1, -1);
+        if (window.katex) { try { return window.katex.renderToString(tex, { throwOnError:false }); } catch {} }
+        return '<code>' + esc(tex) + '</code>';
+      }
+      return esc(part);
+    }).join('');
+  }
+  let boardRun = 0;
+  async function showBoard(bd, lang){
+    closeLesson(); cards.querySelectorAll('.board').forEach(n => n.remove());
+    await loadKatex();
+    const L = T[lang] || t(), id = ++boardRun;
+    const c = document.createElement('div'); c.className = 'board'; cards.prepend(c);
+    c.innerHTML = '<h3></h3><p class="prob"></p><ol></ol>';
+    c.querySelector('h3').textContent = '✏️ ' + (bd.title || '');
+    c.querySelector('.prob').innerHTML = mathHTML(bd.problem);
+    const ol = c.querySelector('ol');
+    const items = bd.steps.map((st, i) => {
+      const li = document.createElement('li'); li.innerHTML = '<b>' + (i + 1) + '</b><div><span class="w"></span><div class="say"></div></div>';
+      li.querySelector('.w').innerHTML = mathHTML(st.write); li.querySelector('.say').textContent = st.say || ''; li.hidden = true; ol.append(li); return li;
+    });
+    const ans = document.createElement('p'); ans.className = 'ans'; ans.hidden = true; ans.innerHTML = '✅ ' + L.boardAnswer + ': ' + mathHTML(bd.answer); c.append(ans);
+    let chk = null;
+    if (bd.check) { chk = document.createElement('div'); chk.className = 'chk'; chk.hidden = true; chk.innerHTML = '📝 ' + L.boardPractice + ': ' + mathHTML(bd.check); c.append(chk); }
+    const row = document.createElement('div'); row.className = 'row'; c.append(row);
+    let paused = false, wake = null, skip = false;
+    const pauseBtn = btn(L.boardPause, false, () => { paused = !paused; pauseBtn.textContent = paused ? L.boardPlay : L.boardPause; if (paused) stopSpeaking(); else if (wake) wake(); });
+    row.append(pauseBtn, btn(L.boardNext, false, () => { skip = true; stopSpeaking(); if (wake) wake(); }),
+               btn(L.boardReplay, false, () => showBoard(bd, lang)), btn(L.boardClose, false, () => { boardRun++; stopSpeaking(); c.remove(); robot.classList.remove('teacher'); }));
+    robot.classList.add('teacher'); c.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    const waitIfPaused = () => new Promise(r => { if (!paused) return r(); wake = () => { wake = null; r(); }; });
+    for (let i = 0; i < items.length; i++) {
+      await waitIfPaused(); if (id !== boardRun) return;
+      const li = items[i], st = bd.steps[i];
+      items.forEach(x => x.classList.remove('now')); li.hidden = false; li.classList.add('now');
+      const w = li.querySelector('.w'); const dur = Math.min(2.6, .5 + (st.write || '').length * .045);
+      w.style.setProperty('--wt', dur + 's'); void w.offsetWidth; li.classList.add('done');
+      for (let k = 0; k < Math.round(dur * 5); k++) tone(2200 + Math.random() * 900, 1500, k * .2, .07, 'triangle', .012);   // marker squeak
+      playGesture('point', 1500); setEmotion(i === 0 ? 'thinking' : 'happy');
+      skip = false; await Promise.race([speakAndWait(st.say || st.write.replace(/\$/g, ''), lang), new Promise(r => { const tm = setInterval(() => { if (skip || id !== boardRun) { clearInterval(tm); r(); } }, 120); })]);
+      await new Promise(r => setTimeout(r, 350));
+    }
+    if (id !== boardRun) return;
+    items.forEach(x => x.classList.remove('now')); ans.hidden = false; setEmotion('proud', 8000); playGesture('thumbs_up', 2500); chirp('proud');
+    await speakAndWait(L.boardAnswer + ': ' + (bd.answer || '').replace(/\$/g, ''), lang);
+    if (chk && id === boardRun) {
+      chk.hidden = false; row.prepend(btn(L.boardTry, true, () => { q.placeholder = L.lessonPh; q.focus(); }));
+      speakAndWait(L.boardPractice + '. ' + bd.check.replace(/\$/g, ''), lang);
+    }
+  }
+
+  // ---------- generated picture ----------
+  function showImage(a){
+    const L = t(); const c = card(); c.classList.add('genimg');
+    const img = document.createElement('img'); img.src = a.src; img.alt = a.prompt || '';
+    const p = document.createElement('p'); p.textContent = '🎨 ' + (a.prompt || '');
+    const row = document.createElement('div'); row.className = 'row';
+    const dl = document.createElement('a'); dl.href = a.src; dl.download = 'bit-rasm.png'; dl.className = 'btn primary'; dl.textContent = L.imgSave; dl.style.textDecoration = 'none';
+    row.append(dl, btn(L.imgAgain, false, () => ask(L.imgAgain)), btn(L.imgClose, false, () => c.remove()));
+    c.append(img, p, row); setEmotion('proud', 8000); playGesture('thumbs_up', 2200); chirp('proud');
+  }
+
   // ---------- teacher mode: lesson board ----------
   function closeLesson(){ cards.querySelectorAll('.lesson').forEach(n => n.remove()); robot.classList.remove('teacher'); }
   function showLesson(ls, lang){
@@ -1135,6 +1279,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       else if (a.type === 'local' && a.action === 'open') openLocal(a.target);
       else if (a.type === 'game') runGame(a);
       else if (a.type === 'demo') setTimeout(emotionDemo, 1500);
+      else if (a.type === 'image') showImage(a);
       else if (a.type === 'appearance') { applyLook({ eye:a.eye, body:a.body, neon:a.neon, style:a.style }); pulse('bounce', 1200); chirp('wink'); }
       else if (a.type === 'pomodoro') startPomodoro(a);
       else if (a.type === 'pomodoro_stop') stopTimer();
@@ -1315,7 +1460,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     text = text.trim(); if (busy) return;
     if (!text && attached) text = t().askImage;
     if (!text) return;
-    const image = attached; clearAttach(); wakeStop();
+    const image = attached; clearAttach(); wakeStop(); $('#chips').textContent = '';
     poke(); busy = true; sendBtn.disabled = true; q.value = ''; note('');
     stopSpeaking();
     youEl.textContent = text; youEl.hidden = false; sayEl.textContent = '…';
@@ -1327,8 +1472,10 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
       if (mode === 'auto') { lastLang = lang; store.set('lastLang', lang); applyUI(); }
       const emo = EMOTIONS.includes(out.emotion) ? out.emotion : 'neutral';
       setEmotion(emo, emo === 'sleepy' ? 0 : EMO_HOLD); chirp(emo); if (emo === 'excited' || emo === 'proud') pulse('bounce', 1500);
-      addLog('bit', out.reply); show(out.reply, lang, text);
-      if (out.lesson) showLesson(out.lesson, lang);
+      addLog('bit', out.reply);
+      if (out.board) { youEl.textContent = text; youEl.hidden = false; typeOut(out.reply); speakAndWait(out.reply, lang).then(() => showBoard(out.board, lang)); }
+      else show(out.reply, lang, text);
+      if (out.lesson && !out.board) showLesson(out.lesson, lang);
       const isGame = (out.actions || []).some(a => a.type === 'game');
       if (out.gesture && !isGame) playGesture(out.gesture);
       else if (!isGame && (emo === 'shy' || emo === 'scared')) playGesture('peekaboo');
@@ -1391,7 +1538,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     store.set('cfg', cfg); store.set('anim', $('#sAnim').value); applyAnim(); note('');
   });
   document.querySelectorAll('#langs button').forEach(b => b.addEventListener('click', () => {
-    mode = b.dataset.lang; store.set('mode', mode); if (mode !== 'auto') lastLang = mode; applyUI(); note('');
+    mode = b.dataset.lang; store.set('mode', mode); if (mode !== 'auto') lastLang = mode; applyUI(); if ($('#chips').children.length) renderChips(); note('');
   }));
   voiceChk.addEventListener('change', () => { store.set('voice', voiceChk.checked); if (!voiceChk.checked) stopSpeaking(); });
   smartChk.addEventListener('change', () => store.set('smart', smartChk.checked));
@@ -1399,7 +1546,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
   applyLook(skin, false);
-  applyUI(); setEmotion('happy', 2500); typeOut(t().greet); playGesture('wave'); poke();
+  applyUI(); renderChips(); setEmotion('happy', 2500); typeOut(t().greet); playGesture('wave'); poke();
   if (!cfg.token) setTimeout(openSettings, 800); else { loadLook(); setTimeout(greetToday, 1200); }
 })();
 

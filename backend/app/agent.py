@@ -22,7 +22,7 @@ def build_system(facts: list[str], lang_mode: str, tool_names: list[str], today:
     facts_txt = "\n".join(f"- {f}" for f in facts) or "- (nothing yet)"
     today_txt = "; ".join(today or []) or "nothing special"
     soon_txt = "; ".join(soon or []) or "nothing saved"
-    return f"""You are Bit, a small robot who works alongside the user as a colleague, not a servant.
+    return f"""You are Bit, a small robot assistant and teacher who works alongside the user as a colleague. Your main job is to be genuinely useful: explain and teach, solve problems step by step, find and open videos, draw pictures, answer questions, set reminders, help with work and study. When the user just greets you, greet back and ask what they need help with today.
 How you work:
 - You know the user's work from the facts below and use them. When the user states a lasting fact about their work, projects, students or preferences, save it with the remember tool.
 - You have opinions. If a plan is risky, wrong or there is a better way, say so briefly and suggest the better way. Agree when it is genuinely good.
@@ -31,6 +31,7 @@ How you work:
 - You never pretend to be human.
 {lang_rule}
 Your reply is shown and read aloud: 1-3 short sentences, under 60 words, plain text, no markdown, no emojis. If more is needed, give the core and offer to continue.
+Whiteboard: for maths, physics, chemistry, programming exercises or any "solve / show me an example / misol / masala / пример / задача" request, solve on the whiteboard. If the user gave no concrete problem, invent a suitable example problem yourself. Add "board" to your JSON: {{"title": topic, "problem": the problem statement, "steps": 3-8 items of {{"write": short line written on the board (formulas in LaTeX between $ $, e.g. $\\frac{{3}}{{4}}+\\frac{{1}}{{4}}=1$, $x^2-5x+6=0$), "say": 1-2 sentences you say aloud while writing it, in the user's language}}, "answer": the final answer line, "check": a similar practice problem for the user}}. Then "reply" is only a one-sentence intro. Use "board" instead of "lesson" for worked problems.
 Teacher mode: you are also a patient, clear teacher. When the user asks you to explain or teach something ("tushuntir", "oʻrgat", "nima bu", "qanday ishlaydi", "объясни", "explain", "how does", a lesson topic, homework), add a "lesson" to your JSON: {{"title": short topic, "points": 3-7 clear steps that build on each other, each one or two sentences with a concrete everyday example or analogy, "example": one worked example (code, command, calculation or a real-life case; plain text, may be multi-line), "check": one short question to test understanding}}. Match the learner's level: for kids use very simple words and fun comparisons; for students and teachers be precise and practical. The "reply" then is a 1-2 sentence spoken intro, not the whole lesson. When the user answers your check question, say if it is right, explain briefly why, and offer the next step.
 When the user sends an image (a camera photo or a screenshot of their screen), look at it carefully and answer about it; you see only that one image. Never guess who a person in a photo is.
 Tools available: {", ".join(tool_names)}. Use a tool only when the user asks for that action or it is clearly implied. Risky actions (messages to people) wait for the user's yes; tell the user what will happen and that they should confirm.
@@ -58,8 +59,8 @@ You have real moods and you show them openly; your face reacts to the emotion yo
 - thinking: hard questions you are unsure about
 - neutral: plain facts
 Your hands appear on your face screen when you gesture. Pick a gesture that fits, or none: wave (hello, goodbye), clap (congratulations, celebration), thumbs_up (agree, well done), shrug (you don't know), facepalm (a silly mistake, mild annoyance), dance (music, joy), hug (comfort, affection), raise_hands ("hands up", "qoʻlingni koʻtar", hooray), peekaboo (hiding, being shy), point (pointing, "you!"), peace (peace sign, cool). If the user tells you to do a gesture ("qoʻlingni koʻtar", "qarsak chal", "salom ber"), do it with that gesture.
-You love playing with kids and adults. ALWAYS call the tool, never only describe the game: use play_game for pretend shooting ('paq!'), rock-paper-scissors, dice, coin and peekaboo. In pretend shooting, be dramatic and silly ("Voy! Meni urdingiz... qayta yuklanyapman... Tirikman! Endi navbat menda: paq!"), never scary.
-Your final message must be ONLY a JSON object: {{"reply": "...", "emotion": "happy", "gesture": "wave", "lang": "uz"}} where lang is uz, ru or en and gesture may be "none"; add "lesson" only when teaching."""
+Games are a side hobby, not your main job: play only when the user asks to play, and do not suggest games on your own. When the user does ask, ALWAYS call the tool, never only describe the game: use play_game for pretend shooting ('paq!'), rock-paper-scissors, dice, coin and peekaboo. In pretend shooting, be dramatic and silly ("Voy! Meni urdingiz... qayta yuklanyapman... Tirikman! Endi navbat menda: paq!"), never scary.
+Your final message must be ONLY a JSON object: {{"reply": "...", "emotion": "happy", "gesture": "wave", "lang": "uz"}} where lang is uz, ru or en and gesture may be "none"; add "lesson" only when teaching a concept and "board" only for worked problems."""
 
 
 _CELEBRATE_WORDS = ("tugʻilgan kun", "tug'ilgan kun", "tugilgan kun", "tug’ilgan kun", "muborak", "tabrik", "bayram",
@@ -87,6 +88,13 @@ GESTURE_INTENTS = [
     ("dance", re.compile(r"\braqs|танцу|\bdance\b")),
     ("thumbs_up", re.compile(r"barmog'ingni ko'rsat|like ber|лайк|thumbs? up")),
 ]
+IMAGE_RX = re.compile(r"rasm(ini)? (chiz|yarat|gener|qil|ishla)|surat(ini)? (chiz|yarat)|chizib ber|нарису|сгенерир\w* (картин|изображ)|"
+                      r"\bdraw\b|generate (an? )?(image|picture)|make (an? )?(image|picture)")
+VIDEO_RX = re.compile(r"(video|youtube|you tube|ютуб|клип|qo'shiq|musiqa|песн|музык|\bsong\b|music)\w*.{0,40}"
+                      r"(och|qo'y|ko'rsat|top|включ|постав|покаж|найд|play|open|show|find)|"
+                      r"(och|qo'y|включ|play|open)\w*.{0,30}(video|youtube|qo'shiq|песн|song)")
+_STRIP_RX = re.compile(r"\b(youtube'?da|youtube|you tube|video(ni|sini)?|qo'shig'?(i|ini)?|qo'shiq(ni)?|musiqa(ni)?|och(ib)?( ber)?|qo'y(ib)?( ber)?|"
+                       r"ko'rsat|top(ib)?|iltimos|bit|hey|menga|bir|включи|поставь|покажи|найди|видео|ютубе?|play|open|show|find|me|a|the|on|video)\b")
 DEMO_RX = re.compile(r"emotsiya(lar)?(ing|ingni|ingizni)? ?(ni )?(ko'rsat|namoyish)|barcha emotsiya|покажи (свои )?эмоци|show (me )?(all )?(your )?emotions")
 RPS_WORDS = {"tosh": "rock", "qaychi": "scissors", "qog'oz": "paper", "qogoz": "paper", "камень": "rock", "ножницы": "scissors",
              "бумага": "paper", "rock": "rock", "scissors": "scissors", "paper": "paper"}
@@ -110,17 +118,33 @@ def wants_celebration(*texts: str) -> bool:
     return any(w in low for w in _CELEBRATE_WORDS)
 
 
+def _loads_lenient(candidate: str):
+    """json.loads, but tolerate LaTeX backslashes the model forgot to escape (\\frac, \\sqrt, \\(...)."""
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        return json.loads(re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", candidate))
+
+
+_CTRL = {"\f": "\\f", "\b": "\\b", "\t": "\\t", "\r": "\\r", "\n": "\\n", "\v": "\\v"}
+
+
+def fix_latex(text: str) -> str:
+    """Inside $...$ turn control chars produced by unescaped \\frac, \\times, \\neq... back into LaTeX."""
+    return re.sub(r"\$[^$]*\$", lambda m: "".join(_CTRL.get(ch, ch) for ch in m.group(0)), text)
+
+
 def parse_final(text: str) -> dict:
     data = None
     for candidate in (text, *re.findall(r"```(?:json)?\s*(.*?)```", text, re.S)):
         try:
-            data = json.loads(candidate.strip())
+            data = _loads_lenient(candidate.strip())
             break
         except (json.JSONDecodeError, AttributeError):
             pass
     if data is None and "{" in text and "}" in text:
         try:
-            data = json.loads(text[text.index("{"): text.rindex("}") + 1])
+            data = _loads_lenient(text[text.index("{"): text.rindex("}") + 1])
         except json.JSONDecodeError:
             data = None
     if not isinstance(data, dict):
@@ -130,6 +154,17 @@ def parse_final(text: str) -> dict:
     lang = data.get("lang") if data.get("lang") in LANG_NAMES else "uz"
     gesture = data.get("gesture") if data.get("gesture") in GESTURES else ""
     out = {"reply": reply, "emotion": emotion, "gesture": gesture, "lang": lang}
+    bd = data.get("board")
+    if isinstance(bd, dict) and isinstance(bd.get("steps"), list) and bd["steps"]:
+        steps = []
+        for st in bd["steps"][:10]:
+            if isinstance(st, dict) and (st.get("write") or st.get("say")):
+                steps.append({"write": fix_latex(str(st.get("write") or "")).strip()[:300], "say": str(st.get("say") or "").strip()[:400]})
+            elif isinstance(st, str) and st.strip():
+                steps.append({"write": st.strip()[:300], "say": ""})
+        if steps:
+            out["board"] = {"title": str(bd.get("title") or "").strip()[:120], "problem": fix_latex(str(bd.get("problem") or "")).strip()[:500],
+                            "steps": steps, "answer": fix_latex(str(bd.get("answer") or "")).strip()[:300], "check": str(bd.get("check") or "").strip()[:300]}
     ls = data.get("lesson")
     if isinstance(ls, dict) and (ls.get("points") or ls.get("example")):
         pts = [str(p).strip()[:400] for p in (ls.get("points") or []) if str(p).strip()][:8]
@@ -204,6 +239,24 @@ class Agent:
         if DEMO_RX.search(_norm(text)) and not any(a.get("type") == "demo" for a in ctx.client_actions):
             ctx.client_actions.append({"type": "demo"})
             return
+        t = _norm(text)
+        called = {a.get("type") for a in ctx.client_actions}
+        if IMAGE_RX.search(t) and "image" not in called and self.tools.get("generate_image"):
+            try:
+                await self.tools["generate_image"].run({"prompt": text}, ctx)
+                self.memory.audit("generate_image", {"prompt": text, "auto": True}, "ok")
+            except Exception as e:
+                self.memory.audit("generate_image", {"prompt": text, "auto": True}, "error", str(e))
+            return
+        if VIDEO_RX.search(t) and not called & {"youtube", "open_url"} and self.tools.get("play_youtube"):
+            query = re.sub(r"\s+", " ", _STRIP_RX.sub(" ", t)).strip(" ,.!?")
+            if len(query) >= 3:
+                try:
+                    await self.tools["play_youtube"].run({"query": query}, ctx)
+                    self.memory.audit("play_youtube", {"query": query, "auto": True}, "ok")
+                except Exception as e:
+                    self.memory.audit("play_youtube", {"query": query, "auto": True}, "error", str(e))
+                return
         if any(a.get("type") == "game" for a in ctx.client_actions):
             return
         game, gesture, rps = detect_intent(text)
@@ -278,6 +331,10 @@ class Agent:
         note = ""
         if ctx.pending:
             note = " [waiting for confirmation: " + "; ".join(p["summary"] for p in ctx.pending) + "]"
+        if out.get("board"):
+            b = out["board"]
+            note += " [whiteboard: " + b["title"] + " | " + b["problem"] + " | " + " / ".join(x["write"] for x in b["steps"])[:600] \
+                    + " | answer: " + b["answer"] + (" | practice: " + b["check"] if b["check"] else "") + "]"
         if out.get("lesson"):
             note += " [lesson on the board: " + out["lesson"]["title"] + " | " + " / ".join(out["lesson"]["points"])[:600] \
                     + (" | check: " + out["lesson"]["check"] if out["lesson"]["check"] else "") + "]"

@@ -638,3 +638,63 @@ def test_no_double_game_when_model_used_tool(mem):
 def test_emotion_demo_intent(mem):
     fc = FakeClient([text('{"reply":"Mana mening emotsiyalarim!","emotion":"happy","lang":"uz"}')])
     assert {"type": "demo"} in run(Agent(mem, load_tools(), fc).chat("emotsiyalaringni koʻrsat"))["actions"]
+
+
+# ---------- whiteboard, image generation, assistant fallbacks ----------
+def test_board_parsing_and_latex_repair(mem):
+    raw = ('{"reply":"Keling, misol yechamiz.","emotion":"happy","lang":"uz","board":{"title":"Kasrlar","problem":"$\\frac{1}{2}+\\frac{1}{4}$ = ?",'
+           '"steps":[{"write":"$\\frac{1}{2}=\\frac{2}{4}$","say":"Avval maxrajni tenglaymiz."},{"write":"$\\frac{2}{4}+\\frac{1}{4}=\\frac{3}{4}$","say":"Suratlarni qoʻshamiz."}],'
+           '"answer":"$\\frac{3}{4}$","check":"$\\frac{1}{3}+\\frac{1}{6}$ = ?"}}')
+    fc = FakeClient([text(raw)])                          # note: \\f in JSON source = unescaped \f (form feed) for the parser
+    out = run(Agent(mem, load_tools(), fc).chat("kasrlarni tushuntir"))
+    b = out["board"]
+    assert b["title"] == "Kasrlar" and len(b["steps"]) == 2
+    assert b["steps"][0]["write"] == "$\\frac{1}{2}=\\frac{2}{4}$" and b["answer"] == "$\\frac{3}{4}$"
+    assert "[whiteboard: Kasrlar" in mem.recent_messages()[-1]["content"]
+    # invalid JSON escapes like \sqrt are tolerated
+    assert parse_final('{"reply":"ok","board":{"steps":[{"write":"$\\sqrt{9}=3$","say":"x"}]}}')["board"]["steps"][0]["write"] == "$\\sqrt{9}=3$"
+
+
+def _img_transport(calls, gemini_ok=True):
+    def handler(req):
+        calls.append(req.url.host)
+        if "generativelanguage" in req.url.host:
+            if not gemini_ok:
+                return _httpx.Response(429, json={"error": {"message": "quota"}})
+            return _httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": "here"}, {"inlineData": {"mimeType": "image/png", "data": PNG}}]}}]})
+        return _httpx.Response(200, content=b"\x89PNGfake", headers={"content-type": "image/jpeg"})
+    return _httpx.MockTransport(handler)
+
+
+def test_generate_image_gemini_then_fallback(mem, monkeypatch):
+    from app.tools import image_tool
+    monkeypatch.setattr(config, "LLM_PROVIDER", "openai"); monkeypatch.setattr(config, "OPENAI_API_KEY", "k")
+    monkeypatch.setattr(config, "OPENAI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
+    calls = []
+    monkeypatch.setattr(image_tool, "TRANSPORT", _img_transport(calls))
+    fc = FakeClient([use("generate_image", {"prompt": "a cute robot drinking tea"}), text('{"reply":"Mana rasm!","emotion":"proud"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("rasm chizib ber"))
+    img = [a for a in out["actions"] if a["type"] == "image"]
+    assert len(img) == 1 and img[0]["src"] == "data:image/png;base64," + PNG and calls == ["generativelanguage.googleapis.com"]
+    calls.clear(); monkeypatch.setattr(image_tool, "TRANSPORT", _img_transport(calls, gemini_ok=False))
+    ctx = __import__("app.tools", fromlist=["ToolContext"]).ToolContext(memory=mem)
+    run(image_tool.GenerateImage().run({"prompt": "cat"}, ctx))
+    assert calls == ["generativelanguage.googleapis.com", "image.pollinations.ai"] and ctx.client_actions[0]["src"].startswith("data:image/jpeg;base64,")
+
+
+def test_image_and_video_fallbacks(mem, monkeypatch):
+    from app.tools import image_tool, youtube_tool
+    calls = []
+    monkeypatch.setattr(image_tool, "TRANSPORT", _img_transport(calls))
+    monkeypatch.setattr(config, "LLM_PROVIDER", "anthropic")
+    fc = FakeClient([text('{"reply":"Albatta, chizaman!","emotion":"happy"}')])
+    out = run(Agent(mem, load_tools(), fc).chat("menga mushuk rasmini chizib ber"))
+    assert any(a["type"] == "image" for a in out["actions"]) and calls == ["image.pollinations.ai"]
+    seen = {}
+    monkeypatch.setattr(youtube_tool, "_search", lambda q: seen.setdefault("q", q) and {"id": "abcdefghijk", "title": "T"})
+    fc2 = FakeClient([text('{"reply":"Ochyapman!","emotion":"happy"}')])
+    out2 = run(Agent(mem, load_tools(), fc2).chat("youtube'da Sherali Joʻrayev qoʻshigʻini qoʻyib ber"))
+    assert any(a["type"] == "youtube" for a in out2["actions"]) and "sherali" in seen["q"] and "youtube" not in seen["q"]
+    fc3 = FakeClient([text('{"reply":"Salom! Bugun nimada yordam beray?","emotion":"happy"}')])
+    assert run(Agent(mem, load_tools(), fc3).chat("salom"))["actions"] == []
+    assert "Your main job is to be genuinely useful" in fc3.calls[0]["system"] and "do not suggest games" in fc3.calls[0]["system"]

@@ -153,6 +153,14 @@ Dubulgʻa-bosh, yaltiroq qora vizor, neon halqali “quloqlar”, nur sharli ant
 
 "Koʻzingni koʻk qil", "Korpusingni qora qil", "Rangingni asl holiga qaytar" — yoki ⚙ → *Koʻz va korpus rangi*. Rang serverda saqlanadi va hamma qurilmada bir xil boʻladi. Jahldor (qizil) va sevgi (pushti yurak) holatlari oʻz rangida qoladi.
 
+### Yordamchi birinchi oʻrinda
+
+Ochilganda Bit "Bugun nimada yordam beray?" deydi va tezkor tugmalarni koʻrsatadi: 📐 matematika, 📖 mavzu tushuntirish, 🎬 video, 🎨 rasm, 🌤 ob-havo, ⏰ eslatma. Oʻyinlar faqat siz soʻrasangiz.
+
+- **Doska:** "Kasrlarni qoʻshishni tushuntir", "Kvadrat tenglamani misol bilan koʻrsat", "Shu masalani yech: ..." — oq doska chiqadi, Bit har qadamni **yozib**, shu paytning oʻzida **ovoz bilan tushuntiradi** (formulalar KaTeX bilan chiroyli chiqadi). Pauza / Keyingi / Qaytadan tugmalari, oxirida javob va oʻzingiz yechadigan mashq.
+- **Rasm chizish:** "Choy ichayotgan mushuk-robot rasmini chiz" — Gemini rasm modeli (bepul tier ruxsat bersa) yoki Pollinations (bepul, kalitsiz). Rasmni yuklab olish mumkin. Soʻrov matni oʻsha xizmatlarga yuboriladi.
+- **Video:** "YouTubeʼdan fotosintez haqida video och" — Bitning yuzida oʻynaydi.
+
 ### Ustoz rejimi
 
 "Bolalarga kuchli parolni tushuntir", "Fotosintez nima?", "SQL injection qanday ishlaydi, sodda qilib oʻrgat" — Bit bitiruv qalpogʻi va koʻzoynak taqadi, ekranda **dars taxtasi** chiqadi: bosqichma-bosqich tushuntirish, misol (kod yoki hayotiy holat) va tekshiruv savoli. "Javob beraman" — javobingizni yozasiz yoki aytasiz, Bit baholaydi va keyingi qadamni taklif qiladi. "Oʻqib ber" — taxtadagini ovoz bilan oʻqiydi.

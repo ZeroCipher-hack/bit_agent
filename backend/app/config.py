@@ -55,6 +55,10 @@ TELEGRAM_MAX_PER_HOUR = int(os.getenv("TELEGRAM_MAX_PER_HOUR", "20"))
 CONTACTS_FILE = DATA_DIR / "contacts.json"
 DEVICES_FILE = DATA_DIR / "devices.json"
 
+# Image generation: auto = Gemini image model when Gemini is the brain, else Pollinations (free, no key)
+IMAGE_PROVIDER = os.getenv("BIT_IMAGE_PROVIDER", "auto").strip().lower()   # auto | gemini | pollinations
+IMAGE_MODEL = os.getenv("BIT_IMAGE_MODEL", "gemini-2.5-flash-image")
+
 # Weather (Open-Meteo, free, no key): default city when the user does not name one
 HOME_CITY = os.getenv("BIT_HOME_CITY", "Tashkent")
 # Reminders: also send them to your Telegram "Saved Messages" so they arrive when the app is closed
