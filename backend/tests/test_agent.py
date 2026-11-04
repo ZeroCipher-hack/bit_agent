@@ -649,7 +649,7 @@ def test_board_parsing_and_latex_repair(mem):
     out = run(Agent(mem, load_tools(), fc).chat("kasrlarni tushuntir"))
     b = out["board"]
     assert b["title"] == "Kasrlar" and len(b["steps"]) == 2
-    assert b["steps"][0]["write"] == "$\\frac{1}{2}=\\frac{2}{4}$" and b["answer"] == "$\\frac{3}{4}$"
+    assert b["steps"][0]["write"] == "$\\frac{1}{2}=\\frac{2}{4}$" and b["answer"] == "$\\frac{3}{4}$" and b["steps"][0]["read"] == ""
     assert "[whiteboard: Kasrlar" in mem.recent_messages()[-1]["content"]
     # invalid JSON escapes like \sqrt are tolerated
     assert parse_final('{"reply":"ok","board":{"steps":[{"write":"$\\sqrt{9}=3$","say":"x"}]}}')["board"]["steps"][0]["write"] == "$\\sqrt{9}=3$"
@@ -698,3 +698,12 @@ def test_image_and_video_fallbacks(mem, monkeypatch):
     fc3 = FakeClient([text('{"reply":"Salom! Bugun nimada yordam beray?","emotion":"happy"}')])
     assert run(Agent(mem, load_tools(), fc3).chat("salom"))["actions"] == []
     assert "Your main job is to be genuinely useful" in fc3.calls[0]["system"] and "do not suggest games" in fc3.calls[0]["system"]
+
+
+def test_board_read_field_and_reexplain_prompt(mem):
+    raw = json.dumps({"reply": "Koʻramiz", "emotion": "happy", "board": {"title": "T", "problem": "p",
+        "steps": [{"write": "$2+2=4$", "read": "ikki qoʻshuv ikki teng toʻrt", "say": "Oddiy qoʻshish."}], "answer": "4"}}, ensure_ascii=False)
+    fc = FakeClient([text(raw)])
+    out = run(Agent(mem, load_tools(), fc).chat("misol"))
+    assert out["board"]["steps"][0]["read"] == "ikki qoʻshuv ikki teng toʻrt"
+    assert '"read": how a teacher reads that line aloud' in fc.calls[0]["system"] and "did not understand a step" in fc.calls[0]["system"]

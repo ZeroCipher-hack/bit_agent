@@ -157,7 +157,7 @@ Dubulgʻa-bosh, yaltiroq qora vizor, neon halqali “quloqlar”, nur sharli ant
 
 Ochilganda Bit "Bugun nimada yordam beray?" deydi va tezkor tugmalarni koʻrsatadi: 📐 matematika, 📖 mavzu tushuntirish, 🎬 video, 🎨 rasm, 🌤 ob-havo, ⏰ eslatma. Oʻyinlar faqat siz soʻrasangiz.
 
-- **Doska:** "Kasrlarni qoʻshishni tushuntir", "Kvadrat tenglamani misol bilan koʻrsat", "Shu masalani yech: ..." — oq doska chiqadi, Bit har qadamni **yozib**, shu paytning oʻzida **ovoz bilan tushuntiradi** (formulalar KaTeX bilan chiroyli chiqadi). Pauza / Keyingi / Qaytadan tugmalari, oxirida javob va oʻzingiz yechadigan mashq.
+- **Doska:** "Kasrlarni qoʻshishni tushuntir", "Kvadrat tenglamani misol bilan koʻrsat", "Shu masalani yech: ..." — oq doska chiqadi, Bit har qadamni **yozib**, shu paytning oʻzida **ovoz bilan tushuntiradi** (formulalar KaTeX bilan chiroyli chiqadi). Doskadagi yozuvni ham oʻqiydi ("toʻrtdan uch qoʻshuv…"), har ikki qadamdan keyin "Shu yergacha tushunarlimi?" deb soʻraydi: "ha" — davom etadi, "tushunmadim" — oʻsha qadamni boshqa misol bilan qayta tushuntiradi. Pauza / Keyingi / Qaytadan tugmalari, oxirida javob va oʻzingiz yechadigan mashq.
 - **Rasm chizish:** "Choy ichayotgan mushuk-robot rasmini chiz" — Gemini rasm modeli (bepul tier ruxsat bersa) yoki Pollinations (bepul, kalitsiz). Rasmni yuklab olish mumkin. Soʻrov matni oʻsha xizmatlarga yuboriladi.
 - **Video:** "YouTubeʼdan fotosintez haqida video och" — Bitning yuzida oʻynaydi.
 
