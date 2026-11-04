@@ -200,15 +200,14 @@ Qulflar, signalizatsiya va garaj/eshiklar har doim **tasdiq** bilan bajariladi.
 
 ## 9. Kompyuter ilovasi (Windows, macOS, Linux)
 
-`desktop/` — Bit ekran burchagida kichik robot boʻlib turadi (hamma oynalar ustida). Ustiga bosing — panel ochiladi.
+`desktop/` — Bit ekran burchagida kichik robot boʻlib turadi (hamma oynalar ustida, orqa fonsiz). Ustiga bosing — tepasida kichik yozish qutisi chiqadi: 🎤 bosib gapirasiz (gapirib boʻlganingizda oʻzi toʻxtaydi) yoki yozasiz, javob pufakchada chiqadi. Doska, rasm yoki video kerak boʻlsa, ular Bitning chap tomonida ochiladi. Yana bir bosish yoki Esc — kichrayadi.
 
 | Qanday | Nima qiladi |
 |---|---|
 | Robotni sudrab olib boring | xohlagan joyga koʻchadi, joyini eslab qoladi |
 | **Ctrl+Shift+Space** | kursor turgan joyni rasmga olib, oʻsha soʻz/matnni tushuntiradi (kitob, PDF, sayt, terminal…). Linuxda belgilangan matnni ham oʻqiydi |
 | 🎯 Kursor ostidagini tushuntir | 3 soniya ichida kursorni soʻz ustiga olib borasiz |
-| 🖥 Ekranni tushuntir | butun ekran rasmini koʻrsatadi |
-| 📋 Nusxalangan matn | Ctrl+C qilingan matnni tushuntiradi |
+| 🖥 (pufakcha ustida) | butun ekran rasmini koʻrsatib tushuntiradi |
 | Tray belgisi | koʻrsatish, kichraytirish, server manzili, kompyuter yonganda ochilish, chiqish |
 
 **Oʻrnatish fayllarini olish:** GitHub → **Actions** → *Desktop app* → **Run workflow**. Tayyor boʻlgach, artefaktlardan yuklab oling: Windows `.exe`, macOS `.dmg`, Linux `.AppImage` / `.deb`. `v1.0.0` kabi teg qoʻysangiz, avtomatik **Release** ham yaratiladi.
@@ -218,6 +217,10 @@ Oʻzingiz yigʻish: `cd desktop && npm install && npm run dist` (har bir OS oʻz
 Birinchi ishga tushirishda server manzili soʻraladi (standart `http://127.0.0.1:8001`), keyin ⚙ da tokenni kiriting.
 
 > Ilovalar imzolanmagan: Windows "SmartScreen" ogohlantirsa — *Batafsil → Baribir ishga tushirish*; macOS'da — ilovani oʻng tugma → *Open*, va *Settings → Privacy → Screen Recording* da Bitga ruxsat bering.
+
+### Yaxshiroq quloq
+
+Mikrofon endi brauzerning nutq xizmatiga emas, serverga ishlaydi: ovoz yoziladi, jim boʻlsangiz oʻzi toʻxtaydi va Gemini oʻzbekcha/ruscha/inglizcha matnga aylantiradi (`/api/stt`). Shu sabab Brave, kompyuter ilovasi va telefonda ham ishlaydi. Gemini ulanmagan boʻlsa, eski usul (Chrome) ishlatiladi.
 
 ### Telefonda: "Ulashish → Bit"
 

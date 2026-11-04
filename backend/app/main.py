@@ -120,6 +120,10 @@ class TtsIn(BaseModel):
     lang: str = "uz"
 
 
+class SttIn(BaseModel):
+    audio: str = Field(min_length=20, max_length=12_000_000)   # data:audio/wav;base64,...
+
+
 class GreetIn(BaseModel):
     lang_mode: str = "auto"
 
@@ -139,7 +143,8 @@ class ConfirmIn(BaseModel):
 @app.get("/api/health")
 def health():
     return {"ok": True, "tools": sorted(tools), "autonomy": config.AUTONOMY_LEVEL,
-            "telegram": bool(config.TELEGRAM_SESSION), "llm": config.llm_configured(), "provider": config.LLM_PROVIDER, "tts": config.TTS_MODE}
+            "telegram": bool(config.TELEGRAM_SESSION), "llm": config.llm_configured(), "provider": config.LLM_PROVIDER, "tts": config.TTS_MODE,
+            "stt": __import__("app.stt", fromlist=["available"]).available()}
 
 
 @app.post("/api/chat", dependencies=[Depends(auth)])
@@ -175,6 +180,22 @@ async def tts(body: TtsIn):
         log.warning("tts failed: %r", e)
         raise HTTPException(502, f"TTS error: {type(e).__name__}")
     return Response(content=audio, media_type="audio/mpeg", headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/stt", dependencies=[Depends(auth)])
+async def stt(body: SttIn):
+    from . import stt as stt_mod
+    if not stt_mod.available():
+        raise HTTPException(501, "server speech recognition needs Gemini (OPENAI_BASE_URL + OPENAI_API_KEY)")
+    m = re.match(r"^data:(audio/(?:wav|x-wav|wave|ogg|mpeg|mp3|flac|aac|webm))(?:;[^,]*)?;base64,([A-Za-z0-9+/=]+)$", body.audio)
+    if not m:
+        raise HTTPException(400, "audio must be a wav/ogg/mp3/flac data URL")
+    mime = "audio/wav" if "wav" in m.group(1) else m.group(1)
+    try:
+        return {"text": await stt_mod.transcribe(__import__("base64").b64decode(m.group(2)), mime)}
+    except Exception as e:
+        log.warning("stt failed: %r", e)
+        raise HTTPException(502, f"STT error: {str(e)[:200]}")
 
 
 @app.post("/api/greet", dependencies=[Depends(auth)])

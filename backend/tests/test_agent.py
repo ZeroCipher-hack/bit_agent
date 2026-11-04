@@ -1,4 +1,5 @@
 """Offline tests: a fake Claude client drives the real agent loop, tools, policy and API."""
+import base64
 import asyncio
 import json
 from types import SimpleNamespace as NS
@@ -707,3 +708,30 @@ def test_board_read_field_and_reexplain_prompt(mem):
     out = run(Agent(mem, load_tools(), fc).chat("misol"))
     assert out["board"]["steps"][0]["read"] == "ikki qoʻshuv ikki teng toʻrt"
     assert '"read": how a teacher reads that line aloud' in fc.calls[0]["system"] and "did not understand a step" in fc.calls[0]["system"]
+
+
+# ---------- server speech-to-text ----------
+def test_stt_endpoint(monkeypatch):
+    from app import stt
+    monkeypatch.setattr(config, "OPENAI_API_KEY", "k")
+    monkeypatch.setattr(config, "OPENAI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
+    monkeypatch.setattr(config, "OPENAI_MODEL_FAST", "flash-lite"); monkeypatch.setattr(config, "OPENAI_MODEL_FALLBACKS", ["backup"])
+    seen = []
+
+    def handler(req):
+        seen.append(req.url.path)
+        body = json.loads(req.content)
+        assert body["contents"][0]["parts"][1]["inline_data"]["mime_type"] == "audio/wav"
+        if "flash-lite" in req.url.path:
+            return _httpx.Response(503, json={"error": {"message": "busy"}})
+        return _httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": "Salom Bit, bugun ob-havo qanday?"}]}}]})
+    monkeypatch.setattr(stt, "TRANSPORT", _httpx.MockTransport(handler))
+    c = TestClient(main.app); h = {"Authorization": "Bearer test-token"}
+    wav = "data:audio/wav;base64," + base64.b64encode(b"RIFF0000WAVEfmt fake").decode()
+    r = c.post("/api/stt", json={"audio": wav}, headers=h)
+    assert r.status_code == 200 and r.json()["text"] == "Salom Bit, bugun ob-havo qanday?"
+    assert seen[0].endswith("flash-lite:generateContent") and seen[1].endswith("backup:generateContent")   # falls back when busy
+    assert c.post("/api/stt", json={"audio": "data:text/html;base64,PGI+eDwvYj4="}, headers=h).status_code == 400
+    assert c.get("/api/health").json()["stt"] is True
+    monkeypatch.setattr(config, "OPENAI_API_KEY", "")
+    assert c.post("/api/stt", json={"audio": wav}, headers=h).status_code == 501

@@ -55,6 +55,9 @@ TELEGRAM_MAX_PER_HOUR = int(os.getenv("TELEGRAM_MAX_PER_HOUR", "20"))
 CONTACTS_FILE = DATA_DIR / "contacts.json"
 DEVICES_FILE = DATA_DIR / "devices.json"
 
+# Speech-to-text on the server (Gemini). Empty = the fast chat model
+STT_MODEL = os.getenv("BIT_STT_MODEL", "")
+
 # Image generation: auto = Gemini image model when Gemini is the brain, else Pollinations (free, no key)
 IMAGE_PROVIDER = os.getenv("BIT_IMAGE_PROVIDER", "auto").strip().lower()   # auto | gemini | pollinations
 IMAGE_MODEL = os.getenv("BIT_IMAGE_MODEL", "gemini-2.5-flash-image")

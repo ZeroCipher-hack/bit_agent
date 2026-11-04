@@ -1,7 +1,7 @@
 // Bit desktop: a small always-on-top robot in the screen corner. Click it to ask; Ctrl+Shift+Space explains
 // whatever is under the mouse cursor (a word in a book, an error in a terminal, a chart...).
 // The UI is the Bit web app served by your Bit server; this file only adds desktop powers.
-const { app, BrowserWindow, ipcMain, screen, desktopCapturer, globalShortcut, clipboard, Tray, Menu, shell, nativeImage, session } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, desktopCapturer, globalShortcut, clipboard, Tray, Menu, shell, nativeImage, session, systemPreferences } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -9,8 +9,9 @@ if (process.platform === 'linux') app.commandLine.appendSwitch('enable-transpare
 if (!app.requestSingleInstanceLock()) app.quit();
 
 const CFG_FILE = path.join(app.getPath('userData'), 'config.json');
-const WIDGET = { width: 190, height: 236 };
-const PANEL = { width: 410, height: 700 };
+// window sizes: the robot always sits in the bottom-right corner of the window, so it does not jump
+const SIZES = { widget: { width: 190, height: 236 }, ask: { width: 420, height: 500 }, board: { width: 940, height: 720 } };
+const WIDGET = SIZES.widget;
 const HOTKEY = 'CommandOrControl+Shift+Space';
 
 let cfg = {};
@@ -38,15 +39,16 @@ function widgetBounds() {
 
 function setMode(next) {
   if (!win) return;
-  const cur = win.getBounds();
-  if (next === 'panel') {
-    // grow up-and-left from the widget so the robot stays roughly where it was
-    const b = clampToScreen({ x: cur.x + cur.width - PANEL.width, y: cur.y + cur.height - PANEL.height, ...PANEL });
-    win.setBounds(b, true); win.setSkipTaskbar(false); win.focus();
-  } else {
-    win.setBounds(widgetBounds(), true); win.setSkipTaskbar(true);
-    win.webContents.send('bit:collapsed');
-  }
+  if (next === 'panel') next = 'board';
+  if (!SIZES[next]) return;
+  const cur = win.getBounds(), size = SIZES[next];
+  const wa = screen.getDisplayMatching(cur).workArea;
+  const w = Math.min(size.width, wa.width), h = Math.min(size.height, wa.height);
+  // keep the bottom-right corner (where the robot is) fixed
+  win.setBounds(clampToScreen({ x: cur.x + cur.width - w, y: cur.y + cur.height - h, width: w, height: h }), false);
+  win.setSkipTaskbar(next === 'widget');
+  if (next !== 'widget') win.focus();
+  if (next === 'widget') win.webContents.send('bit:collapsed');
   mode = next;
 }
 
@@ -62,14 +64,18 @@ function createWindow() {
   // links to other sites open in the normal browser; the window only ever shows Bit
   win.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url)) shell.openExternal(url); return { action: 'deny' }; });
   win.webContents.on('will-navigate', (e, url) => { if (!isOurs(url)) { e.preventDefault(); if (/^https?:/.test(url)) shell.openExternal(url); } });
-  win.on('moved', () => { if (mode === 'widget') { const b = win.getBounds(); cfg.widget = { x: b.x, y: b.y }; saveCfg(); } });
+  win.on('moved', () => {   // remember where the robot (bottom-right corner) is
+    const b = win.getBounds(); cfg.widget = { x: b.x + b.width - WIDGET.width, y: b.y + b.height - WIDGET.height }; saveCfg();
+  });
+  // Windows/macOS: clicks on transparent areas go through to the apps below (the page tells us where it is solid)
+  if (process.platform !== 'linux') win.setIgnoreMouseEvents(true, { forward: true });
   win.once('ready-to-show', () => win.show());
   win.webContents.on('did-fail-load', (_e, code, desc, url) => {
     if (isOurs(url) && !url.startsWith('file:')) win.loadFile('setup.html');   // server not reachable -> ask again
   });
 
   if (cfg.server) win.loadURL(cfg.server.replace(/\/+$/, '') + '/?desktop=1');
-  else { win.loadFile('setup.html'); setMode('panel'); }
+  else { win.loadFile('setup.html'); setMode('ask'); }
 }
 
 // Screenshot of the screen under the mouse; Bit's own window is hidden for the shot.
@@ -103,7 +109,7 @@ async function explainUnderCursor() {
   const selection = process.platform === 'linux' ? clipboard.readText('selection').trim().slice(0, 500) : '';
   let image = null;
   try { image = await capture(true); } catch (e) { console.error(e); }
-  setMode('panel'); win.show(); win.focus();
+  setMode('ask'); win.show(); win.focus();
   win.webContents.send('bit:explain', { image, text: selection });
 }
 
@@ -113,21 +119,23 @@ function buildTray() {
   tray.setToolTip('Bit');
   const login = app.getLoginItemSettings().openAtLogin;
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Bitni koʻrsatish', click: () => { win.show(); setMode('panel'); } },
+    { label: 'Bitni koʻrsatish', click: () => { win.show(); setMode('ask'); } },
     { label: 'Burchakka kichraytirish', click: () => setMode('widget') },
     { label: `Kursor ostidagini tushuntir (${HOTKEY.replace('CommandOrControl', 'Ctrl')})`, click: explainUnderCursor },
     { type: 'separator' },
-    { label: 'Server manzilini oʻzgartirish', click: () => { setMode('panel'); win.loadFile('setup.html'); } },
+    { label: 'Server manzilini oʻzgartirish', click: () => { setMode('board'); win.loadFile('setup.html'); } },
     { label: 'Kompyuter yonganda ochilsin', type: 'checkbox', checked: login, visible: process.platform !== 'linux',
       click: (item) => app.setLoginItemSettings({ openAtLogin: item.checked }) },
     { type: 'separator' },
     { label: 'Chiqish', click: () => app.quit() },
   ]));
-  tray.on('click', () => { if (!win.isVisible()) win.show(); setMode(mode === 'widget' ? 'panel' : 'widget'); });
+  tray.on('click', () => { if (!win.isVisible()) win.show(); setMode(mode === 'widget' ? 'ask' : 'widget'); });
 }
 
-ipcMain.handle('bit:expand', () => setMode('panel'));
+ipcMain.handle('bit:expand', () => setMode('ask'));
 ipcMain.handle('bit:collapse', () => setMode('widget'));
+ipcMain.handle('bit:mode', (_e, m) => setMode(m));
+ipcMain.handle('bit:ignore', (_e, on) => { if (win && process.platform !== 'linux') win.setIgnoreMouseEvents(!!on, { forward: true }); });
 ipcMain.handle('bit:capture', (_e, around) => capture(around));
 ipcMain.handle('bit:clipboard', () => {
   const sel = process.platform === 'linux' ? clipboard.readText('selection') : '';
@@ -143,9 +151,10 @@ ipcMain.handle('bit:set-server', async (_e, url) => {
   return true;
 });
 
-app.on('second-instance', () => { if (win) { win.show(); setMode('panel'); } });
+app.on('second-instance', () => { if (win) { win.show(); setMode('ask'); } });
 app.whenReady().then(() => {
   loadCfg();
+  if (process.platform === 'darwin') systemPreferences.askForMediaAccess('microphone').catch(() => {});
   // microphone / camera / notifications only for the Bit server; screen capture goes through capture() above
   session.defaultSession.setPermissionRequestHandler((wc, perm, cb) => cb(isOurs(wc.getURL()) && ['media', 'notifications', 'clipboard-read'].includes(perm)));
   createWindow();

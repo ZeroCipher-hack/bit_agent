@@ -341,19 +341,16 @@ html.desktop .deskonly{display:flex}
 .gear.deskonly{display:none}
 html.desktop .gear.deskonly{display:grid;font-weight:700}
 html.desktop body{background:transparent}
-html.desktop:not(.widget) main{background:var(--bg);border-radius:18px;margin:6px;min-height:calc(100% - 12px);box-shadow:0 10px 40px rgba(0,0,0,.45)}
 html.desktop .top{-webkit-app-region:drag}
 html.desktop .top button,html.desktop .top .langs{-webkit-app-region:no-drag}
 .deskbar{gap:6px;flex-wrap:wrap}
 .deskbar button{flex:1 1 auto;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:12px;padding:8px 10px;font:inherit;font-size:13px;cursor:pointer}
 html.widget main{padding:0;gap:0;max-width:none;overflow:visible}
 html.widget main>*:not(.robot){display:none!important}
-html.widget .robot{width:142px;margin:22px auto 0;-webkit-app-region:drag}
 html.widget .head,html.widget .ear,html.widget .antenna,html.widget #logo{-webkit-app-region:no-drag}
 html.widget .robot .floor{opacity:.6}
 html.widget body,html.widget html{overflow:hidden}
 html.widget .peek:not([hidden]){display:block}
-html.desktop:not(.widget) .robot{width:min(60vw,240px)}
 .peek{display:none;position:fixed;left:6px;right:6px;top:2px;z-index:20;background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:5px 8px;font-size:12px;line-height:1.3;cursor:pointer;-webkit-app-region:no-drag}
 
 /* compact layout: the input bar always stays reachable */
@@ -362,8 +359,6 @@ html.desktop:not(.widget) .robot{width:min(60vw,240px)}
 .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;-webkit-mask-image:linear-gradient(90deg,#000 92%,transparent)}
 .chips::-webkit-scrollbar{display:none}
 .chips button{flex:none;white-space:nowrap}
-html.desktop:not(.widget) .robot{width:150px;margin-top:6px}
-html.desktop:not(.widget) main{gap:10px;padding:10px 14px 0}
 html.desktop:not(.widget) .who h1{font-size:22px}
 html.desktop:not(.widget) .langs button{padding:5px 8px;font-size:12px}
 html.desktop:not(.widget) .gear{width:32px;height:32px}
@@ -371,6 +366,36 @@ html.desktop:not(.widget) .bubble{min-height:0;padding:12px 14px}
 html.desktop:not(.widget) .bubble p{font-size:16px}
 .deskbar{flex-wrap:nowrap}
 .deskbar button{flex:1 1 0;padding:7px 6px;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- desktop: no window background, just Bit + a small ask box above him; board to the side ---------- */
+html.desktop,html.desktop body{background:transparent!important}
+html.desktop main{max-width:none;min-height:0;padding:0;gap:0}
+html.desktop #robot{position:fixed;right:24px;bottom:4px;width:142px;margin:0;z-index:5;-webkit-app-region:drag}
+html.desktop .head,html.desktop .ear,html.desktop .antenna,html.desktop #logo{-webkit-app-region:no-drag}
+html.desktop:not(.widget) main>*:not(.robot):not(.bubble):not(.ask):not(.cards):not(.attach):not(.note):not(dialog){display:none!important}
+html.desktop:not(.widget) .ask{position:fixed;right:8px;bottom:252px;width:min(404px,calc(100vw - 16px));margin:0;padding:6px;border-radius:30px;
+  background:var(--field);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.4);gap:6px}
+html.desktop:not(.widget) .ask .mic{width:40px;height:40px}
+html.desktop:not(.widget) .ask input{height:40px;border:0;background:transparent;padding:0 6px}
+html.desktop:not(.widget) .ask .send{width:40px;height:40px;padding:0;display:grid;place-items:center}
+html.desktop:not(.widget) .ask .send svg{display:block}
+html.desktop:not(.widget) #sendTxt,html.desktop #camBtn,html.desktop #scrBtn{display:none!important}
+html.desktop:not(.widget) .bubble{position:fixed;right:8px;bottom:314px;width:min(404px,calc(100vw - 16px));max-height:190px;overflow:auto;margin:0;
+  min-height:0;padding:12px 64px 12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+html.desktop:not(.widget) .bubble::before{display:none}
+html.desktop:not(.widget) .bubble p{font-size:15.5px}
+html.desktop:not(.widget) .bubble .you{font-size:12.5px;margin-bottom:3px}
+.btools{display:none;position:absolute;top:6px;right:6px;gap:4px}
+html.desktop:not(.widget) .btools{display:flex}
+.btools button{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;font-size:13px;display:grid;place-items:center;padding:0}
+html.desktop:not(.widget) .attach{position:fixed;right:8px;bottom:312px;z-index:16}
+html.desktop.has-attach:not(.widget) .bubble{bottom:372px}
+html.desktop:not(.widget) .note{position:fixed;right:12px;bottom:226px;width:400px;font-size:12px;text-align:right;text-shadow:0 1px 3px rgba(0,0,0,.8);color:#fff}
+html.desktop:not(.widget) .cards{position:fixed;left:8px;top:8px;bottom:8px;width:calc(100vw - 436px);overflow:auto;padding:2px;gap:12px}
+html.desktop:not(.widget) .cards:empty{display:none}
+html.desktop .deskonly-ask{display:none}
+html.desktop:not(.widget) .deskonly-ask{display:grid}
+html.desktop.widget .peek:not([hidden]){display:block}
 .robot.listening{--ew:21cqw;--eh:26cqw}
 .robot.listening .bulb{animation:pulse .7s ease-in-out infinite}
 .robot.bounce{animation:bounce .5s ease-in-out 3}
@@ -525,6 +550,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   </div>
 
   <section class="bubble" aria-live="polite">
+    <div class="btools"><button type="button" id="bScreen" title="Ekrandagini tushuntir">🖥</button><button type="button" id="bGear" title="Sozlamalar">⚙</button><button type="button" id="bClose" title="Kichraytirish">✕</button></div>
     <span class="you" id="you" hidden></span>
     <p id="say"></p>
   </section>
@@ -541,6 +567,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     <button type="button" class="mic" id="mic" aria-pressed="false" aria-label="Gapirish">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
     </button>
+    <button type="button" class="mic deskonly-ask" id="aCursor" aria-label="Kursor ostidagini tushuntir" title="Kursor ostidagi soʻzni tushuntir (Ctrl+Shift+Space)">🎯</button>
     <button type="button" class="mic" id="camBtn" aria-label="Kamera">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
     </button>
@@ -810,7 +837,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   let pokeLog = [];
   head.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); head.click(); } });
   head.addEventListener('click', () => {
-    if (document.documentElement.classList.contains('widget')) { deskExpand(); return; }
+    if (desk) { if (deskMode === 'widget') deskExpand(); else deskCollapse(); return; }
     if (busy || gameBusy || robot.classList.contains('tv')) return;
     const now = Date.now(); taps = taps.filter(x => now - x < 1300); taps.push(now);
     pokeLog = pokeLog.filter(x => now - x < 8000); pokeLog.push(now);
@@ -1519,12 +1546,12 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     return c.toDataURL('image/jpeg', .82);
   }
   function attach(dataUrl){
-    attached = dataUrl; $('#attachImg').src = dataUrl; $('#attachTxt').textContent = t().attached; $('#attach').hidden = false;
+    attached = dataUrl; document.documentElement.classList.add('has-attach'); $('#attachImg').src = dataUrl; $('#attachTxt').textContent = t().attached; $('#attach').hidden = false;
     robot.classList.remove('snap'); void robot.offsetWidth; robot.classList.add('snap'); setTimeout(() => robot.classList.remove('snap'), 500);
     tone(1800, 900, 0, .06, 'square', .04); tone(1200, 600, .07, .08, 'square', .03);
     setEmotion('surprised', 1500); q.focus();
   }
-  function clearAttach(){ attached = null; $('#attach').hidden = true; $('#attachImg').removeAttribute('src'); }
+  function clearAttach(){ attached = null; document.documentElement.classList.remove('has-attach'); $('#attach').hidden = true; $('#attachImg').removeAttribute('src'); }
   $('#attachDel').onclick = clearAttach;
   const camDlg = $('#camDlg'), camVideo = $('#camVideo');
   function stopCam(){ if (camStream) camStream.getTracks().forEach(tr => tr.stop()); camStream = null; camVideo.srcObject = null; }
@@ -1561,38 +1588,46 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
 
   // ---------- desktop app: corner widget, explain under cursor / screen / clipboard ----------
   const desk = window.bitDesktop || null;
-  function deskExpand(){ if (!desk) return; document.documentElement.classList.remove('widget'); desk.expand(); }
-  function deskCollapse(){ if (!desk) return; document.documentElement.classList.add('widget'); desk.collapse(); }
+  let deskMode = 'widget', deskIdle = 0, settingsOpen = false;
+  function deskSet(m){
+    if (!desk) return;
+    if (m !== 'widget' && (settingsOpen || cards.children.length)) m = 'board';
+    const h = document.documentElement;
+    h.classList.toggle('widget', m === 'widget'); h.classList.toggle('dask', m === 'ask'); h.classList.toggle('dboard', m === 'board');
+    if (m !== deskMode) { deskMode = m; desk.setMode ? desk.setMode(m) : (m === 'widget' ? desk.collapse() : desk.expand()); }
+    clearTimeout(deskIdle);
+    if (m === 'ask') deskIdle = setTimeout(() => { if (deskMode === 'ask' && !busy && !listening && document.activeElement !== q) deskSet('widget'); }, 90000);
+  }
+  function deskExpand(){ deskSet('ask'); setTimeout(() => q.focus(), 120); }
+  function deskCollapse(){ deskSet('widget'); }
   if (desk) {
     document.documentElement.classList.add('desktop', 'widget');
-    $('#deskMin').onclick = deskCollapse;
-    desk.onCollapsed(() => document.documentElement.classList.add('widget'));
-    desk.onExplain(d => {
-      document.documentElement.classList.remove('widget');
-      const L = t();
-      if (d.image) attached = d.image;
-      ask(d.text ? L.deskSelQ.replace('{t}', d.text) : L.deskCursorQ);
-    });
-    $('#dCursor').onclick = async () => {          // give the user 3 s to point at the word
-      const L = t(); deskCollapse();
+    if (desk.setMode) desk.setMode('widget');            // sync the window size after a reload
+    desk.onCollapsed(() => { if (deskMode !== 'widget') { deskMode = 'widget'; document.documentElement.classList.add('widget'); } });
+    desk.onExplain(d => { deskSet('ask'); if (d.image) attached = d.image; const L = t(); ask(d.text ? L.deskSelQ.replace('{t}', d.text) : L.deskCursorQ); });
+    $('#bClose').onclick = deskCollapse;
+    $('#bGear').onclick = () => openSettings();
+    $('#bScreen').onclick = async () => { try { attached = await desk.capture(false); } catch { note(t().noScreen); return; } ask(t().deskScreenQ); };
+    $('#aCursor').onclick = async () => {          // 3 s to point at the word, then look at it
+      const L = t(); deskSet('widget');
       const peek = $('#peek');
       for (let n = 3; n > 0; n--) { peek.hidden = false; peek.textContent = L.deskCount.replace('{n}', n); tone(880, 880, 0, .05, 'sine', .04); await new Promise(r => setTimeout(r, 1000)); }
       peek.hidden = true;
       try { attached = await desk.capture(true); } catch { note(t().noScreen); }
-      deskExpand(); ask(L.deskCursorQ);
+      deskSet('ask'); ask(L.deskCursorQ);
     };
-    $('#dScreen').onclick = async () => {
-      try { attached = await desk.capture(false); } catch { note(t().noScreen); return; }
-      ask(t().deskScreenQ);
-    };
-    $('#dClip').onclick = async () => {
-      const txt = await desk.clipboard();
-      if (!txt) { note(t().deskNoClip); return; }
-      ask(t().deskClipQ.replace('{t}', txt.length > 600 ? txt.slice(0, 600) + '…' : txt));
-    };
-    // the 🖥 button in the input bar uses the desktop capture too (no browser picker)
-    $('#scrBtn').hidden = false;
-    $('#scrBtn').onclick = async () => { try { const img = await desk.capture(false); attach(img); } catch { note(t().noScreen); } };
+    // cards (whiteboard, lesson, picture, video controls...) open the side area; when they are gone, shrink back
+    new MutationObserver(() => { if (deskMode !== 'widget') deskSet(cards.children.length ? 'board' : 'ask'); }).observe(cards, { childList:true });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !settingsOpen) deskCollapse(); });
+    // Windows/macOS: let clicks through the transparent parts of the window
+    let solid = null;
+    document.addEventListener('mousemove', e => {
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const now = !!(el && el.closest('#robot, .bubble, .ask, .cards > *, dialog, .peek, .attach'));
+      if (now !== solid) { solid = now; desk.setIgnore && desk.setIgnore(!now); }
+    });
+    // old full-panel buttons are not used any more
+    ['#deskMin', '#deskbar'].forEach(sel => { const n = $(sel); if (n) n.remove(); });
   }
 
   // ---------- phone: "Share -> Bit" from any app (installed PWA share target) ----------
@@ -1649,10 +1684,69 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   let rec = null, listening = false;
   if (!SR) { micBtn.hidden = true; $('#wakeWrap').hidden = true; }
   else if (store.get('wake', false)) { $('#wake').checked = true; wakeOn = true; setTimeout(wakeStart, 1500); }
+  // ---------- server ears: record WAV, stop on silence, Gemini transcribes (works in Electron, Brave, phones) ----------
+  let sttOK = false, recStop = null;
+  fetch(apiBase() + '/api/health').then(r => r.json()).then(h => { sttOK = !!h.stt; if (sttOK) micBtn.hidden = false; }).catch(() => {});
+  function encodeWav(samples, rate){
+    const buf = new ArrayBuffer(44 + samples.length * 2), v = new DataView(buf);
+    const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + samples.length * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true);
+    v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, samples.length * 2, true);
+    for (let i = 0; i < samples.length; i++) { const x = Math.max(-1, Math.min(1, samples[i])); v.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7FFF, true); }
+    return buf;
+  }
+  function toDataUrl(buf){
+    let bin = ''; const b = new Uint8Array(buf);
+    for (let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+    return 'data:audio/wav;base64,' + btoa(bin);
+  }
+  async function listenServer(){
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true, channelCount:1 } }); }
+    catch { note(t().micBlocked); return; }
+    const ctx = new (window.AudioContext || window.webkitAudioContext)(), src = ctx.createMediaStreamSource(stream);
+    const proc = ctx.createScriptProcessor(4096, 1, 1), chunks = [], rate = ctx.sampleRate, t0 = performance.now();
+    let spoke = false, quiet = 0, done = false, level = 0;
+    listening = true; micBtn.setAttribute('aria-pressed', 'true'); robot.classList.add('listening'); setEmotion('neutral'); setLook(0, 0); note(''); refreshStatus();
+    q.placeholder = '🎙 …';
+    const finish = async () => {
+      if (done) return; done = true;
+      try { proc.disconnect(); src.disconnect(); } catch {}
+      stream.getTracks().forEach(tr => tr.stop()); ctx.close();
+      listening = false; recStop = null; micBtn.setAttribute('aria-pressed', 'false'); robot.classList.remove('listening'); q.placeholder = t().ph; refreshStatus();
+      if (!spoke) return;
+      const len = chunks.reduce((a, c) => a + c.length, 0), all = new Float32Array(len); let o = 0;
+      for (const c of chunks) { all.set(c, o); o += c.length; }
+      const k = rate / 16000, out = new Float32Array(Math.floor(len / k));       // downsample to 16 kHz
+      for (let i = 0; i < out.length; i++) out[i] = all[Math.floor(i * k)];
+      setEmotion('thinking'); sayEl.textContent = '…';
+      try {
+        const r = await fetch(apiBase() + '/api/stt', { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.token },
+                                                         body: JSON.stringify({ audio: toDataUrl(encodeWav(out, 16000)) }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.detail || r.status);
+        const text = (j.text || '').trim();
+        if (text) ask(text); else { setEmotion('confused', 2500); note(t().micLang); }
+      } catch (e) { setEmotion('confused', 2500); note(String(e.message || e).slice(0, 120)); }
+    };
+    recStop = finish;
+    proc.onaudioprocess = e => {
+      const d = e.inputBuffer.getChannelData(0); chunks.push(new Float32Array(d));
+      let sum = 0; for (let i = 0; i < d.length; i += 4) sum += d[i] * d[i];
+      level = Math.sqrt(sum / (d.length / 4));
+      if (level > 0.025) { spoke = true; quiet = 0; } else if (spoke) quiet += d.length / rate;
+      const el = (performance.now() - t0) / 1000;
+      if ((spoke && quiet > 1.3) || el > 25 || (!spoke && el > 8)) finish();   // stop when you stop talking
+    };
+    src.connect(proc); proc.connect(ctx.destination);
+  }
+
   micBtn.addEventListener('click', () => {
     audio(); wakeStop(); store.set('micUsed', true);
-    if (listening) { rec && rec.stop(); return; }
+    if (listening) { if (recStop) recStop(); else rec && rec.stop(); return; }
     stopSpeaking();
+    if (sttOK || !SR) { listenServer(); return; }
     rec = new SR(); rec.lang = BCP[uiLang()]; rec.interimResults = true;
     let finalText = '';
     rec.onresult = e => { let s = ''; for (let i = 0; i < e.results.length; i++) s += e.results[i][0].transcript;
@@ -1666,7 +1760,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
   // ---------- settings ----------
   const dlg = $('#settings');
   function openSettings(){
-    if (document.documentElement.classList.contains('widget')) deskExpand();
+    if (desk) { settingsOpen = true; deskSet('board'); }
     $('#sUrl').value = cfg.url; $('#sToken').value = cfg.token; $('#sLocal').value = cfg.local; $('#sAnim').value = store.get('anim', 'auto');
     $('#sEye').value = skin.eye || '#7CF5D6'; $('#sBody').value = skin.body || '#FFFFFF'; $('#sNeon').value = skin.neon || '#D6FF3D';
     $('#sStyle').value = skin.style || 'neon';
@@ -1690,6 +1784,7 @@ dialog .hint{font-size:13px;color:var(--muted);margin:6px 0 0}
     try { applyLook(await api('/api/appearance', { body: th.body || 'default', neon: th.neon || 'default' })); pulse('bounce', 1200); } catch (e) { note(errText(e)); }
   });
   dlg.addEventListener('close', () => {
+    if (desk) { settingsOpen = false; deskSet('ask'); }
     if (dlg.returnValue !== 'save') return;
     cfg = { url: $('#sUrl').value.trim(), token: $('#sToken').value.trim(), local: $('#sLocal').value.trim() };
     store.set('cfg', cfg); store.set('anim', $('#sAnim').value); applyAnim(); note('');
